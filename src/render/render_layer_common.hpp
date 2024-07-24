@@ -133,4 +133,127 @@ static inline unsigned both_colors(const char_element *src)
   return reinterpret_cast<const uint16_t *>(src)[1];
 }
 
+#ifndef CONFIG_NO_VECTOR_RENDERING
+
+/**
+ * render_layer32x4_sse2
+ */
+boolean render_layer32x4_sse2(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_AMD64) || defined(_M_X64) || \
+    (defined(_M_IX86_FP) && _M_IX86_FP == 2)
+#define HAS_RENDER_LAYER32X4
+#define HAS_RENDER_LAYER32X4_SSE2
+
+static inline boolean render_layer32x4(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+#if defined(__GNUC__) && !defined(__SSE2__)
+  unsigned eax = 1;
+  unsigned edx;
+#ifndef __x86_64__ /* x86-64 always has cpuid */
+  unsigned tmp;
+  asm(
+    "pushfd"                "\n\t" // save eflags
+    "popq %%eax"            "\n\t" // load eflags
+    "xor $0x200000, %%eax"  "\n\t" // invert ID bit in eflags
+    "mov %%eax %%ebx"       "\n\t"
+    "pushd %%eax"           "\n\t" // save modified eflags
+    "popfd"                 "\n\t"
+    "pushfd"                "\n\t"
+    "popd %%eax"            "\n\t" // reload modified(?) eflags
+    "xor %%ebx, %%eax"      "\n\t" // should be 0
+    : "=a"(tmp)
+    :
+    : "ebx"
+  );
+  if(tmp)
+    return false;
+#endif
+
+  asm(
+    "cpuid"
+    : "=d"(edx)
+    : "a"(eax)
+    : "ebx", "ecx"
+  );
+  if((edx & (3 << 25)) != 3 << 25) /* SSE + SSE2 */
+    return false;
+#endif
+
+  return render_layer32x4_sse2(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* SSE2 */
+
+/**
+ * render_layer32x8_avx
+ */
+boolean render_layer32x8_avx(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+#if (defined(__GNUC__) && defined(__x86_64__)) || defined(__AVX__)
+#define HAS_RENDER_LAYER32X8
+#define HAS_RENDER_LAYER32X8_AVX
+
+static inline boolean render_layer32x8(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+#ifndef __AVX__
+  int eax = 1;
+  int ecx;
+  asm(
+    "cpuid"
+    : "=c"(ecx)
+    : "a"(eax)
+    : "ebx", "edx"
+  );
+  if(~ecx & (1 << 28)) /* AVX */
+    return false;
+#endif
+
+  return render_layer32x8_avx(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* AVX */
+
+/**
+ * render_layer32x4_neon
+ */
+boolean render_layer32x4_neon(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+#ifdef __ARM_NEON
+#define HAS_RENDER_LAYER32X4
+#define HAS_RENDER_LAYER32X4_NEON
+
+// This renderer requires intrinsics, so runtime checks
+// can be performed in render_layer_neon.cpp.
+static inline boolean render_layer32x4(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  return render_layer32x4_neon(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* NEON */
+
+#endif /* CONFIG_NO_VECTOR_RENDERING */
+
 #endif /* MEGAZEUX_RENDER_LAYER_COMMON_HPP */

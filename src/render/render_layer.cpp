@@ -49,6 +49,7 @@
 #define SKIP_8BPP
 #endif
 
+#include "render_layer_common.hpp"
 #include "render_layer_code.hpp"
 
 #ifdef BUILD_REFERENCE_RENDERER
@@ -241,6 +242,21 @@ static inline void select_aligned_renderer(const void *pixels,
 
   if(bpp == -1)
     bpp = graphics->bits_per_pixel;
+
+  if(bpp == 32)
+  {
+#if defined(HAS_RENDER_LAYER32X8) && !defined(MZX_UNIT_TESTS)
+    if(render_layer32x8(pixels, width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip))
+      return;
+#endif
+
+#if defined(HAS_RENDER_LAYER32X4) && !defined(MZX_UNIT_TESTS)
+    if(render_layer32x4(pixels, width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip))
+      return;
+#endif
+  }
 
   size_t drawStart =
    (size_t)((char *)pixels + layer->y * (ptrdiff_t)pitch + (layer->x * bpp / 8));

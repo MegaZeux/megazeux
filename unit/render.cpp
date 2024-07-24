@@ -28,6 +28,9 @@ extern "C" {
 
 #define BUILD_REFERENCE_RENDERER
 #include "../src/render/render_layer.cpp"
+#include "../src/render_layer_avx.cpp"
+#include "../src/render_layer_neon.cpp"
+#include "../src/render_layer_sse2.cpp"
 
 typedef void (*render_layer_fp)(void * RESTRICT pixels,
  size_t width_px, size_t height_px, size_t pitch, int bpp,
@@ -1328,6 +1331,104 @@ UNITTEST(reference_renderer_mzx32)
 UNITTEST(reference_renderer_smzx32)
 {
   using test = render_layer_tester<uint32_t, SMZX, FLAT32, 0, reference_renderer_wrap>;
+  SECTION(graphic)      test::graphic(DIR "32s.tga.gz");
+  SECTION(align)        test::align(DIR "32sa.tga.gz");
+  SECTION(align_tr)     test::align_tr(DIR "32sta.tga.gz");
+  SECTION(clip)         test::clip(DIR "32sc.tga.gz");
+  SECTION(clip_tr)      test::clip_tr(DIR "32stc.tga.gz");
+  SECTION(misalign)     test::misalign(DIR "32sa.tga.gz");
+  SECTION(misalign_tr)  test::misalign_tr(DIR "32sta.tga.gz");
+  SECTION(misclip)      test::misclip(DIR "32sc.tga.gz");
+  SECTION(misclip_tr)   test::misclip_tr(DIR "32stc.tga.gz");
+  SECTION(large)        test::large(DIR "32sxl.tga.gz");
+}
+
+static void render_layer32x4_wrap(void * RESTRICT pixels,
+ size_t width_px, size_t height_px, size_t pitch, int bpp,
+ const struct graphics_data *graphics, const struct video_layer *layer)
+{
+  ASSERTEQ(bpp, 32, "vector 32x4 renderer is 32-bit only");
+#ifdef HAS_RENDER_LAYER32X4
+  int smzx = layer->mode;
+  int trans = layer->transparent_col != -1;
+  int clip =
+   (layer->x < 0 || layer->y < 0 ||
+    (layer->x + layer->w * CHAR_W) > width_px ||
+    (layer->y + layer->h * CHAR_H) > height_px);
+
+  if(!render_layer32x4(pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip))
+#endif
+  SKIP();
+}
+
+UNITTEST(render_layer32x4_mzx)
+{
+  using test = render_layer_tester<uint32_t, MZX, FLAT32, 0, render_layer32x4_wrap>;
+  SECTION(graphic)      test::graphic(DIR "32.tga.gz");
+  SECTION(align)        test::align(DIR "32a.tga.gz");
+  SECTION(align_tr)     test::align_tr(DIR "32ta.tga.gz");
+  SECTION(clip)         test::clip(DIR "32c.tga.gz");
+  SECTION(clip_tr)      test::clip_tr(DIR "32tc.tga.gz");
+  SECTION(misalign)     test::misalign(DIR "32a.tga.gz");
+  SECTION(misalign_tr)  test::misalign_tr(DIR "32ta.tga.gz");
+  SECTION(misclip)      test::misclip(DIR "32c.tga.gz");
+  SECTION(misclip_tr)   test::misclip_tr(DIR "32tc.tga.gz");
+  SECTION(large)        test::large(DIR "32xl.tga.gz");
+}
+
+UNITTEST(render_layer32x4_smzx)
+{
+  using test = render_layer_tester<uint32_t, SMZX, FLAT32, 0, render_layer32x4_wrap>;
+  SECTION(graphic)      test::graphic(DIR "32s.tga.gz");
+  SECTION(align)        test::align(DIR "32sa.tga.gz");
+  SECTION(align_tr)     test::align_tr(DIR "32sta.tga.gz");
+  SECTION(clip)         test::clip(DIR "32sc.tga.gz");
+  SECTION(clip_tr)      test::clip_tr(DIR "32stc.tga.gz");
+  SECTION(misalign)     test::misalign(DIR "32sa.tga.gz");
+  SECTION(misalign_tr)  test::misalign_tr(DIR "32sta.tga.gz");
+  SECTION(misclip)      test::misclip(DIR "32sc.tga.gz");
+  SECTION(misclip_tr)   test::misclip_tr(DIR "32stc.tga.gz");
+  SECTION(large)        test::large(DIR "32sxl.tga.gz");
+}
+
+static void render_layer32x8_wrap(void * RESTRICT pixels,
+ size_t width_px, size_t height_px, size_t pitch, int bpp,
+ const struct graphics_data *graphics, const struct video_layer *layer)
+{
+  ASSERTEQ(bpp, 32, "vector 32x8 renderer is 32-bit only");
+#ifdef HAS_RENDER_LAYER32X8
+  int smzx = layer->mode;
+  int trans = layer->transparent_col != -1;
+  int clip =
+   (layer->x < 0 || layer->y < 0 ||
+    (layer->x + layer->w * CHAR_W) > width_px ||
+    (layer->y + layer->h * CHAR_H) > height_px);
+
+  if(!render_layer32x8(pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip))
+#endif
+  SKIP();
+}
+
+UNITTEST(render_layer32x8_mzx)
+{
+  using test = render_layer_tester<uint32_t, MZX, FLAT32, 0, render_layer32x8_wrap>;
+  SECTION(graphic)      test::graphic(DIR "32.tga.gz");
+  SECTION(align)        test::align(DIR "32a.tga.gz");
+  SECTION(align_tr)     test::align_tr(DIR "32ta.tga.gz");
+  SECTION(clip)         test::clip(DIR "32c.tga.gz");
+  SECTION(clip_tr)      test::clip_tr(DIR "32tc.tga.gz");
+  SECTION(misalign)     test::misalign(DIR "32a.tga.gz");
+  SECTION(misalign_tr)  test::misalign_tr(DIR "32ta.tga.gz");
+  SECTION(misclip)      test::misclip(DIR "32c.tga.gz");
+  SECTION(misclip_tr)   test::misclip_tr(DIR "32tc.tga.gz");
+  SECTION(large)        test::large(DIR "32xl.tga.gz");
+}
+
+UNITTEST(render_layer32x8_smzx)
+{
+  using test = render_layer_tester<uint32_t, SMZX, FLAT32, 0, render_layer32x8_wrap>;
   SECTION(graphic)      test::graphic(DIR "32s.tga.gz");
   SECTION(align)        test::align(DIR "32sa.tga.gz");
   SECTION(align_tr)     test::align_tr(DIR "32sta.tga.gz");
