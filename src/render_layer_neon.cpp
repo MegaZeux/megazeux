@@ -25,6 +25,10 @@
 #include "util.h"
 #endif
 
+#ifdef __aarch64__
+#define RENDER_VQTBL
+#endif
+
 #ifdef HAS_RENDER_LAYER32X4_NEON
 #include <arm_neon.h>
 
@@ -76,9 +80,71 @@ static boolean has_neon_runtime_support(void)
   return has_neon;
 }
 
+// Both set_colors and selectors are set up for little endian only.
+// On the extreme off chance someone needs big endian, print an error.
 #if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
-#error wtf?
+#error Neon renderer is configured for little endian only--please report this!
 #endif
+
+#ifdef RENDER_VQTBL
+#define SELECT_0 0, 1, 2, 3
+#define SELECT_1 4, 5, 6, 7
+#define SELECT_2 8, 9, 10, 11
+#define SELECT_3 12, 13, 14, 15
+
+static const uint8x16_t selectors_mzx[16] =
+{
+  { SELECT_0, SELECT_0, SELECT_0, SELECT_0 },
+  { SELECT_0, SELECT_0, SELECT_0, SELECT_1 },
+  { SELECT_0, SELECT_0, SELECT_1, SELECT_0 },
+  { SELECT_0, SELECT_0, SELECT_1, SELECT_1 },
+  { SELECT_0, SELECT_1, SELECT_0, SELECT_0 },
+  { SELECT_0, SELECT_1, SELECT_0, SELECT_1 },
+  { SELECT_0, SELECT_1, SELECT_1, SELECT_0 },
+  { SELECT_0, SELECT_1, SELECT_1, SELECT_1 },
+  { SELECT_1, SELECT_0, SELECT_0, SELECT_0 },
+  { SELECT_1, SELECT_0, SELECT_0, SELECT_1 },
+  { SELECT_1, SELECT_0, SELECT_1, SELECT_0 },
+  { SELECT_1, SELECT_0, SELECT_1, SELECT_1 },
+  { SELECT_1, SELECT_1, SELECT_0, SELECT_0 },
+  { SELECT_1, SELECT_1, SELECT_0, SELECT_1 },
+  { SELECT_1, SELECT_1, SELECT_1, SELECT_0 },
+  { SELECT_1, SELECT_1, SELECT_1, SELECT_1 },
+};
+
+static const uint8x16_t selectors_smzx[16] =
+{
+  { SELECT_0, SELECT_0, SELECT_0, SELECT_0 },
+  { SELECT_0, SELECT_0, SELECT_1, SELECT_1 },
+  { SELECT_0, SELECT_0, SELECT_2, SELECT_2 },
+  { SELECT_0, SELECT_0, SELECT_3, SELECT_3 },
+  { SELECT_1, SELECT_1, SELECT_0, SELECT_0 },
+  { SELECT_1, SELECT_1, SELECT_1, SELECT_1 },
+  { SELECT_1, SELECT_1, SELECT_2, SELECT_2 },
+  { SELECT_1, SELECT_1, SELECT_3, SELECT_3 },
+  { SELECT_2, SELECT_2, SELECT_0, SELECT_0 },
+  { SELECT_2, SELECT_2, SELECT_1, SELECT_1 },
+  { SELECT_2, SELECT_2, SELECT_2, SELECT_2 },
+  { SELECT_2, SELECT_2, SELECT_3, SELECT_3 },
+  { SELECT_3, SELECT_3, SELECT_0, SELECT_0 },
+  { SELECT_3, SELECT_3, SELECT_1, SELECT_1 },
+  { SELECT_3, SELECT_3, SELECT_2, SELECT_2 },
+  { SELECT_3, SELECT_3, SELECT_3, SELECT_3 },
+};
+
+template<int SMZX>
+static inline uint8x16_t get_selector(unsigned half_char)
+{
+  const uint8x16_t (&selectors)[16] = SMZX ? selectors_smzx : selectors_mzx;
+  return selectors[half_char];
+}
+
+static inline uint32x4_t get_colors(uint32x4_t colors, uint8x16_t selector)
+{
+  return vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(colors), selector));
+}
+
+#else /* !RENDER_VQTBL */
 
 static inline void set_colors_mzx_neon(uint32x4_t * RESTRICT dest,
  uint32x4_t colors)
@@ -141,6 +207,7 @@ static inline void set_colors_smzx_neon(uint32x4_t * RESTRICT dest,
   dest[14] = vreinterpretq_u32_u64(vcombine_u64(x33, x22));
   dest[15] = vreinterpretq_u32_u64(vcombine_u64(x33, x33));
 }
+#endif /* !RENDER_VQTBL */
 
 template<int SMZX, int TR, int CLIP>
 static inline void render_layer32x4_neon(
@@ -157,10 +224,14 @@ static inline void render_layer32x4_neon(
   }
 #endif
 
+#ifndef RENDER_VQTBL
   uint32x4_t set_colors[16];
   uint32x4_t set_opaque[16];
+#endif
   uint32x4_t left_mask[2];
   uint32x4_t right_mask[2];
+  uint32x4_t char_colors = { 0, 0, 0, 0 };
+  uint32x4_t char_opaque = { 0, 0, 0, 0 };
 
   int x, y, i;
   unsigned ch;
@@ -260,9 +331,6 @@ static inline void render_layer32x4_neon(
 
       if(prev != ((uint16_t *)src)[1])
       {
-        uint32x4_t char_colors;
-        uint32x4_t char_masks;
-
         prev = ((uint16_t *)src)[1];
         if(SMZX)
         {
@@ -282,12 +350,14 @@ static inline void render_layer32x4_neon(
               }
               all_tcol &= idx == tcol;
               has_tcol |= idx == tcol;
-              char_masks[i] = idx == tcol ? 0 : 0xffffffffu;
+              char_opaque[i] = idx == tcol ? 0 : 0xffffffffu;
             }
           }
+#ifndef RENDER_VQTBL
           set_colors_smzx_neon(set_colors, char_colors);
           if(TR && has_tcol)
-            set_colors_smzx_neon(set_opaque, char_masks);
+            set_colors_smzx_neon(set_opaque, char_opaque);
+#endif
         }
         else
         {
@@ -295,7 +365,6 @@ static inline void render_layer32x4_neon(
           int fg = select_color_16(src->fg_color, ppal);
           char_colors[0] = graphics->flat_intensity_palette[bg];
           char_colors[1] = graphics->flat_intensity_palette[fg];
-          set_colors_mzx_neon(set_colors, char_colors);
 
           if(TR)
           {
@@ -305,11 +374,15 @@ static inline void render_layer32x4_neon(
 
             if(has_tcol)
             {
-              char_masks[0] = (bg == tcol) ? 0 : 0xffffffffu;
-              char_masks[1] = (fg == tcol) ? 0 : 0xffffffffu;
-              set_colors_mzx_neon(set_opaque, char_masks);
+              char_opaque[0] = (bg == tcol) ? 0 : 0xffffffffu;
+              char_opaque[1] = (fg == tcol) ? 0 : 0xffffffffu;
             }
           }
+#ifndef RENDER_VQTBL
+          set_colors_mzx_neon(set_colors, char_colors);
+          if(TR && has_tcol)
+            set_colors_mzx_neon(set_opaque, char_opaque);
+#endif
         }
       }
 
@@ -334,30 +407,45 @@ static inline void render_layer32x4_neon(
             if(out_ptr + CHAR_W <= start_ptr || out_ptr >= end_ptr)
               continue;
 
-            uint32x4_t left = set_colors[char_ptr[i] >> 4];
-            uint32x4_t right = set_colors[char_ptr[i] & 0x0f];
-            uint32x4_t left_op = { 0, 0, 0, 0 };
-            uint32x4_t right_op = { 0, 0, 0, 0 };
+            char_byte_left = char_ptr[i] >> 4;
+            char_byte_right = char_ptr[i] & 0x0f;
+
+#ifdef RENDER_VQTBL
+            uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
+            uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
+            uint32x4_t col_l = get_colors(char_colors, sel_l);
+            uint32x4_t col_r = get_colors(char_colors, sel_r);
+#else
+            uint32x4_t col_l = set_colors[char_byte_left];
+            uint32x4_t col_r = set_colors[char_byte_right];
+#endif
+            uint32x4_t tr_l = { 0, 0, 0, 0 };
+            uint32x4_t tr_r = { 0, 0, 0, 0 };
             int j;
             if(TR && has_tcol)
             {
               if(byte_tcol == char_ptr[i])
                 continue;
 
-              left_op = set_opaque[char_ptr[i] >> 4];
-              right_op = set_opaque[char_ptr[i] & 0xf];
+#ifdef RENDER_VQTBL
+              tr_l = get_colors(char_opaque, sel_l);
+              tr_r = get_colors(char_opaque, sel_r);
+#else
+              tr_l = set_opaque[char_byte_left];
+              tr_r = set_opaque[char_byte_right];
+#endif
             }
             for(j = 0; j < 4; j++)
             {
               if(clip_mask[0][j])
-                if(!TR || !has_tcol || left_op[j])
-                  out_ptr[j] = left[j];
+                if(!TR || !has_tcol || tr_l[j])
+                  out_ptr[j] = col_l[j];
             }
             for(j = 0; j < 4; j++)
             {
               if(clip_mask[1][j])
-                if(!TR || !has_tcol || right_op[j])
-                  out_ptr[j + 4] = right[j];
+                if(!TR || !has_tcol || tr_r[j])
+                  out_ptr[j + 4] = col_r[j];
             }
           }
         }
@@ -375,10 +463,19 @@ static inline void render_layer32x4_neon(
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
+#ifdef RENDER_VQTBL
+            uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
+            uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
+            uint32x4_t col_l = get_colors(char_colors, sel_l);
+            uint32x4_t col_r = get_colors(char_colors, sel_r);
+            uint32x4_t tr_l = get_colors(char_opaque, sel_l);
+            uint32x4_t tr_r = get_colors(char_opaque, sel_r);
+#else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
             uint32x4_t tr_l = set_opaque[char_byte_left];
             uint32x4_t tr_r = set_opaque[char_byte_right];
+#endif
             uint32x4_t bg_l = vld1q_u32(out_ptr);
             uint32x4_t bg_r = vld1q_u32(out_ptr + 4);
 
@@ -399,8 +496,15 @@ static inline void render_layer32x4_neon(
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
+#ifdef RENDER_VQTBL
+            uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
+            uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
+            uint32x4_t col_l = get_colors(char_colors, sel_l);
+            uint32x4_t col_r = get_colors(char_colors, sel_r);
+#else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
+#endif
             uint32x4_t tr_l = clip_mask[0];
             uint32x4_t tr_r = clip_mask[1];
             uint32x4_t bg_l = vld1q_u32(out_ptr);
@@ -425,10 +529,19 @@ static inline void render_layer32x4_neon(
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
+#ifdef RENDER_VQTBL
+            uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
+            uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
+            uint32x4_t col_l = get_colors(char_colors, sel_l);
+            uint32x4_t col_r = get_colors(char_colors, sel_r);
+            uint32x4_t tr_l = get_colors(char_opaque, sel_l);
+            uint32x4_t tr_r = get_colors(char_opaque, sel_r);
+#else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
             uint32x4_t tr_l = set_opaque[char_byte_left];
             uint32x4_t tr_r = set_opaque[char_byte_right];
+#endif
             uint32x4_t bg_l = vld1q_u32(out_ptr);
             uint32x4_t bg_r = vld1q_u32(out_ptr + 4);
 
@@ -446,8 +559,15 @@ static inline void render_layer32x4_neon(
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
+#ifdef RENDER_VQTBL
+            uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
+            uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
+            uint32x4_t col_l = get_colors(char_colors, sel_l);
+            uint32x4_t col_r = get_colors(char_colors, sel_r);
+#else
             uint32x4_t col_l = set_colors[char_byte_left];
-            uint32x4_t col_r  = set_colors[char_byte_right];
+            uint32x4_t col_r = set_colors[char_byte_right];
+#endif
             vst1q_u32(out_ptr,      col_l);
             vst1q_u32(out_ptr + 4,  col_r);
           }
