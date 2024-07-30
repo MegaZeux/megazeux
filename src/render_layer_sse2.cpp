@@ -325,12 +325,12 @@ static inline void render_layer32x4_sse2(
         ch %= PROTECTED_CHARSET_POSITION;
       }
 
-      if(prev != ((uint16_t *)src)[1])
+      if(prev != both_colors(src))
       {
         xmm char_colors;
         xmm char_masks;
 
-        prev = ((uint16_t *)src)[1];
+        prev = both_colors(src);
         if(SMZX)
         {
           unsigned pal = ((src->bg_color << 4) | src->fg_color);

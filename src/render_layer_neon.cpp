@@ -32,20 +32,35 @@
 #ifdef HAS_RENDER_LAYER32X4_NEON
 #include <arm_neon.h>
 
-/* Mac OS processor feature detection header. */
+/* iOS processor feature detection header (32-bit). */
 #if defined(__APPLE__) && defined(__arm__)
 #include <sys/sysctl.h>
+static boolean has_neon_check()
+{
+  size_t val = 0;
+  size_t sz = sizeof(val);
+  int ret = sysctlbyname("hw.optional.neon", &val, &sz, NULL, 0);
+  return (ret == 0 && val);
+}
 
-/* Linux processor feature detection headers. */
+/* Linux processor feature detection headers (32-bit). */
 #elif defined(__linux__) && defined(__arm__)
 #include <sys/auxv.h>
 #include <asm/hwcap.h>
+static boolean has_neon_check()
+{
+  int tmp = getauxval(AT_HWCAP);
+  return !!(tmp & HWCAP_NEON);
+}
 
-/* Assume any others that reached this point have it.
- * This includes AArch64 (mandatory, always available) and bare metal.
- * TODO: runtime checking for *BSD and Windows? */
+/* Assume AArch64, anything with intrinsics that reached this point has it. */
+#elif defined(__aarch64__) || defined(__ARM_NEON) || \
+ defined(_M_ARM) || defined(_M_ARM64)
+#define has_neon_check() true
+
+/* No intrinsics and no runtime check available; disable. */
 #else
-#define HAS_NEON_DEFAULT
+#define has_neon_check() false
 #endif
 
 static boolean has_neon_runtime_support(void)
@@ -55,26 +70,7 @@ static boolean has_neon_runtime_support(void)
 
   if(!init)
   {
-#if defined(__APPLE__) && defined(__arm__)
-
-    /* Detect via Apple kernel. */
-    size_t val = 0;
-    size_t sz = sizeof(val);
-    int ret = sysctlbyname("hw.optional.neon", &val, &sz, NULL, 0);
-    if(ret == 0 && val)
-      has_neon = true;
-
-#elif defined(__linux__) && defined(__arm__)
-
-    /* Detect via Linux kernel (32-bit). (Android API 18+ too.) */
-    int tmp = getauxval(AT_HWCAP);
-    if(tmp & HWCAP_NEON)
-      has_neon = true;
-
-#elif defined(HAS_NEON_DEFAULT)
-    /* Bare metal can't runtime detect at EL0 without a fault, but assume yes. */
-    has_neon = true;
-#endif
+    has_neon = has_neon_check();
     init = true;
   }
   return has_neon;
@@ -139,7 +135,7 @@ static inline uint8x16_t get_selector(unsigned half_char)
   return selectors[half_char];
 }
 
-static inline uint32x4_t get_colors(uint32x4_t colors, uint8x16_t selector)
+static inline uint32x4_t permute_colors(uint32x4_t colors, uint8x16_t selector)
 {
   return vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(colors), selector));
 }
@@ -329,9 +325,9 @@ static inline void render_layer32x4_neon(
         ch %= PROTECTED_CHARSET_POSITION;
       }
 
-      if(prev != ((uint16_t *)src)[1])
+      if(prev != both_colors(src))
       {
-        prev = ((uint16_t *)src)[1];
+        prev = both_colors(src);
         if(SMZX)
         {
           unsigned pal = ((src->bg_color << 4) | src->fg_color);
@@ -413,8 +409,8 @@ static inline void render_layer32x4_neon(
 #ifdef RENDER_VQTBL
             uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
             uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
-            uint32x4_t col_l = get_colors(char_colors, sel_l);
-            uint32x4_t col_r = get_colors(char_colors, sel_r);
+            uint32x4_t col_l = permute_colors(char_colors, sel_l);
+            uint32x4_t col_r = permute_colors(char_colors, sel_r);
 #else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
@@ -428,8 +424,8 @@ static inline void render_layer32x4_neon(
                 continue;
 
 #ifdef RENDER_VQTBL
-              tr_l = get_colors(char_opaque, sel_l);
-              tr_r = get_colors(char_opaque, sel_r);
+              tr_l = permute_colors(char_opaque, sel_l);
+              tr_r = permute_colors(char_opaque, sel_r);
 #else
               tr_l = set_opaque[char_byte_left];
               tr_r = set_opaque[char_byte_right];
@@ -466,10 +462,10 @@ static inline void render_layer32x4_neon(
 #ifdef RENDER_VQTBL
             uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
             uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
-            uint32x4_t col_l = get_colors(char_colors, sel_l);
-            uint32x4_t col_r = get_colors(char_colors, sel_r);
-            uint32x4_t tr_l = get_colors(char_opaque, sel_l);
-            uint32x4_t tr_r = get_colors(char_opaque, sel_r);
+            uint32x4_t col_l = permute_colors(char_colors, sel_l);
+            uint32x4_t col_r = permute_colors(char_colors, sel_r);
+            uint32x4_t tr_l = permute_colors(char_opaque, sel_l);
+            uint32x4_t tr_r = permute_colors(char_opaque, sel_r);
 #else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
@@ -499,8 +495,8 @@ static inline void render_layer32x4_neon(
 #ifdef RENDER_VQTBL
             uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
             uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
-            uint32x4_t col_l = get_colors(char_colors, sel_l);
-            uint32x4_t col_r = get_colors(char_colors, sel_r);
+            uint32x4_t col_l = permute_colors(char_colors, sel_l);
+            uint32x4_t col_r = permute_colors(char_colors, sel_r);
 #else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
@@ -532,10 +528,10 @@ static inline void render_layer32x4_neon(
 #ifdef RENDER_VQTBL
             uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
             uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
-            uint32x4_t col_l = get_colors(char_colors, sel_l);
-            uint32x4_t col_r = get_colors(char_colors, sel_r);
-            uint32x4_t tr_l = get_colors(char_opaque, sel_l);
-            uint32x4_t tr_r = get_colors(char_opaque, sel_r);
+            uint32x4_t col_l = permute_colors(char_colors, sel_l);
+            uint32x4_t col_r = permute_colors(char_colors, sel_r);
+            uint32x4_t tr_l = permute_colors(char_opaque, sel_l);
+            uint32x4_t tr_r = permute_colors(char_opaque, sel_r);
 #else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
@@ -562,8 +558,8 @@ static inline void render_layer32x4_neon(
 #ifdef RENDER_VQTBL
             uint8x16_t sel_l = get_selector<SMZX>(char_byte_left);
             uint8x16_t sel_r = get_selector<SMZX>(char_byte_right);
-            uint32x4_t col_l = get_colors(char_colors, sel_l);
-            uint32x4_t col_r = get_colors(char_colors, sel_r);
+            uint32x4_t col_l = permute_colors(char_colors, sel_l);
+            uint32x4_t col_r = permute_colors(char_colors, sel_r);
 #else
             uint32x4_t col_l = set_colors[char_byte_left];
             uint32x4_t col_r = set_colors[char_byte_right];
