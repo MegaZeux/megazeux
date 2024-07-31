@@ -149,10 +149,7 @@ boolean render_layer32x4_sse2(
 #define HAS_RENDER_LAYER32X4
 #define HAS_RENDER_LAYER32X4_SSE2
 
-static inline boolean render_layer32x4(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int smzx, int trans, int clip)
+static inline boolean has_sse2()
 {
 #if defined(__GNUC__) && !defined(__SSE2__)
   unsigned eax = 1;
@@ -186,6 +183,16 @@ static inline boolean render_layer32x4(
   if((edx & (3 << 25)) != 3 << 25) /* SSE + SSE2 */
     return false;
 #endif
+  return true;
+}
+
+static inline boolean render_layer32x4(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!has_sse2())
+    return false;
 
   return render_layer32x4_sse2(
    pixels, width_px, height_px, pitch, graphics, layer,
@@ -201,14 +208,31 @@ boolean render_layer32x8_avx(
  const struct graphics_data *graphics, const struct video_layer *layer,
  int smzx, int tr, int clip);
 
-#if (defined(__GNUC__) && defined(__x86_64__)) || defined(__AVX__)
+boolean render_layer32x8_avx2(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+// GCC support includes both intrinsics and inline ASM (GCC 4.7+, clang 5?).
+// MSVC support is intrinsics-only, so both AVX and AVX2 must be enabled.
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__x86_64__) && \
+  ((__GNUC__ >= 4 && __GNUC_MINOR__ >= 7) || (__GNUC__ >= 5))
+#define GCC_HAS_AVX
+#endif
+
+#if defined(__clang__) && defined(__clang_major__) && __clang_major__ >= 5
+#define CLANG_HAS_AVX
+#endif
+
+#if defined(_MSC_VER) && defined(__AVX__) && defined(__AVX2__)
+#define MSVC_HAS_AVX
+#endif
+
+#if defined(GCC_HAS_AVX) || defined(CLANG_HAS_AVX) || defined(MSVC_HAS_AVX)
 #define HAS_RENDER_LAYER32X8
 #define HAS_RENDER_LAYER32X8_AVX
 
-static inline boolean render_layer32x8(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int smzx, int trans, int clip)
+static inline boolean has_avx()
 {
 #ifndef __AVX__
   int eax = 1;
@@ -222,6 +246,40 @@ static inline boolean render_layer32x8(
   if(~ecx & (1 << 28)) /* AVX */
     return false;
 #endif
+  return true;
+}
+
+static inline boolean has_avx2()
+{
+#ifndef __AVX2__
+  int eax = 7;
+  int ebx;
+  asm(
+    "cpuid"
+    : "=b"(ebx)
+    : "a"(eax)
+    : "ecx", "edx"
+  );
+  if(~ebx & (1 << 5)) /* AVX2 */
+    return false;
+#endif
+  return true;
+}
+
+static inline boolean render_layer32x8(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!has_avx())
+    return false;
+
+  if(has_avx2())
+  {
+    return render_layer32x8_avx2(
+     pixels, width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip);
+  }
 
   return render_layer32x8_avx(
    pixels, width_px, height_px, pitch, graphics, layer,
