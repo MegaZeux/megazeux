@@ -1992,7 +1992,11 @@ fi
 # Autoconf-esque detection for some compilation flags.
 #
 echo
-gmake -f Makefile.config
+if command -v gmake >/dev/null 2>&1; then
+	gmake -f Makefile.config || exit 1
+else
+	make -f Makefile.config || exit 1
+fi
 
 #
 # Pledge(2) on main executable warning

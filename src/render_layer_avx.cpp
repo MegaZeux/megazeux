@@ -767,12 +767,11 @@ boolean render_layer32x8_avx(
  const struct graphics_data *graphics, const struct video_layer *layer,
  int smzx, int trans, int clip)
 {
-#if defined(USE_AVX2_INTRINSICS) || !defined(__AVX__)
-  /* If AVX2 is enabled across the build, don't bother generating these. */
-  return false;
-#else
+#ifdef __AVX__
   return render_layer32x8_avx<1>(
    pixels, width_px, height_px, pitch, graphics, layer, smzx, trans, clip);
+#else
+  return false;
 #endif
 }
 
