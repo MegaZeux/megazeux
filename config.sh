@@ -1989,6 +1989,12 @@ else
 fi
 
 #
+# Autoconf-esque detection for some compilation flags.
+#
+echo
+gmake -f Makefile.config
+
+#
 # Pledge(2) on main executable warning
 #
 if [ "$PLEDGE" = "true" ]; then

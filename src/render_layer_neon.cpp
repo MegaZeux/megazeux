@@ -32,50 +32,6 @@
 #ifdef HAS_RENDER_LAYER32X4_NEON
 #include <arm_neon.h>
 
-/* iOS processor feature detection header (32-bit). */
-#if defined(__APPLE__) && defined(__arm__)
-#include <sys/sysctl.h>
-static boolean has_neon_check()
-{
-  size_t val = 0;
-  size_t sz = sizeof(val);
-  int ret = sysctlbyname("hw.optional.neon", &val, &sz, NULL, 0);
-  return (ret == 0 && val);
-}
-
-/* Linux processor feature detection headers (32-bit). */
-#elif defined(__linux__) && defined(__arm__)
-#include <sys/auxv.h>
-#include <asm/hwcap.h>
-static boolean has_neon_check()
-{
-  int tmp = getauxval(AT_HWCAP);
-  return !!(tmp & HWCAP_NEON);
-}
-
-/* Assume AArch64, anything with intrinsics that reached this point has it. */
-#elif defined(__aarch64__) || defined(__ARM_NEON) || \
- defined(_M_ARM) || defined(_M_ARM64)
-#define has_neon_check() true
-
-/* No intrinsics and no runtime check available; disable. */
-#else
-#define has_neon_check() false
-#endif
-
-static boolean has_neon_runtime_support(void)
-{
-  static boolean init = false;
-  static boolean has_neon = false;
-
-  if(!init)
-  {
-    has_neon = has_neon_check();
-    init = true;
-  }
-  return has_neon;
-}
-
 // Both set_colors and selectors are set up for little endian only.
 // On the extreme off chance someone needs big endian, print an error.
 #if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN

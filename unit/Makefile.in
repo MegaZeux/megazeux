@@ -165,6 +165,10 @@ ${unit_obj}/%.o: ${unit_src}/%.cpp
 	$(if ${V},,@echo "  CXX     " $<)
 	${CXX} -MD ${unit_cflags} -c $< -o $@
 
+${unit_obj}/render.o: ${unit_src}/render.cpp
+	$(if ${V},,@echo "  CXX     " $<)
+	${CXX} -MD ${unit_cflags} ${MSSE2} ${MAVX} ${MNEON} $< -o $@
+
 ${unit_target}: ${unit_objs} ${unit_extra_objs}
 	$(if ${V},,@echo "  LINK    " $@)
 	${CXX} ${unit_cflags} -o $@ ${unit_objs} ${unit_extra_objs} ${unit_ldflags}

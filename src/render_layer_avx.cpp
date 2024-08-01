@@ -24,33 +24,24 @@
 #include "util.h"
 #endif
 
-//#define __AVX__
-// FIXME: asm is broken trash
+#if defined(HAS_RENDER_LAYER32X8_AVX) && defined(__AVX__)
+#include <immintrin.h>
+
 // TODO: maskstore seems inferior to XOR AND XOR (compare AVX vs AVX2 vs AVX2 maskstore)
 //#define USE_MASKSTORE
 
-#ifdef HAS_RENDER_LAYER32X8_AVX
-
-#ifdef __AVX__
-#include <immintrin.h>
-#define USE_AVX_INTRINSICS
-#endif
-
+// TODO: avx2 seems negligible or worse
 #ifdef __AVX2__
-#define USE_AVX2_INTRINSICS
+//#define USE_AVX2_INTRINSICS
 #endif
 
 #ifdef _MSC_VER
 typedef __declspec(alignas(32)) uint32_t (selector_t)[8];
-//#elif defined(__AVX__)
-//typedef __v8su selector_t;
+#elif defined(__AVX__)
+typedef __v8su selector_t;
 #else
 #define ALIGN32 __attribute__((aligned(32)))
 typedef uint32_t (selector_t)[8] ALIGN32;
-#endif
-
-#ifndef ALIGN32
-#define ALIGN32
 #endif
 
 union ymm
@@ -326,11 +317,6 @@ static const selector_t selectors_smzx[256] =
   { 3, 3, 3, 3, 3, 3, 2, 2 }, { 3, 3, 3, 3, 3, 3, 3, 3 }
 };
 
-#if !defined(__AVX__) || !defined(__AVX2__)
-register uint32_t ymm4 asm("ymm4");
-register uint32_t ymm5 asm("ymm5");
-#endif
-
 template<int AVX_VERSION, int SMZX, int TR, int CLIP>
 static inline void render_layer32x8_avx(
  void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
@@ -347,9 +333,8 @@ static inline void render_layer32x8_avx(
 #endif
 
   const selector_t (&selectors)[256] = SMZX ? selectors_smzx : selectors_mzx;
-#ifdef USE_AVX_INTRINSICS
   const __m256i *selectors_v = reinterpret_cast<const __m256i *>(selectors);
-#endif
+
   ymm char_colors;
   ymm char_opaque;
   ymm left_mask;
@@ -513,20 +498,6 @@ static inline void render_layer32x8_avx(
             }
           }
         }
-#if !defined(USE_AVX_INTRINSICS) || !defined(USE_AVX2_INTRINSICS)
-#ifdef USE_AVX_INTRINSICS
-        if(AVX_VERSION >= 2)
-#endif
-        {
-          asm(
-            "vmovaps  (%0), %%ymm4" "\n\t"
-            "vmovaps  (%1), %%ymm5"
-            :
-            : "r"(char_colors.values),
-              "r"(char_opaque.values)
-          );
-        }
-#endif
       }
 
       if(TR && all_tcol)
@@ -595,29 +566,10 @@ static inline void render_layer32x8_avx(
 
               _mm256_storeu_si256(out_vec, colors);
 #endif
-#else
-              asm(
-                "vmovdqa    (%1, %2, 1), %%ymm3"    "\n\t"
-                "vmovdqu    (%0), %%ymm2"           "\n\t"
-                "vpermd     %%ymm3, %%ymm5, %%ymm1" "\n\t"
-                "vpermd     %%ymm3, %%ymm4, %%ymm0" "\n\t"
-                "vpand      (%3), %%ymm1, %%ymm1"   "\n\t"
-                "vpxor      %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vpand      %%ymm1, %%ymm0, %%ymm0" "\n\t"
-                "vpxor      %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vmovdqu    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5),
-                  "r"(clip_mask.values)
-                : "ymm0", "ymm1", "ymm2", "ymm3"
-              );
-#endif
+#endif // __AVX2__
             }
             else // AVX
             {
-#ifdef USE_AVX_INTRINSICS
               __m256i selector = selectors_v[char_byte];
               __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
               __m256 opaque = _mm256_permutevar_ps(char_opaque.vecs, selector);
@@ -628,27 +580,6 @@ static inline void render_layer32x8_avx(
                _mm256_xor_ps(colors, bg), opaque), bg);
 
               _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-#else
-              asm(
-                "vmovaps    (%1, %2, 1), %%ymm3"    "\n\t"
-                "vmovups    (%0), %%ymm2"           "\n\t"
-                "vpermilps  %%ymm3, %%ymm5, %%ymm1" "\n\t"
-                "vpermilps  %%ymm3, %%ymm4, %%ymm0" "\n\t"
-                "vandps     (%3), %%ymm1, %%ymm1"   "\n\t"
-                "vxorps     %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vandps     %%ymm1, %%ymm0, %%ymm0" "\n\t"
-                "vxorps     %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vmovups    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5),
-                  "r"(clip_mask.values)
-                  /*,
-                  "x"(char_colors.values),*/
-                : "ymm0", "ymm1", "ymm2", "ymm3"
-              );
-#endif
             }
           }
         }
@@ -676,26 +607,10 @@ static inline void render_layer32x8_avx(
 
               _mm256_storeu_si256(out_vec, colors);
 #endif
-#else
-              asm(
-                "vmovdqu    (%0), %%ymm2"                 "\n\t"
-                "vpermd     (%1, %2, 1), %%ymm4, %%ymm0"  "\n\t"
-                "vpxor      %%ymm2, %%ymm0, %%ymm0"       "\n\t"
-                "vpand      (%3), %%ymm0, %%ymm0"         "\n\t"
-                "vpxor      %%ymm2, %%ymm0, %%ymm0"       "\n\t"
-                "vmovdqu    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5),
-                  "r"(clip_mask.values)
-                : "ymm0", "ymm2"
-              );
-#endif
+#endif // __AVX2__
             }
             else // AVX
             {
-#ifdef USE_AVX_INTRINSICS
               __m256i selector = selectors_v[char_byte];
               __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
               __m256 bg = _mm256_loadu_ps(reinterpret_cast<float *>(out_ptr));
@@ -704,23 +619,6 @@ static inline void render_layer32x8_avx(
                _mm256_xor_ps(colors, bg), clip_mask.vecs), bg);
 
               _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-#else
-              asm(
-                "vmovups    (%0), %%ymm2"                 "\n\t"
-                "vpermilps  (%1, %2, 1), %%ymm4, %%ymm0"  "\n\t"
-                "vxorps     %%ymm2, %%ymm0, %%ymm0"       "\n\t"
-                "vandps     (%3), %%ymm0, %%ymm0"         "\n\t"
-                "vxorps     %%ymm2, %%ymm0, %%ymm0"       "\n\t"
-                "vmovups    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5),
-                  "r"(clip_mask.values)/*,
-                  "x"(char_colors.values)*/
-                : "ymm0", "ymm2"
-              );
-#endif
             }
           }
         }
@@ -754,27 +652,10 @@ static inline void render_layer32x8_avx(
 
               _mm256_storeu_si256(out_vec, colors);
 #endif
-#else
-              asm(
-                "vmovdqa    (%1, %2, 1), %%ymm3"    "\n\t"
-                "vmovdqu    (%0), %%ymm2"           "\n\t"
-                "vpermd     %%ymm3, %%ymm4, %%ymm0" "\n\t"
-                "vpermd     %%ymm3, %%ymm5, %%ymm1" "\n\t"
-                "vpxor      %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vpand      %%ymm1, %%ymm0, %%ymm0" "\n\t"
-                "vpxor      %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vmovups    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5)
-                : "ymm0", "ymm1", "ymm2", "ymm3"
-              );
-#endif
+#endif // __AVX2__
             }
             else // AVX
             {
-#ifdef USE_AVX_INTRINSICS
               __m256i selector = selectors_v[char_byte];
               __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
               __m256 opaque = _mm256_permutevar_ps(char_opaque.vecs, selector);
@@ -784,26 +665,6 @@ static inline void render_layer32x8_avx(
                _mm256_xor_ps(colors, bg), opaque), bg);
 
               _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-#else
-              asm(
-                "vmovaps    (%1, %2, 1), %%ymm3"    "\n\t"
-                "vmovups    (%0), %%ymm2"           "\n\t"
-                "vpermilps  %%ymm3, %%ymm4, %%ymm0" "\n\t"
-                "vpermilps  %%ymm3, %%ymm5, %%ymm1" "\n\t"
-                "vxorps     %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vandps     %%ymm1, %%ymm0, %%ymm0" "\n\t"
-                "vxorps     %%ymm2, %%ymm0, %%ymm0" "\n\t"
-                "vmovups    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5)/*
-                  "x"(char_colors.values),
-                  "x"(char_opaque.values),
-                  */
-                : "ymm0", "ymm1", "ymm2"
-              );
-#endif
             }
           }
         }
@@ -821,35 +682,13 @@ static inline void render_layer32x8_avx(
               __m256i selector = selectors_v[char_byte];
               __m256i colors = _mm256_permutevar8x32_epi32(char_colors.vec, selector);
               _mm256_storeu_si256(reinterpret_cast<__m256i_u *>(out_ptr), colors);
-#else
-              asm(
-                "vpermd     (%1, %2, 1), %%ymm4, %%ymm0" "\n\t"
-                "vmovdqu    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5)
-                : "ymm0"
-              );
-#endif
+#endif // __AVX2__
             }
             else // AVX
             {
-#ifdef USE_AVX_INTRINSICS
               __m256i selector = selectors_v[char_byte];
               __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
               _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-#else
-              asm(
-                "vpermilps  (%1, %2, 1), %%ymm4, %%ymm0" "\n\t"
-                "vmovups    %%ymm0, (%0)"
-                :
-                : "r"(out_ptr),
-                  "r"(selectors),
-                  "r"(char_byte << 5)
-                : "ymm0"
-              );
-#endif
             }
           }
         }
@@ -921,12 +760,14 @@ boolean render_layer32x8_avx(
   return true;
 }
 
+#endif /* HAS_RENDER_LAYER32X8_AVX && __AVX__ */
+
 boolean render_layer32x8_avx(
  void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
  const struct graphics_data *graphics, const struct video_layer *layer,
  int smzx, int trans, int clip)
 {
-#ifdef __AVX2__
+#if defined(USE_AVX2_INTRINSICS) || !defined(__AVX__)
   /* If AVX2 is enabled across the build, don't bother generating these. */
   return false;
 #else
@@ -940,26 +781,10 @@ boolean render_layer32x8_avx2(
  const struct graphics_data *graphics, const struct video_layer *layer,
  int smzx, int trans, int clip)
 {
+#ifdef USE_AVX2_INTRINSICS
   return render_layer32x8_avx<2>(
    pixels, width_px, height_px, pitch, graphics, layer, smzx, trans, clip);
-}
-
-#else /* HAS_RENDER_LAYER32X8_AVX */
-
-boolean render_layer32x8_avx(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int smzx, int trans, int clip)
-{
+#else
   return false;
+#endif
 }
-
-boolean render_layer32x8_avx2(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int smzx, int trans, int clip)
-{
-  return false;
-}
-
-#endif /* HAS_RENDER_LAYER32X8_AVX */

@@ -33,19 +33,16 @@
 #if defined(__x86_64__) || defined(__SSE2__) || \
  defined(_M_AMD64) || defined(_M_X64) || \
  (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-#define USE_INTRINSICS
-#include <emmintrin.h>
-#include <mmintrin.h>
+#define HAS_SSE2_INTRINSICS
 #endif
 
-#if defined(HAS_RENDER_LAYER32X4_SSE2) && \
- (defined(USE_INTRINSICS) || defined(__GNUC__))
+#if defined(HAS_RENDER_LAYER32X4_SSE2) && defined(HAS_SSE2_INTRINSICS)
+#include <emmintrin.h>
+#include <mmintrin.h>
 
 union xmm
 {
-#ifdef USE_INTRINSICS
   __m128i vec;
-#endif
   uint32_t values[4];
 };
 
@@ -55,7 +52,7 @@ static inline void set_colors_mzx_sse2(xmm * RESTRICT dest, xmm colors)
   // Autovectorization correctly optimizes this to PUNPCKLQDQ.
   colors.values[2] = colors.values[0];
   colors.values[3] = colors.values[1];
-#ifdef USE_INTRINSICS
+
   __m128i x1010 = colors.vec;
   __m128i x0000 = _mm_shuffle_epi32(x1010, 0x00);
   __m128i x1111 = _mm_shuffle_epi32(x1010, 0x55);
@@ -78,56 +75,10 @@ static inline void set_colors_mzx_sse2(xmm * RESTRICT dest, xmm colors)
   d128[13] = _mm_unpacklo_epi64(x1111, x1010);
   d128[14] = _mm_unpacklo_epi64(x1111, x0101);
   d128[15] = x1111;
-#else
-  /* pshufd is nicer but has more latency on old systems. */
-  asm(
-    "movdqa %1, %%xmm2"             "\n\t"  // 1010 (5)
-    "pshufd $0x00, %%xmm2, %%xmm0"  "\n\t"  // 0000 (0)
-    "movdqa %%xmm2, %%xmm1"         "\n\t"
-    "movdqa %%xmm0, 0x00(%0)"       "\n\t"
-    "movdqa %%xmm2, 0x50(%0)"       "\n\t"
-    "pshufd $0x55, %%xmm2, %%xmm3"  "\n\t"  // 1111 (f)
-    "movdqa %%xmm3, %%xmm1"         "\n\t"
-    "movdqa %%xmm3, 0xf0(%0)"       "\n\t"
-    "punpckldq %%xmm0, %%xmm1"      "\n\t"  // 0101 (a)
-    "movdqa %%xmm1, 0xa0(%0)"       "\n\t"
-
-    "punpcklqdq %%xmm2, %%xmm0"     "\n\t"  // 1000 (1)
-    "movdqa %%xmm0, 0x10(%0)"       "\n\t"
-    "punpcklqdq %%xmm1, %%xmm0"     "\n\t"  // 0100 (2)
-    "movdqa %%xmm0, 0x20(%0)"       "\n\t"
-    "punpcklqdq %%xmm3, %%xmm0"     "\n\t"  // 1100 (3)
-    "movdqa %%xmm0, 0x30(%0)"       "\n\t"
-    "punpcklqdq %%xmm0, %%xmm2"     "\n\t"  // 0010 (4)
-    "movdqa %%xmm2, 0x40(%0)"       "\n\t"
-
-    "punpcklqdq %%xmm1, %%xmm2"     "\n\t"  // 0110 (6)
-    "movdqa %%xmm2, 0x60(%0)"       "\n\t"
-    "punpcklqdq %%xmm3, %%xmm2"     "\n\t"  // 1110 (7)
-    "movdqa %%xmm2, 0x70(%0)"       "\n\t"
-    "punpcklqdq %%xmm0, %%xmm1"     "\n\t"  // 0001 (8)
-    "movdqa %%xmm1, 0x80(%0)"       "\n\t"
-    "punpcklqdq %%xmm2, %%xmm1"     "\n\t"  // 1001 (9)
-    "movdqa %%xmm1, 0x90(%0)"       "\n\t"
-
-    "punpcklqdq %%xmm3, %%xmm1"     "\n\t"  // 1101 (b)
-    "movdqa %%xmm1, 0xb0(%0)"       "\n\t"
-    "punpcklqdq %%xmm0, %%xmm3"     "\n\t"  // 0011 (c)
-    "movdqa %%xmm3, 0xc0(%0)"       "\n\t"
-    "punpcklqdq %%xmm2, %%xmm3"     "\n\t"  // 1011 (d)
-    "movdqa %%xmm3, 0xd0(%0)"       "\n\t"
-    "punpcklqdq %%xmm1, %%xmm3"     "\n\t"  // 0111 (e)
-    "movdqa %%xmm3, 0xe0(%0)"       "\n\t"
-    :
-    : "r" (dest), "x" (colors)
-    : "xmm0", "xmm1", "xmm2", "xmm3"
-  );
-#endif
 }
 
 static inline void set_colors_smzx_sse2(xmm * RESTRICT dest, xmm colors)
 {
-#ifdef USE_INTRINSICS
   __m128i x0123 = colors.vec;
   __m128i x0000 = _mm_shuffle_epi32(x0123, 0x00);
   __m128i x1111 = _mm_shuffle_epi32(x0123, 0x55);
@@ -151,50 +102,6 @@ static inline void set_colors_smzx_sse2(xmm * RESTRICT dest, xmm colors)
   d128[13] = _mm_unpacklo_epi64(x3333, x1111);
   d128[14] = _mm_unpacklo_epi64(x3333, x2222);
   d128[15] = x3333;
-#else
-  // TODO: punpcklqdq
-  dest += 8;
-  asm(
-    "movdqa %1, %%xmm8"             "\n\t"
-    "pshufd $0x00, %%xmm8, %%xmm0"  "\n\t"
-    "pshufd $0x50, %%xmm8, %%xmm1"  "\n\t"
-    "pshufd $0xa0, %%xmm8, %%xmm2"  "\n\t"
-    "pshufd $0xf0, %%xmm8, %%xmm3"  "\n\t"
-    "pshufd $0x05, %%xmm8, %%xmm4"  "\n\t"
-    "pshufd $0x55, %%xmm8, %%xmm5"  "\n\t"
-    "pshufd $0xa5, %%xmm8, %%xmm6"  "\n\t"
-    "pshufd $0xf5, %%xmm8, %%xmm7"  "\n\t"
-    "movdqa %%xmm0, -128(%0)"       "\n\t"
-    "movdqa %%xmm1, -112(%0)"       "\n\t"
-    "movdqa %%xmm2,  -96(%0)"       "\n\t"
-    "movdqa %%xmm3,  -80(%0)"       "\n\t"
-    "movdqa %%xmm4,  -64(%0)"       "\n\t"
-    "movdqa %%xmm5,  -48(%0)"       "\n\t"
-    "movdqa %%xmm6,  -32(%0)"       "\n\t"
-    "movdqa %%xmm7,  -16(%0)"       "\n\t"
-    "pshufd $0x0a, %%xmm8, %%xmm0"  "\n\t"
-    "pshufd $0x5a, %%xmm8, %%xmm1"  "\n\t"
-    "pshufd $0xaa, %%xmm8, %%xmm2"  "\n\t"
-    "pshufd $0xfa, %%xmm8, %%xmm3"  "\n\t"
-    "pshufd $0x0f, %%xmm8, %%xmm4"  "\n\t"
-    "pshufd $0x5f, %%xmm8, %%xmm5"  "\n\t"
-    "pshufd $0xaf, %%xmm8, %%xmm6"  "\n\t"
-    "pshufd $0xff, %%xmm8, %%xmm7"  "\n\t"
-    "movdqa %%xmm0,   0(%0)"        "\n\t"
-    "movdqa %%xmm1,  16(%0)"        "\n\t"
-    "movdqa %%xmm2,  32(%0)"        "\n\t"
-    "movdqa %%xmm3,  48(%0)"        "\n\t"
-    "movdqa %%xmm4,  64(%0)"        "\n\t"
-    "movdqa %%xmm5,  80(%0)"        "\n\t"
-    "movdqa %%xmm6,  96(%0)"        "\n\t"
-    "movdqa %%xmm7, 112(%0)"        "\n\t"
-
-    :
-    : "r" (dest), "x" (colors)
-    : "xmm0", "xmm1", "xmm2", "xmm3", "xmm4",
-      "xmm5", "xmm6", "xmm7", "xmm8"
-  );
-#endif
 }
 
 template<int SMZX, int TR, int CLIP>
@@ -212,21 +119,10 @@ static inline void render_layer32x4_sse2(
   }
 #endif
 
-#ifdef USE_INTRINSICS
   xmm set_colors[16];
   xmm set_opaque[16];
   xmm left_mask[2];
   xmm right_mask[2];
-#else
-  uint32_t set_colors_unaligned[(16 * 4 * 2) + (2 * 4 * 2) + 16];
-  size_t set_colors_offset = 16 -
-   (((reinterpret_cast<size_t>(set_colors_unaligned)) >> 2) & 15);
-  xmm *set_colors =
-   reinterpret_cast<xmm *>(set_colors_unaligned + set_colors_offset);
-  xmm *set_opaque = set_colors + 16;
-  xmm *left_mask = set_opaque + 16;
-  xmm *right_mask = left_mask + 2;
-#endif
 
   int x, y, i;
   unsigned ch;
@@ -401,30 +297,30 @@ static inline void render_layer32x4_sse2(
             if(out_ptr + CHAR_W <= start_ptr || out_ptr >= end_ptr)
               continue;
 
-            xmm left = set_colors[char_ptr[i] >> 4];
-            xmm right = set_colors[char_ptr[i] & 0x0f];
-            xmm left_op{};
-            xmm right_op{};
+            xmm col_l = set_colors[char_ptr[i] >> 4];
+            xmm col_r = set_colors[char_ptr[i] & 0x0f];
+            xmm tr_l = {};
+            xmm tr_r = {};
             int j;
             if(TR && has_tcol)
             {
               if(byte_tcol == char_ptr[i])
                 continue;
 
-              left_op = set_opaque[char_ptr[i] >> 4];
-              right_op = set_opaque[char_ptr[i] & 0xf];
+              tr_l = set_opaque[char_ptr[i] >> 4];
+              tr_r = set_opaque[char_ptr[i] & 0xf];
             }
             for(j = 0; j < 4; j++)
             {
               if(clip_mask[0].values[j])
-                if(!TR || !has_tcol || left_op.values[j])
-                  out_ptr[j] = left.values[j];
+                if(!TR || !has_tcol || tr_l.values[j])
+                  out_ptr[j] = col_l.values[j];
             }
             for(j = 0; j < 4; j++)
             {
               if(clip_mask[1].values[j])
-                if(!TR || !has_tcol || right_op.values[j])
-                  out_ptr[j + 4] = right.values[j];
+                if(!TR || !has_tcol || tr_r.values[j])
+                  out_ptr[j + 4] = col_r.values[j];
             }
           }
         }
@@ -439,30 +335,6 @@ static inline void render_layer32x4_sse2(
             if(clip_y && (out_ptr < start_ptr || out_ptr >= end_ptr))
               continue;
 
-#ifdef USE_MASKMOVDQU
-            char_byte_left = char_ptr[i] & 0xf0;
-            char_byte_right = (char_ptr[i] & 0x0f) << 4;
-            asm(
-              "movdqa     (%3, %1, 1), %%xmm0"  "\n\t"
-              "movdqa     (%3, %2, 1), %%xmm1"  "\n\t"
-              "movdqa     (%4, %1, 1), %%xmm2"  "\n\t"
-              "movdqa     (%4, %2, 1), %%xmm3"  "\n\t"
-              "pand        0(%5), %%xmm2"       "\n\t"
-              "pand       16(%5), %%xmm3"       "\n\t"
-              "mov        %0, %%rdi"            "\n\t"
-              "maskmovdqu %%xmm2, %%xmm0"       "\n\t"
-              "lea        16(%0), %%rdi"        "\n\t"
-              "maskmovdqu %%xmm3, %%xmm1"       "\n\t"
-              :
-              : "r"(out_ptr),
-                "r"(char_byte_left),
-                "r"(char_byte_right),
-                "r"(set_colors),
-                "r"(set_opaque),
-                "r"(clip_mask)
-              : "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "rdi"
-            );
-#elif defined(USE_INTRINSICS)
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
@@ -471,40 +343,18 @@ static inline void render_layer32x4_sse2(
             __m128i col_r = _mm_load_si128(&set_colors[char_byte_right].vec);
             __m128i tr_l = _mm_load_si128(&set_opaque[char_byte_left].vec);
             __m128i tr_r = _mm_load_si128(&set_opaque[char_byte_right].vec);
-            __m128i bg_l = _mm_loadu_si128(dest);
-            __m128i bg_r = _mm_loadu_si128(dest + 1);
             tr_l &= _mm_load_si128(&clip_mask[0].vec);
             tr_r &= _mm_load_si128(&clip_mask[1].vec);
 
+#ifdef USE_MASKMOVDQU
+            _mm_maskmoveu_si128(col_l, tr_l, reinterpret_cast<char *>(dest));
+            _mm_maskmoveu_si128(col_r, tr_r, reinterpret_cast<char *>(dest + 1));
+#else
+            __m128i bg_l = _mm_loadu_si128(dest);
+            __m128i bg_r = _mm_loadu_si128(dest + 1);
+
             _mm_storeu_si128(dest,     (col_l & tr_l) | (bg_l & ~tr_l));
             _mm_storeu_si128(dest + 1, (col_r & tr_r) | (bg_r & ~tr_r));
-#else
-            char_byte_left = char_ptr[i] & 0xf0;
-            char_byte_right = (char_ptr[i] & 0x0f) << 4;
-            asm(
-              "movdqu   0(%0), %%xmm2"      "\n\t" // load image
-              "movdqu  16(%0), %%xmm3"      "\n\t"
-              "movdqa  %%xmm2, %%xmm0"      "\n\t"
-              "movdqa  %%xmm3, %%xmm1"      "\n\t"
-              "pxor    (%3, %1, 1), %%xmm0" "\n\t" // image ^ colors
-              "pxor    (%3, %2, 1), %%xmm1" "\n\t"
-              "pand     0(%5), %%xmm0"      "\n\t" // & clip_mask
-              "pand    16(%5), %%xmm1"      "\n\t"
-              "pand    (%4, %1, 1), %%xmm0" "\n\t" // & opaque
-              "pand    (%4, %2, 1), %%xmm1" "\n\t" // off = 0, on = image ^ colors
-              "pxor    %%xmm2, %%xmm0"      "\n\t" // ^ image
-              "pxor    %%xmm3, %%xmm1"      "\n\t" // off = image, on = colors
-              "movdqu  %%xmm0,  0(%0)"      "\n\t"
-              "movdqu  %%xmm1, 16(%0)"      "\n\t"
-              :
-              : "r"(out_ptr),
-                "r"(char_byte_left),
-                "r"(char_byte_right),
-                "r"(set_colors),
-                "r"(set_opaque),
-                "r"(clip_mask)
-              : "xmm0", "xmm1", "xmm2", "xmm3"
-            );
 #endif
           }
         }
@@ -515,27 +365,6 @@ static inline void render_layer32x4_sse2(
             if(clip_y && (out_ptr < start_ptr || out_ptr >= end_ptr))
               continue;
 
-#ifdef USE_MASKMOVDQU
-            char_byte_left = char_ptr[i] & 0xf0;
-            char_byte_right = (char_ptr[i] & 0x0f) << 4;
-            asm(
-              "movdqa     (%3, %1, 1), %%xmm0"  "\n\t"
-              "movdqa     (%3, %2, 1), %%xmm1"  "\n\t"
-              "movdqa      0(%4), %%xmm2"       "\n\t"
-              "movdqa     16(%4), %%xmm3"       "\n\t"
-              "mov        %0, %%rdi"            "\n\t"
-              "maskmovdqu %%xmm2, %%xmm0"       "\n\t"
-              "lea        16(%0), %%rdi"        "\n\t"
-              "maskmovdqu %%xmm3, %%xmm1"       "\n\t"
-              :
-              : "r"(out_ptr),
-                "r"(char_byte_left),
-                "r"(char_byte_right),
-                "r"(set_colors),
-                "r"(clip_mask)
-              : "xmm0", "xmm1", "xmm1", "xmm2", "rdi"
-            );
-#elif defined(USE_INTRINSICS)
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
@@ -544,35 +373,16 @@ static inline void render_layer32x4_sse2(
             __m128i col_r = _mm_load_si128(&set_colors[char_byte_right].vec);
             __m128i tr_l = _mm_load_si128(&clip_mask[0].vec);
             __m128i tr_r = _mm_load_si128(&clip_mask[1].vec);
+
+#ifdef USE_MASKMOVDQU
+            _mm_maskmoveu_si128(col_l, tr_l, reinterpret_cast<char *>(dest));
+            _mm_maskmoveu_si128(col_r, tr_r, reinterpret_cast<char *>(dest + 1));
+#else
             __m128i bg_l = _mm_loadu_si128(dest);
             __m128i bg_r = _mm_loadu_si128(dest + 1);
 
             _mm_storeu_si128(dest,     (col_l & tr_l) | (bg_l & ~tr_l));
             _mm_storeu_si128(dest + 1, (col_r & tr_r) | (bg_r & ~tr_r));
-#else
-            char_byte_left = char_ptr[i] & 0xf0;
-            char_byte_right = (char_ptr[i] & 0x0f) << 4;
-            asm(
-              "movdqu   0(%0), %%xmm2"      "\n\t" // load image
-              "movdqu  16(%0), %%xmm3"      "\n\t"
-              "movdqa  %%xmm2, %%xmm0"      "\n\t"
-              "movdqa  %%xmm3, %%xmm1"      "\n\t"
-              "pxor    (%3, %1, 1), %%xmm0" "\n\t" // image ^ colors
-              "pxor    (%3, %2, 1), %%xmm1" "\n\t"
-              "pand     0(%4), %%xmm0"      "\n\t" // & clip_mask
-              "pand    16(%4), %%xmm1"      "\n\t" // off = 0, on = image ^ colors
-              "pxor    %%xmm2, %%xmm0"      "\n\t" // ^ image
-              "pxor    %%xmm3, %%xmm1"      "\n\t" // off = image, on = colors
-              "movdqu  %%xmm0,  0(%0)"      "\n\t"
-              "movdqu  %%xmm1, 16(%0)"      "\n\t"
-              :
-              : "r"(out_ptr),
-                "r"(char_byte_left),
-                "r"(char_byte_right),
-                "r"(set_colors),
-                "r"(clip_mask)
-              : "xmm0", "xmm1", "xmm2", "xmm3"
-            );
 #endif
           }
         }
@@ -588,27 +398,6 @@ static inline void render_layer32x4_sse2(
             if(CLIP && clip_y && (out_ptr < start_ptr || out_ptr >= end_ptr))
               continue;
 
-#ifdef USE_MASKMOVDQU
-            char_byte_left = char_ptr[i] & 0xf0;
-            char_byte_right = (char_ptr[i] & 0x0f) << 4;
-            asm(
-              "movdqa     (%3, %1, 1), %%xmm0"  "\n\t"
-              "movdqa     (%3, %2, 1), %%xmm1"  "\n\t"
-              "movdqa     (%4, %1, 1), %%xmm2"  "\n\t"
-              "movdqa     (%4, %2, 1), %%xmm3"  "\n\t"
-              "mov        %0, %%rdi"            "\n\t"
-              "maskmovdqu %%xmm2, %%xmm0"       "\n\t"
-              "lea        16(%0), %%rdi"        "\n\t"
-              "maskmovdqu %%xmm3, %%xmm1"       "\n\t"
-              :
-              : "r"(out_ptr),
-                "r"(char_byte_left),
-                "r"(char_byte_right),
-                "r"(set_colors),
-                "r"(set_opaque)
-              : "xmm0", "xmm1", "xmm2", "xmm3", "rdi"
-            );
-#elif defined(USE_INTRINSICS)
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
@@ -617,35 +406,16 @@ static inline void render_layer32x4_sse2(
             __m128i col_r = _mm_load_si128(&set_colors[char_byte_right].vec);
             __m128i tr_l = _mm_load_si128(&set_opaque[char_byte_left].vec);
             __m128i tr_r = _mm_load_si128(&set_opaque[char_byte_right].vec);
+
+#ifdef USE_MASKMOVDQU
+            _mm_maskmoveu_si128(col_l, tr_l, reinterpret_cast<char *>(dest));
+            _mm_maskmoveu_si128(col_r, tr_r, reinterpret_cast<char *>(dest + 1));
+#else
             __m128i bg_l = _mm_loadu_si128(dest);
             __m128i bg_r = _mm_loadu_si128(dest + 1);
 
             _mm_storeu_si128(dest,     (col_l & tr_l) | (bg_l & ~tr_l));
             _mm_storeu_si128(dest + 1, (col_r & tr_r) | (bg_r & ~tr_r));
-#else
-            char_byte_left = char_ptr[i] & 0xf0;
-            char_byte_right = (char_ptr[i] & 0x0f) << 4;
-            asm(
-              "movdqu   0(%0), %%xmm2"      "\n\t" // load image
-              "movdqu  16(%0), %%xmm3"      "\n\t"
-              "movdqa  %%xmm2, %%xmm0"      "\n\t"
-              "movdqa  %%xmm3, %%xmm1"      "\n\t"
-              "pxor    (%3, %1, 1), %%xmm0" "\n\t" // image ^ colors
-              "pxor    (%3, %2, 1), %%xmm1" "\n\t"
-              "pand    (%4, %1, 1), %%xmm0" "\n\t" // & opaque
-              "pand    (%4, %2, 1), %%xmm1" "\n\t" // off = 0, on = image ^ colors
-              "pxor    %%xmm2, %%xmm0"      "\n\t" // ^ image
-              "pxor    %%xmm3, %%xmm1"      "\n\t" // off = image, on = colors
-              "movdqu  %%xmm0,  0(%0)"      "\n\t"
-              "movdqu  %%xmm1, 16(%0)"      "\n\t"
-              :
-              : "r"(out_ptr),
-                "r"(char_byte_left),
-                "r"(char_byte_right),
-                "r"(set_colors),
-                "r"(set_opaque)
-              : "xmm0", "xmm1", "xmm2", "xmm3"
-            );
 #endif
           }
         }
@@ -656,7 +426,6 @@ static inline void render_layer32x4_sse2(
             if(CLIP && clip_y && (out_ptr < start_ptr || out_ptr >= end_ptr))
               continue;
 
-#ifdef USE_INTRINSICS
             char_byte_left = char_ptr[i] >> 4;
             char_byte_right = char_ptr[i] & 0x0f;
 
@@ -665,22 +434,6 @@ static inline void render_layer32x4_sse2(
             __m128i col_r = _mm_load_si128(&set_colors[char_byte_right].vec);
             _mm_storeu_si128(dest, col_l);
             _mm_storeu_si128(dest + 1, col_r);
-#else
-            char_byte_left = char_ptr[i] & 0xf0;
-            char_byte_right = (char_ptr[i] & 0x0f) << 4;
-            asm(
-              "movdqa (%3, %1, 1), %%xmm0"  "\n\t"
-              "movdqa (%3, %2, 1), %%xmm1"  "\n\t"
-              "movdqu %%xmm0,  0(%0)"       "\n\t"
-              "movdqu %%xmm1, 16(%0)"       "\n\t"
-              :
-              : "r"(out_ptr),
-                "r"(char_byte_left),
-                "r"(char_byte_right),
-                "r"(set_colors)
-              : "xmm0", "xmm1"
-            );
-#endif
           }
         }
       }

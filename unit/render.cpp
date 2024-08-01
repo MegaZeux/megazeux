@@ -26,8 +26,11 @@ extern "C" {
 #include "../src/render/render.c"
 }
 
+#include "../src/platform/platform_endian.c"
+
 #define BUILD_REFERENCE_RENDERER
 #include "../src/render/render_layer.cpp"
+#include "../src/render_layer.cpp"
 #include "../src/render_layer_avx.cpp"
 #include "../src/render_layer_neon.cpp"
 #include "../src/render_layer_sse2.cpp"
