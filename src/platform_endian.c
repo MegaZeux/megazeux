@@ -181,9 +181,10 @@ int platform_has_avx2(void)
 }
 
 /* iOS processor feature detection header (32-bit). */
+#if defined(PLATFORM_IS_ARM) && !defined(PLATFORM_IS_ARM64)
 #if defined(__APPLE__) && defined(__arm__)
 #include <sys/sysctl.h>
-static boolean has_neon_check()
+static boolean has_neon_check(void)
 {
   size_t val = 0;
   size_t sz = sizeof(val);
@@ -195,20 +196,21 @@ static boolean has_neon_check()
 #elif defined(__linux__) && defined(__arm__)
 #include <sys/auxv.h>
 #include <asm/hwcap.h>
-static boolean has_neon_check()
+static boolean has_neon_check(void)
 {
   int tmp = getauxval(AT_HWCAP);
   return !!(tmp & HWCAP_NEON);
 }
 
 /* Assume AArch64, anything with intrinsics that reached this point has it. */
-#elif defined(PLATFORM_IS_ARM) && defined(__ARM_NEON)
+#elif defined(__ARM_NEON)
 #define has_neon_check() true
 
 /* No intrinsics and no runtime check available; disable. */
 #else
 #define has_neon_check() false
 #endif
+#endif /* PLATFORM_IS_ARM && !PLATFORM_IS_ARM64 */
 
 int platform_has_neon(void)
 {

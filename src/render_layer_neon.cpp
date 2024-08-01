@@ -574,9 +574,6 @@ boolean render_layer32x4_neon(
  const struct graphics_data *graphics, const struct video_layer *layer,
  int smzx, int tr, int clip)
 {
-  if(!has_neon_runtime_support())
-    return false;
-
   if(width_px & 7)
     return false;
 
