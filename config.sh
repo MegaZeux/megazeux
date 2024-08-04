@@ -65,6 +65,7 @@ usage() {
 	echo "  --enable-trace            Enable trace logging for debug builds."
 	echo "  --enable-stdio-redirect   Redirect console logging to stdout.txt/stderr.txt."
 	echo "  --disable-stack-protector Disable stack protector safety checks."
+	echo "  --neon-armel --neon-armhf Enable Neon (ARM, Linux, 32-bit only)."
 	echo
 	echo "Platform-dependent options:"
 	echo "  --enable-sdl              Enable SDL backend, typically SDL2 (default)."
@@ -219,6 +220,7 @@ LAYER_RENDERING="true"
 DOS_SVGA="true"
 DOS_ROOTS="false"
 VFS="true"
+ARMHF="not-arm"
 
 #
 # User may override above settings
@@ -474,6 +476,9 @@ while [ "$1" != "" ]; do
 
 	[ "$1" = "--enable-dos-svga" ]  && DOS_SVGA="true"
 	[ "$1" = "--disable-dos-svga" ] && DOS_SVGA="false"
+
+	[ "$1" = "--neon-armel" ] && ARMHF="false"
+	[ "$1" = "--neon-armhf" ] && ARMHF="true"
 
 	if [ "$1" = "--help" ]; then
 		usage
@@ -1986,6 +1991,32 @@ if [ "$SDL" != "false" ] && [ "$SDL" -ge "2" ] && \
 	echo "BUILD_GAMECONTROLLERDB=1" >> platform.inc
 else
 	echo "SDL_GameControllerDB disabled."
+fi
+
+#
+# ARM 32-bit float abi autodetection (if applicable).
+# If the platform already enables Neon this can be skipped.
+#
+if [ "$ARCHNAME" = "arm" ] && [ "$ARMHF" -ne "not-arm" ]; then
+	if command -v "readelf" >/dev/null 2>&1; then
+		echo "Autodetecting float ABI..."
+		PREV=$ARMHF
+		if readelf $(command -v "readelf") | grep -q "VFP registers"; then
+			ARMHF=true
+		else
+			ARMHF=false
+		fi
+		if [ "$ARMHF" -ne "$PREV" ]; then
+			echo "WARNING: autodetection changed float ABI."
+		fi
+	fi
+fi
+if [ "$ARMHF" = "false" ]; then
+	echo "Neon with softfp float ABI enabled."
+	echo "NEON_FLOAT_ABI=softfp" >>platform.inc
+elif [ "$ARMHF" = "true" ]; then
+	echo "Neon with hard float ABI enabled."
+	echo "NEON_FLOAT_ABI=hard" >>platform.inc
 fi
 
 #
