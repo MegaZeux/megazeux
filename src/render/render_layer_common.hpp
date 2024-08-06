@@ -245,6 +245,35 @@ static inline boolean render_layer32x4(
 }
 #endif /* NEON */
 
+/**
+ * render_layer32x8_rvv
+ */
+boolean render_layer32x8_rvv(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+#if defined(__riscv) || defined(__riscv__)
+#define HAS_RENDER_LAYER32X8
+#define HAS_RENDER_LAYER32X8_RVV
+
+#include <riscv_vector.h>
+
+static inline boolean render_layer32x8(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!platform_has_rvv())
+    return false;
+
+  return render_layer32x8_rvv(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+
+#endif
+
 #endif /* CONFIG_NO_VECTOR_RENDERING */
 
 #endif /* MEGAZEUX_RENDER_LAYER_COMMON_HPP */

@@ -238,7 +238,20 @@ int platform_has_sve(void)
   return false;
 }
 
+#if (defined(__riscv) || defined(__riscv__)) && defined(__linux__)
+#include <sys/auxv.h>
+// The position of this is standard but none of the headers seem to agree
+// on the define name or on which extensions actually get defines.
+#define MZX_HWCAP_ISA_V ('V'-'A')
+
+int platform_has_rvv(void)
+{
+  int tmp = getauxval(AT_HWCAP);
+  return !!(tmp & MZX_HWCAP_ISA_V);
+}
+#else
 int platform_has_rvv(void)
 {
   return false;
 }
+#endif

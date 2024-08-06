@@ -61,6 +61,12 @@ ${core_obj}/%.o: ${core_src}/%.S
 	$(if ${V},,@echo "  AS      " $<)
 	${AS} $< -o $@
 
+ifneq (${MRVV},)
+${core_obj}/render_layer_rvv.o: ${core_src}/render_layer_rvv.cpp
+	$(if ${V},,@echo "  CXX     " $<)
+	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} ${MRVV} -c $< -o $@
+endif
+
 #
 # Lists mandatory C language sources (mangled to object names) required
 # to build the main binary. Please keep this sorted alphabetically.

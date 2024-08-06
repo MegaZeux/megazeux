@@ -428,19 +428,9 @@ static inline void render_layer32x8_avx(
 
     for(x = start_x; x < end_x; x++, src++, dest_ptr += CHAR_W)
     {
-      ch = src->char_value;
-      if(ch == INVISIBLE_CHAR)
+      ch = select_char(src, layer);
+      if(ch >= INVISIBLE_CHAR)
         continue;
-
-      if(ch > 0xFF)
-      {
-        ch = (ch & 0xFF) + PROTECTED_CHARSET_POSITION;
-      }
-      else
-      {
-        ch += layer->offset;
-        ch %= PROTECTED_CHARSET_POSITION;
-      }
 
       if(prev != both_colors(src))
       {
