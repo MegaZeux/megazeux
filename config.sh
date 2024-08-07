@@ -65,8 +65,6 @@ usage() {
 	echo "  --enable-trace            Enable trace logging for debug builds."
 	echo "  --enable-stdio-redirect   Redirect console logging to stdout.txt/stderr.txt."
 	echo "  --disable-stack-protector Disable stack protector safety checks."
-	echo "  --neon-armel --neon-armhf Enable Neon (ARM, Linux, 32-bit only)."
-	echo "  --enable-rvv              Enable RVV layer renderer (RISC-V, Linux only)."
 	echo
 	echo "Platform-dependent options:"
 	echo "  --enable-sdl              Enable SDL backend, typically SDL2 (default)."
@@ -104,7 +102,10 @@ usage() {
 	echo "  --disable-gl-prog         Disable GL renderers for programmable h/w."
 	echo "  --disable-overlay         Disable SDL 1.2 overlay renderers."
 	echo "  --enable-gp2x             Enables half-res software renderer."
-	echo "  --disable-dos-svga        On the DOS platform, disable SVGA software renderer."
+	echo "  --disable-dos-svga        Disable SVGA renderer (DOS)."
+	echo "  --enable-neon-softfp      Enable ARM 32-bit Neon rendering (softfp, Linux)."
+	echo "  --enable-neon-hard        Enable ARM 32-bit Neon rendering (hard float, Linux)."
+	echo "  --enable-rvv              Enable RISC-V RVV rendering (Linux)."
 	echo "  --disable-libpng          Disable PNG screendump support."
 	echo "  --disable-screenshots     Disable the screenshot hotkey."
 	echo "  --enable-fps              Enable frames-per-second counter."
@@ -479,8 +480,9 @@ while [ "$1" != "" ]; do
 	[ "$1" = "--enable-dos-svga" ]  && DOS_SVGA="true"
 	[ "$1" = "--disable-dos-svga" ] && DOS_SVGA="false"
 
-	[ "$1" = "--neon-armel" ] && ARMHF="false"
-	[ "$1" = "--neon-armhf" ] && ARMHF="true"
+	[ "$1" = "--enable-neon-softfp" ] && ARMHF="false"
+	[ "$1" = "--enable-neon-hard" ]   && ARMHF="true"
+	[ "$1" = "--disable-neon" ]       && ARMHF="not-arm"
 
 	[ "$1" = "--enable-rvv" ]  && RVV="true"
 	[ "$1" = "--disable-rvv" ] && RVV="false"
@@ -2002,7 +2004,7 @@ fi
 # ARM 32-bit float abi autodetection (if applicable).
 # If the platform already enables Neon this can be disregarded.
 #
-if [ "$ARCHNAME" = "arm" ] && [ "$ARMHF" -ne "not-arm" ]; then
+if [ "$ARCHNAME" = "arm" ] && [ "$ARMHF" != "not-arm" ]; then
 	if command -v "readelf" >/dev/null 2>&1; then
 		echo "Autodetecting float ABI..."
 		PREV=$ARMHF
@@ -2017,10 +2019,10 @@ if [ "$ARCHNAME" = "arm" ] && [ "$ARMHF" -ne "not-arm" ]; then
 	fi
 fi
 if [ "$ARMHF" = "false" ]; then
-	echo "Neon with softfp float ABI enabled."
+	echo "Neon layer renderer with softfp float ABI enabled."
 	echo "NEON_FLOAT_ABI=softfp" >>platform.inc
 elif [ "$ARMHF" = "true" ]; then
-	echo "Neon with hard float ABI enabled."
+	echo "Neon layer renderer with hard float ABI enabled."
 	echo "NEON_FLOAT_ABI=hard" >>platform.inc
 fi
 
