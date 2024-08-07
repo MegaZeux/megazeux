@@ -20,10 +20,6 @@
 #include "compat.h"
 #include "platform_endian.h"
 
-#if defined(__GNUC__) || defined(__clang__)
-#define HAS_GNU_INLINE_ASM
-#endif
-
 #if defined(__x86_64__) || defined(_M_AMD64) || defined(_M_X64)
 #define PLATFORM_IS_X86_64
 #endif
@@ -41,6 +37,10 @@
 #endif
 
 #ifdef PLATFORM_IS_X86
+#if defined(__GNUC__) || defined(__clang__)
+#define HAS_GNU_INLINE_ASM
+#endif
+
 static inline boolean has_cpuid(void)
 {
 #ifdef PLATFORM_IS_X86_64
@@ -48,15 +48,15 @@ static inline boolean has_cpuid(void)
 
 #elif defined(HAS_GNU_INLINE_ASM)
   unsigned tmp;
-  asm(
+  __asm__(
     "pushfd"                "\n\t" // save eflags
-    "popq %%eax"            "\n\t" // load eflags
+    "pop %%eax"             "\n\t" // load eflags
     "xor $0x200000, %%eax"  "\n\t" // invert ID bit in eflags
-    "mov %%eax %%ebx"       "\n\t"
-    "pushd %%eax"           "\n\t" // save modified eflags
+    "mov %%eax, %%ebx"      "\n\t"
+    "push %%eax"            "\n\t" // save modified eflags
     "popfd"                 "\n\t"
     "pushfd"                "\n\t"
-    "popd %%eax"            "\n\t" // reload modified(?) eflags
+    "pop %%eax"             "\n\t" // reload modified(?) eflags
     "xor %%ebx, %%eax"      "\n\t" // should be 0
     : "=a"(tmp)
     :
@@ -88,7 +88,7 @@ int platform_has_sse2(void)
     if(has_cpuid())
     {
 #ifdef HAS_GNU_INLINE_ASM
-      asm(
+      __asm__(
         "cpuid"
         : "=d"(edx)
         : "a"(eax)
@@ -121,7 +121,7 @@ int platform_has_avx(void)
 #define XGETBV_XMM_YMM_ENABLED ((1 << 2) | (1 << 1))
       int eax;
       int ecx;
-      asm(
+      __asm__(
         "cpuid"
         : "=c"(ecx)
         : "a"(1)
@@ -129,7 +129,7 @@ int platform_has_avx(void)
       );
       if((ecx & CPUID_1_AVX_XGETBV) == CPUID_1_AVX_XGETBV)
       {
-        asm(
+        __asm__(
           "xgetbv"
           : "=a"(eax)
           : "c" (0)
@@ -161,7 +161,7 @@ int platform_has_avx2(void)
     {
 #ifdef HAS_GNU_INLINE_ASM
       int ebx;
-      asm(
+      __asm__(
         "cpuid"
         : "=b"(ebx)
         : "a"(7), "c"(0)
@@ -190,6 +190,19 @@ static boolean has_neon_check(void)
   size_t sz = sizeof(val);
   int ret = sysctlbyname("hw.optional.neon", &val, &sz, NULL, 0);
   return (ret == 0 && val);
+}
+
+/* Android API <18 feature detection via SDL (32-bit). */
+#elif defined(__ANDROID__) && defined(__arm__) && \
+ (!defined(__ANDROID_API__) || __ANDROID_API__ < 18)
+#include "SDLmzx.h"
+static boolean has_neon_check(void)
+{
+#if SDL_VERSION_ATLEAST(2,0,6)
+  return SDL_HasNEON();
+#else
+  return false;
+#endif
 }
 
 /* Linux processor feature detection headers (32-bit). */
