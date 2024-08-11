@@ -257,8 +257,6 @@ boolean render_layer32x8_rvv(
 #define HAS_RENDER_LAYER32X8
 #define HAS_RENDER_LAYER32X8_RVV
 
-#include <riscv_vector.h>
-
 static inline boolean render_layer32x8(
  void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
  const struct graphics_data *graphics, const struct video_layer *layer,
@@ -271,8 +269,34 @@ static inline boolean render_layer32x8(
    pixels, width_px, height_px, pitch, graphics, layer,
    smzx, trans, clip);
 }
+#endif /* RVV */
 
-#endif
+/**
+ * render_layer32x4_altivec
+ */
+boolean render_layer32x4_altivec(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip);
+
+#if defined(__ppc__) || defined(__POWERPC__) || \
+ defined(__powerpc64__) || defined(__PPC64__)
+#define HAS_RENDER_LAYER32X4
+#define HAS_RENDER_LAYER32X4_ALTIVEC
+
+static inline boolean render_layer32x4(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!platform_has_altivec())
+    return false;
+
+  return render_layer32x4_altivec(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* AltiVec */
 
 #endif /* CONFIG_NO_VECTOR_RENDERING */
 

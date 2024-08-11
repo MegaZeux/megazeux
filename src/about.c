@@ -216,11 +216,14 @@ static char **about_text(int *num_lines)
     boolean has_neon = platform_has_neon();
     boolean has_sve = platform_has_sve();
     boolean has_rvv = platform_has_rvv();
+    boolean has_altivec = platform_has_altivec();
+    boolean has_vsx = platform_has_altivec_vsx();
 
-    if(has_sse2 || has_avx || has_neon || has_sve || has_rvv)
+    if(has_sse2 || has_avx || has_neon || has_sve || has_rvv ||
+     has_altivec || has_vsx)
     {
       lines[i++] = about_line(" ");
-      lines[i++] = about_line("Extra software renderers: %s%s%s%s%s",
+      lines[i++] = about_line("Extra software renderers: %s%s%s%s%s%s",
         has_sse2 ? "SSE2(32x4) " : "",
         has_avx ? "AVX(32x8) " : "",
 #ifdef __aarch64__
@@ -229,7 +232,8 @@ static char **about_text(int *num_lines)
         has_neon ? "Neon(32x4) " : "",
 #endif
         has_sve ? "SVE(32x8) " : "",
-        has_rvv ? "RVV(32x8) " : ""
+        has_rvv ? "RVV(32x8) " : "",
+        has_altivec ? has_vsx ? "VSX(32x4)" : "VMX(32x4)" : ""
       );
     }
   }

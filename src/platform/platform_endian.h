@@ -188,6 +188,8 @@ int platform_has_avx2(void);
 int platform_has_neon(void);
 int platform_has_sve(void);
 int platform_has_rvv(void);
+int platform_has_altivec(void);
+int platform_has_altivec_vsx(void);
 #ifdef __cplusplus
 }
 #endif

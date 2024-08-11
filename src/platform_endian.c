@@ -36,6 +36,11 @@
 #define PLATFORM_IS_ARM
 #endif
 
+#if defined(__ppc__) || defined(__POWERPC__) || \
+ defined(__powerpc64__) || defined(__PPC64__)
+#define PLATFORM_IS_PPC
+#endif
+
 #ifdef PLATFORM_IS_X86
 #if defined(__GNUC__) || defined(__clang__)
 #define HAS_GNU_INLINE_ASM
@@ -268,3 +273,63 @@ int platform_has_rvv(void)
   return false;
 }
 #endif
+
+#ifdef PLATFORM_IS_PPC
+#if defined(__linux__)
+#include <sys/auxv.h>
+#include <asm/cputable.h>
+static int has_altivec_check(void)
+{
+  int tmp = getauxval(AT_HWCAP);
+  return !!(tmp & PPC_FEATURE_HAS_ALTIVEC) + !!(tmp & PPC_FEATURE_HAS_VSX);
+}
+
+#elif defined(CONFIG_SDL)
+#include "SDLmzx.h"
+static int has_altivec_check(void)
+{
+#if SDL_VERSION_ATLEAST(2,0,0)
+  return SDL_HasAltiVec();
+#else
+  return false;
+#endif
+}
+
+#else
+#define has_altivec_check() false
+#endif
+#endif
+
+int platform_has_altivec()
+{
+#ifdef PLATFORM_IS_PPC
+  static boolean checked = false;
+  static boolean has_altivec = false;
+
+  if(!checked)
+  {
+    has_altivec = has_altivec_check() >= 1;
+    checked = true;
+  }
+  return has_altivec;
+#else
+  return false;
+#endif
+}
+
+int platform_has_altivec_vsx()
+{
+#ifdef PLATFORM_IS_PPC
+  static boolean checked = false;
+  static boolean has_vsx = false;
+
+  if(!checked)
+  {
+    has_vsx = has_altivec_check() >= 2;
+    checked = true;
+  }
+  return has_vsx;
+#else
+  return false;
+#endif
+}
