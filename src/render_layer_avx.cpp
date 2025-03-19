@@ -27,6 +27,9 @@
 #if defined(HAS_RENDER_LAYER32X8_AVX) && defined(__AVX__)
 #include <immintrin.h>
 
+// TODO: seems to improve AVX vs XOR AND XOR, makes AVX2 even worse
+//#define USE_BLENDV
+
 // TODO: maskstore seems inferior to XOR AND XOR (compare AVX vs AVX2 vs AVX2 maskstore)
 //#define USE_MASKSTORE
 
@@ -551,8 +554,12 @@ static inline void render_layer32x8_avx(
               __m256i_u *out_vec = reinterpret_cast<__m256i_u *>(out_ptr);
               __m256i bg = _mm256_loadu_si256(out_vec);
 
+#ifdef USE_BLENDV
+              colors = _mm256_blendv_epi8(bg, colors, opaque);
+#else
               colors = _mm256_xor_si256(_mm256_and_si256(
                _mm256_xor_si256(colors, bg), opaque), bg);
+#endif
 
               _mm256_storeu_si256(out_vec, colors);
 #endif
@@ -566,8 +573,12 @@ static inline void render_layer32x8_avx(
               __m256 bg = _mm256_loadu_ps(reinterpret_cast<float *>(out_ptr));
 
               opaque = _mm256_and_ps(opaque, clip_mask.vecs);
+#ifdef USE_BLENDV
+              colors = _mm256_blendv_ps(bg, colors, opaque);
+#else
               colors = _mm256_xor_ps(_mm256_and_ps(
                _mm256_xor_ps(colors, bg), opaque), bg);
+#endif
 
               _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
             }
@@ -592,8 +603,12 @@ static inline void render_layer32x8_avx(
               __m256i_u *out_vec = reinterpret_cast<__m256i_u *>(out_ptr);
               __m256i bg = _mm256_loadu_si256(out_vec);
 
+#ifdef USE_BLENDV
+              colors = _mm256_blendv_epi8(bg, colors, clip_mask.vec);
+#else
               colors = _mm256_xor_si256(_mm256_and_si256(
                _mm256_xor_si256(colors, bg), clip_mask.vec), bg);
+#endif
 
               _mm256_storeu_si256(out_vec, colors);
 #endif
@@ -605,8 +620,12 @@ static inline void render_layer32x8_avx(
               __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
               __m256 bg = _mm256_loadu_ps(reinterpret_cast<float *>(out_ptr));
 
+#ifdef USE_BLENDV
+              colors = _mm256_blendv_ps(bg, colors, clip_mask.vecs);
+#else
               colors = _mm256_xor_ps(_mm256_and_ps(
                _mm256_xor_ps(colors, bg), clip_mask.vecs), bg);
+#endif
 
               _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
             }
@@ -637,8 +656,12 @@ static inline void render_layer32x8_avx(
               __m256i_u *out_vec = reinterpret_cast<__m256i_u *>(out_ptr);
               __m256i bg = _mm256_loadu_si256(out_vec);
 
+#ifdef USE_BLENDV
+              colors = _mm256_blendv_epi8(bg, colors, opaque);
+#else
               colors = _mm256_xor_si256(_mm256_and_si256(
                _mm256_xor_si256(colors, bg), opaque), bg);
+#endif
 
               _mm256_storeu_si256(out_vec, colors);
 #endif
@@ -651,8 +674,12 @@ static inline void render_layer32x8_avx(
               __m256 opaque = _mm256_permutevar_ps(char_opaque.vecs, selector);
               __m256 bg = _mm256_loadu_ps(reinterpret_cast<float *>(out_ptr));
 
+#ifdef USE_BLENDV
+              colors = _mm256_blendv_ps(bg, colors, opaque);
+#else
               colors = _mm256_xor_ps(_mm256_and_ps(
                _mm256_xor_ps(colors, bg), opaque), bg);
+#endif
 
               _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
             }
