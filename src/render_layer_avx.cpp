@@ -27,10 +27,6 @@
 #if defined(HAS_RENDER_LAYER32X8_AVX) && defined(__AVX__)
 #include <immintrin.h>
 
-/* Enables using BLENDV instead of bitwise operations for compositing.
- * This is faster for everything except AVX2 on Haswell/Broadwell. */
-#define ENABLE_AVX_BLENDV
-
 /* Enables using VPMASKMOVD instead of loading the destination pixels and
  * compositing the write onto them. This is slow and doesn't even guarantee
  * trap safety for edge writes, so there's no point in enabling it. */
@@ -357,13 +353,7 @@ public:
   {
     __m256 bg = _mm256_loadu_ps(reinterpret_cast<const float *>(pos));
 
-#ifdef ENABLE_AVX_BLENDV
     colors = _mm256_blendv_ps(bg, colors, opaque);
-#else
-    colors = _mm256_xor_ps(_mm256_and_ps(
-     _mm256_xor_ps(colors, bg), opaque), bg);
-#endif
-
     store(pos, colors);
   }
 
@@ -410,13 +400,7 @@ public:
     const __m256i_u *pos_vec = reinterpret_cast<const __m256i_u *>(pos);
     __m256i bg = _mm256_loadu_si256(pos_vec);
 
-#ifdef ENABLE_AVX_BLENDV
     colors = _mm256_blendv_epi8(bg, colors, opaque);
-#else
-    colors = _mm256_xor_si256(_mm256_and_si256(
-     _mm256_xor_si256(colors, bg), opaque), bg);
-#endif
-
     store(pos, colors);
 #endif
   }
