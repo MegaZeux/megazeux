@@ -27,15 +27,18 @@
 #if defined(HAS_RENDER_LAYER32X8_AVX) && defined(__AVX__)
 #include <immintrin.h>
 
-// TODO: seems to improve AVX vs XOR AND XOR, makes AVX2 even worse
-//#define USE_BLENDV
+/* Enables using BLENDV instead of bitwise operations for compositing.
+ * This is faster for everything except AVX2 on Haswell/Broadwell. */
+#define ENABLE_AVX_BLENDV
 
-// TODO: maskstore seems inferior to XOR AND XOR (compare AVX vs AVX2 vs AVX2 maskstore)
-//#define USE_MASKSTORE
+/* Enables using VPMASKMOVD instead of loading the destination pixels and
+ * compositing the write onto them. This is slow and doesn't even guarantee
+ * trap safety for edge writes, so there's no point in enabling it. */
+//#define ENABLE_AVX2_MASKSTORE
 
 // TODO: avx2 seems negligible or worse
 #ifdef __AVX2__
-//#define USE_AVX2_INTRINSICS
+//#define ENABLE_AVX2_RENDERING
 #endif
 
 #ifdef _MSC_VER
@@ -320,6 +323,112 @@ static const selector_t selectors_smzx[256] =
   { 3, 3, 3, 3, 3, 3, 2, 2 }, { 3, 3, 3, 3, 3, 3, 3, 3 }
 };
 
+template<int AVX_VERSION>
+class avx_impl;
+
+template<>
+class avx_impl<1>
+{
+public:
+  typedef __m256 vec;
+  typedef __m256i sel;
+
+  static __m256 get(const ymm &value)
+  {
+    return value.vecs;
+  }
+
+  static __m256 permute(__m256 subpalette, __m256i selector)
+  {
+    return _mm256_permutevar_ps(subpalette, selector);
+  }
+
+  static __m256 permute(const ymm &value, __m256i selector)
+  {
+    return permute(get(value), selector);
+  }
+
+  static void store(uint32_t *pos, __m256 colors)
+  {
+    _mm256_storeu_ps(reinterpret_cast<float *>(pos), colors);
+  }
+
+  static void store(uint32_t *pos, __m256 colors, __m256 opaque)
+  {
+    __m256 bg = _mm256_loadu_ps(reinterpret_cast<const float *>(pos));
+
+#ifdef ENABLE_AVX_BLENDV
+    colors = _mm256_blendv_ps(bg, colors, opaque);
+#else
+    colors = _mm256_xor_ps(_mm256_and_ps(
+     _mm256_xor_ps(colors, bg), opaque), bg);
+#endif
+
+    store(pos, colors);
+  }
+
+  static void store(uint32_t *pos, __m256 colors, __m256 opaque, __m256 opaque2)
+  {
+    opaque = _mm256_and_ps(opaque, opaque2);
+    store(pos, colors, opaque);
+  }
+};
+
+#ifdef ENABLE_AVX2_RENDERING
+template<>
+class avx_impl<2>
+{
+public:
+  typedef __m256i vec;
+  typedef __m256i sel;
+
+  static __m256i get(const ymm &value)
+  {
+    return value.vec;
+  }
+
+  static __m256i permute(__m256i subpalette, __m256i selector)
+  {
+    return _mm256_permutevar8x32_epi32(subpalette, selector);
+  }
+
+  static __m256i permute(const ymm &subpalette, __m256i selector)
+  {
+    return permute(get(subpalette), selector);
+  }
+
+  static void store(uint32_t *pos, __m256i colors)
+  {
+    _mm256_storeu_si256(reinterpret_cast<__m256i_u *>(pos), colors);
+  }
+
+  static void store(uint32_t *pos, __m256i colors, __m256i opaque)
+  {
+#ifdef ENABLE_AVX2_MASKSTORE
+    _mm256_maskstore_epi32(reinterpret_cast<int *>(pos), opaque, colors);
+#else
+    const __m256i_u *pos_vec = reinterpret_cast<const __m256i_u *>(pos);
+    __m256i bg = _mm256_loadu_si256(pos_vec);
+
+#ifdef ENABLE_AVX_BLENDV
+    colors = _mm256_blendv_epi8(bg, colors, opaque);
+#else
+    colors = _mm256_xor_si256(_mm256_and_si256(
+     _mm256_xor_si256(colors, bg), opaque), bg);
+#endif
+
+    store(pos, colors);
+#endif
+  }
+
+  static void store(uint32_t *pos, __m256i colors, __m256i opaque, __m256i opaque2)
+  {
+    opaque = _mm256_and_si256(opaque, opaque2);
+    store(pos, colors, opaque);
+  }
+};
+#endif
+
 template<int AVX_VERSION, int SMZX, int TR, int CLIP>
 static inline void render_layer32x8_avx(
  void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
@@ -335,8 +444,15 @@ static inline void render_layer32x8_avx(
   }
 #endif
 
+#ifdef IS_CXX_11
+  using avx = avx_impl<AVX_VERSION>;
+#else
+#define avx avx_impl<AVX_VERSION>
+#endif
+
   const selector_t (&selectors)[256] = SMZX ? selectors_smzx : selectors_mzx;
-  const __m256i *selectors_v = reinterpret_cast<const __m256i *>(selectors);
+  const typename avx::sel *selectors_v =
+   reinterpret_cast<const typename avx::sel *>(selectors);
 
   ymm char_colors;
   ymm char_opaque;
@@ -533,6 +649,7 @@ static inline void render_layer32x8_avx(
 
         if(TR && has_tcol)
         {
+          typename avx::vec clip_v = avx::get(clip_mask);
           for(i = 0; i < CHAR_H; i++, out_ptr += align_pitch)
           {
             if(byte_tcol == char_ptr[i])
@@ -541,94 +658,24 @@ static inline void render_layer32x8_avx(
               continue;
 
             char_byte = char_ptr[i];
-            if(AVX_VERSION >= 2)
-            {
-#ifdef USE_AVX2_INTRINSICS
-              __m256i selector = selectors_v[char_byte];
-              __m256i colors = _mm256_permutevar8x32_epi32(char_colors.vec, selector);
-              __m256i opaque = _mm256_permutevar8x32_epi32(char_opaque.vec, selector);
-              opaque = _mm256_and_si256(opaque, clip_mask.vec);
-#ifdef USE_MASKSTORE
-              _mm256_maskstore_epi32(reinterpret_cast<int *>(out_ptr), opaque, colors);
-#else
-              __m256i_u *out_vec = reinterpret_cast<__m256i_u *>(out_ptr);
-              __m256i bg = _mm256_loadu_si256(out_vec);
-
-#ifdef USE_BLENDV
-              colors = _mm256_blendv_epi8(bg, colors, opaque);
-#else
-              colors = _mm256_xor_si256(_mm256_and_si256(
-               _mm256_xor_si256(colors, bg), opaque), bg);
-#endif
-
-              _mm256_storeu_si256(out_vec, colors);
-#endif
-#endif // __AVX2__
-            }
-            else // AVX
-            {
-              __m256i selector = selectors_v[char_byte];
-              __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
-              __m256 opaque = _mm256_permutevar_ps(char_opaque.vecs, selector);
-              __m256 bg = _mm256_loadu_ps(reinterpret_cast<float *>(out_ptr));
-
-              opaque = _mm256_and_ps(opaque, clip_mask.vecs);
-#ifdef USE_BLENDV
-              colors = _mm256_blendv_ps(bg, colors, opaque);
-#else
-              colors = _mm256_xor_ps(_mm256_and_ps(
-               _mm256_xor_ps(colors, bg), opaque), bg);
-#endif
-
-              _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-            }
+            typename avx::sel selector = selectors_v[char_byte];
+            typename avx::vec colors = avx::permute(char_colors, selector);
+            typename avx::vec opaque = avx::permute(char_opaque, selector);
+            avx::store(out_ptr, colors, opaque, clip_v);
           }
         }
         else
         {
+          typename avx::vec clip_v = avx::get(clip_mask);
           for(i = 0; i < CHAR_H; i++, out_ptr += align_pitch)
           {
             if(clip_y && (out_ptr < start_ptr || out_ptr >= end_ptr))
               continue;
 
             char_byte = char_ptr[i];
-            if(AVX_VERSION >= 2)
-            {
-#ifdef USE_AVX2_INTRINSICS
-              __m256i selector = selectors_v[char_byte];
-              __m256i colors = _mm256_permutevar8x32_epi32(char_colors.vec, selector);
-#ifdef USE_MASKSTORE
-              _mm256_maskstore_epi32(reinterpret_cast<int *>(out_ptr), clip_mask.vec, colors);
-#else
-              __m256i_u *out_vec = reinterpret_cast<__m256i_u *>(out_ptr);
-              __m256i bg = _mm256_loadu_si256(out_vec);
-
-#ifdef USE_BLENDV
-              colors = _mm256_blendv_epi8(bg, colors, clip_mask.vec);
-#else
-              colors = _mm256_xor_si256(_mm256_and_si256(
-               _mm256_xor_si256(colors, bg), clip_mask.vec), bg);
-#endif
-
-              _mm256_storeu_si256(out_vec, colors);
-#endif
-#endif // __AVX2__
-            }
-            else // AVX
-            {
-              __m256i selector = selectors_v[char_byte];
-              __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
-              __m256 bg = _mm256_loadu_ps(reinterpret_cast<float *>(out_ptr));
-
-#ifdef USE_BLENDV
-              colors = _mm256_blendv_ps(bg, colors, clip_mask.vecs);
-#else
-              colors = _mm256_xor_ps(_mm256_and_ps(
-               _mm256_xor_ps(colors, bg), clip_mask.vecs), bg);
-#endif
-
-              _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-            }
+            typename avx::sel selector = selectors_v[char_byte];
+            typename avx::vec colors = avx::permute(char_colors, selector);
+            avx::store(out_ptr, colors, clip_v);
           }
         }
       }
@@ -644,45 +691,10 @@ static inline void render_layer32x8_avx(
               continue;
 
             char_byte = char_ptr[i];
-            if(AVX_VERSION >= 2)
-            {
-#ifdef USE_AVX2_INTRINSICS
-              __m256i selector = selectors_v[char_byte];
-              __m256i colors = _mm256_permutevar8x32_epi32(char_colors.vec, selector);
-              __m256i opaque = _mm256_permutevar8x32_epi32(char_opaque.vec, selector);
-#ifdef USE_MASKSTORE
-              _mm256_maskstore_epi32(reinterpret_cast<int *>(out_ptr), opaque, colors);
-#else
-              __m256i_u *out_vec = reinterpret_cast<__m256i_u *>(out_ptr);
-              __m256i bg = _mm256_loadu_si256(out_vec);
-
-#ifdef USE_BLENDV
-              colors = _mm256_blendv_epi8(bg, colors, opaque);
-#else
-              colors = _mm256_xor_si256(_mm256_and_si256(
-               _mm256_xor_si256(colors, bg), opaque), bg);
-#endif
-
-              _mm256_storeu_si256(out_vec, colors);
-#endif
-#endif // __AVX2__
-            }
-            else // AVX
-            {
-              __m256i selector = selectors_v[char_byte];
-              __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
-              __m256 opaque = _mm256_permutevar_ps(char_opaque.vecs, selector);
-              __m256 bg = _mm256_loadu_ps(reinterpret_cast<float *>(out_ptr));
-
-#ifdef USE_BLENDV
-              colors = _mm256_blendv_ps(bg, colors, opaque);
-#else
-              colors = _mm256_xor_ps(_mm256_and_ps(
-               _mm256_xor_ps(colors, bg), opaque), bg);
-#endif
-
-              _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-            }
+            typename avx::sel selector = selectors_v[char_byte];
+            typename avx::vec colors = avx::permute(char_colors, selector);
+            typename avx::vec opaque = avx::permute(char_opaque, selector);
+            avx::store(out_ptr, colors, opaque);
           }
         }
         else
@@ -693,20 +705,9 @@ static inline void render_layer32x8_avx(
               continue;
 
             char_byte = char_ptr[i];
-            if(AVX_VERSION >= 2)
-            {
-#ifdef USE_AVX2_INTRINSICS
-              __m256i selector = selectors_v[char_byte];
-              __m256i colors = _mm256_permutevar8x32_epi32(char_colors.vec, selector);
-              _mm256_storeu_si256(reinterpret_cast<__m256i_u *>(out_ptr), colors);
-#endif // __AVX2__
-            }
-            else // AVX
-            {
-              __m256i selector = selectors_v[char_byte];
-              __m256 colors = _mm256_permutevar_ps(char_colors.vecs, selector);
-              _mm256_storeu_ps(reinterpret_cast<float *>(out_ptr), colors);
-            }
+            typename avx::sel selector = selectors_v[char_byte];
+            typename avx::vec colors = avx::permute(char_colors, selector);
+            avx::store(out_ptr, colors);
           }
         }
       }
@@ -797,7 +798,7 @@ boolean render_layer32x8_avx2(
  const struct graphics_data *graphics, const struct video_layer *layer,
  int smzx, int trans, int clip)
 {
-#ifdef USE_AVX2_INTRINSICS
+#ifdef ENABLE_AVX2_RENDERING
   return render_layer32x8_avx<2>(
    pixels, width_px, height_px, pitch, graphics, layer, smzx, trans, clip);
 #else
