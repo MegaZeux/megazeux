@@ -243,21 +243,6 @@ static inline void select_aligned_renderer(const void *pixels,
   if(bpp == -1)
     bpp = graphics->bits_per_pixel;
 
-  if(bpp == 32)
-  {
-#if defined(HAS_RENDER_LAYER32X8) && !defined(MZX_UNIT_TESTS)
-    if(render_layer32x8(pixels, width_px, height_px, pitch, graphics, layer,
-     smzx, trans, clip))
-      return;
-#endif
-
-#if defined(HAS_RENDER_LAYER32X4) && !defined(MZX_UNIT_TESTS)
-    if(render_layer32x4(pixels, width_px, height_px, pitch, graphics, layer,
-     smzx, trans, clip))
-      return;
-#endif
-  }
-
   size_t drawStart =
    (size_t)((char *)pixels + layer->y * (ptrdiff_t)pitch + (layer->x * bpp / 8));
 
@@ -308,6 +293,23 @@ void render_layer(void * RESTRICT pixels,
    bpp, align, smzx, trans, clip);
 
   select_unaligned_renderer(align);
+
+  if(bpp == 32)
+  {
+#if defined(HAS_RENDER_LAYER32X8)
+    if(render_layer32x8(reinterpret_cast<uint32_t * RESTRICT>(pixels),
+     width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip))
+      return;
+#endif
+
+#if defined(HAS_RENDER_LAYER32X4)
+    if(render_layer32x4(reinterpret_cast<uint32_t * RESTRICT>(pixels),
+     width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip))
+      return;
+#endif
+  }
 
   render_layer_func(pixels, width_px, height_px, pitch, graphics, layer,
    bpp, align, smzx, trans, clip);
