@@ -1099,9 +1099,11 @@ void force_release_all_keys(void)
 
 boolean get_alt_status(enum keycode_type type)
 {
+  /* Some Mac users have indicated that they prefer to use the command key.
+   * Amiga has the Amiga keys on alt scancodes and alt on the meta scancodes.
+   */
   return
-#ifdef __APPLE__
-  // Some Mac users have indicated that they prefer to use the command key.
+#if defined(__APPLE__) || defined(CONFIG_AMIGA)
    get_key_status(type, IKEY_LSUPER) ||
    get_key_status(type, IKEY_RSUPER) ||
 #endif

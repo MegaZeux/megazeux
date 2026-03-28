@@ -193,6 +193,39 @@ var archs =
     loadsave_meter:   yes,
   },
 
+  amiga:
+  {
+    platform:         "amiga",
+    description:      "Amiga, AmigaOS 4.x, MorphOS, etc.",
+    architecture:     "M68000 <br> PowerPC <br>" + note_link("Amiga"),
+    format:           "ELF",
+    endian:           "Big",
+    toolchain:        "Various",
+    libc:             "Various",
+    packaged:         LHA,
+    visibility:       yes,
+    stack_protector:  stack_protector_strong,
+    layer_rendering:  yes,
+    module_engine:    xmp,
+    adlib_engine:     rad,
+    ogg_vorbis:       tremor_lowmem,
+    optimization:     "Varies",
+    sdl:              yes,
+    editor:           yes,
+    helpsys:          yes,
+    audio:            yes,
+    software:         yes,
+    gl:               yes,
+    overlay:          yes,
+    glsl:             yes,
+    network:          yes,
+    updater:          no_updater,
+    modular:          yes,
+    png:              subopt("NO", 14),
+    hashtables:       yes,
+    loadsave_meter:   no,
+  },
+
   android:
   {
     platform:         "android",
@@ -665,39 +698,6 @@ var archs =
 
   _0: "spacer",
 
-  amiga:
-  {
-    platform:         defunct("amiga"),
-    description:      "AmigaOS 4.x",
-    architecture:     "PowerPC",
-    format:           "ELF",
-    endian:           "Big",
-    toolchain:        "gcc 4.2.2 <br> binutils&nbsp;2.14",
-    libc:             "clib2",
-    packaged:         LHA,
-    visibility:       yes,
-    stack_protector:  stack_protector_strong,
-    layer_rendering:  yes,
-    module_engine:    xmp,
-    adlib_engine:     rad,
-    ogg_vorbis:       libvorbis,
-    optimization:     speed,
-    sdl:              yes,
-    editor:           yes,
-    helpsys:          yes,
-    audio:            yes,
-    software:         yes,
-    gl:               yes,
-    overlay:          yes,
-    glsl:             yes,
-    network:          yes,
-    updater:          no_updater,
-    modular:          yes,
-    png:              yes,
-    hashtables:       yes,
-    loadsave_meter:   no,
-  },
-
   gp2x:
   {
     platform:         defunct("gp2x"),
@@ -1061,7 +1061,7 @@ load icons for some platforms, to load the onscreen keyboard in the 3DS port,
 and for loading PNGs with the utilities <b>ccv</b> and <b>png2smzx</b>.
 MegaZeux has a fallback PNG exporter, so libpng can be disabled to reduce
 executable size if it isn't really needed and/or if the worse PNG output is
-acceptable. Currently, only DJGPP is truly deficient here (utilities).
+acceptable. Currently, only Amiga and DJGPP are truly deficient here (utilities).
 </li>
 
 <li id="note15">There is currently a toolchain conflict between two versions of
@@ -1191,7 +1191,7 @@ in devkitPro. As such, the devkitPro-provided version of libpng fails to link.
     <td>&mdash;</td>
     <td>&mdash;</td>
     <td>&mdash;</td>
-    <td>&mdash;</td>
+    <td>Amiga</td>
   </tr>
   <tr>
     <th>PA-RISC</th>
@@ -1207,7 +1207,7 @@ in devkitPro. As such, the devkitPro-provided version of libpng fails to link.
     <td>&mdash;</td>
     <td>&mdash;</td>
     <td>&mdash;</td>
-    <td>Mac OS X<br>Nintendo Wii<br>Nintendo Wii U<br>AmigaOS 4</td>
+    <td>Mac OS X<br>Nintendo Wii<br>Nintendo Wii U<br>AmigaOS 4<br>MorphOS</td>
   </tr>
   <tr>
     <th>PowerPC 64</th>
@@ -1340,6 +1340,52 @@ in devkitPro. As such, the devkitPro-provided version of libpng fails to link.
     <td>11.0</td>
     <td>SDL2 (latest)<br>SDL3 (latest)</td>
     <td class="no2">NO</td>
+  </tr>
+</table>
+
+<hr>
+
+<h2 id="noteAmiga">Supported Amiga Variants</h2>
+<table style="min-width:800px">
+  <tr>
+    <th>Variant</th>
+    <th>Platform Alias</th>
+    <th>Toolchain</th>
+    <th>Compiler</th>
+    <th>Binutils</th>
+    <th>SDK</th>
+    <th>libc</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <th>Workbench 2.04+</th>
+    <td><code>amigaos3</code></td>
+    <td>bebbo/amiga-gcc</td>
+    <td>gcc 6.5.0b</td>
+    <td>binutils 2.39</td>
+    <td>NDK 3.2</td>
+    <td>libnix</td>
+    <td>--disable-modular <br> --optimize-size</td>
+  </tr>
+  <tr>
+    <th>AmigaOS 4</th>
+    <td><code>amigaos4</code></td>
+    <td>sba1/adtools</td>
+    <td>gcc 8 (FIXME)</td>
+    <td>FIXME</td>
+    <td>FIXME</td>
+    <td>FIXME</td>
+    <td></td>
+  </tr>
+  <tr>
+    <th>MorphOS</th>
+    <td><code>morphos</code></td>
+    <td>AmigaPorts</td>
+    <td>gcc 9.2.0</td>
+    <td>binutils 2.32</td>
+    <td>SDK 2019-10-06</td>
+    <td>ixemul</td>
+    <td></td>
   </tr>
 </table>
 

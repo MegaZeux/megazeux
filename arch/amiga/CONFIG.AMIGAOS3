@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ -z "$AMIGAOS_PREFIX" ] && { echo "Please define \$AMIGAOS_PREFIX. Aborting."; exit 1; }
+
+./config.sh --platform amiga --host m68k-amigaos --prefix "$AMIGAOS_PREFIX" \
+            --enable-release --enable-lto --optimize-size --enable-meter \
+            --enable-sdl1 --disable-gl --disable-libpng --enable-tremor-lowmem \
+            --enable-stdio-redirect "$@"

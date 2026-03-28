@@ -1,0 +1,7 @@
+#!/bin/sh
+
+[ -z "$AMIGAOS4_PREFIX" ] && { echo "Please define \$AMIGAOS4_PREFIX. Aborting."; exit 1; }
+
+./config.sh --platform amiga --host ppc-amigaos --prefix "$AMIGAOS4_PREFIX" \
+            --enable-release --enable-lto --enable-meter \
+            --enable-sdl1 --disable-gl --disable-libpng "$@"

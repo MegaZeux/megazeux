@@ -1,4 +1,0 @@
-#!/bin/sh
-
-./config.sh --platform amiga --prefix /usr/local/amiga \
-            --disable-libpng --disable-utils --enable-release "$@"

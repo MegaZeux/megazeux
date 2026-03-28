@@ -73,7 +73,9 @@ CXX     := ${CROSS_COMPILE}${CXX}
 AR      := ${CROSS_COMPILE}${AR}
 AS      := ${CROSS_COMPILE}${AS}
 STRIP   := ${CROSS_COMPILE}${STRIP}
+ifneq (${OBJCOPY},true)
 OBJCOPY := ${CROSS_COMPILE}${OBJCOPY}
+endif
 WINDRES := ${CROSS_COMPILE}${WINDRES}
 endif
 

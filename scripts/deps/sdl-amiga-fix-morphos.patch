@@ -1,0 +1,146 @@
+diff --git a/Makefile b/Makefile
+index 21c8cf9..0435855 100644
+--- a/Makefile
++++ b/Makefile
+@@ -7,7 +7,7 @@
+ #          - fixed ARGB32 (CGX code was assuming RGBA all the time)
+ #  12-Feb: - deleted redundant includes, now only SDL/ directory remains (as it should)
+ 
+-PREFX := /opt/m68k-amigaos/
++PREFX := /opt/amiga/
+ 	  
+ CC := $(PREFX)/bin/m68k-amigaos-gcc
+ AS := $(PREFX)/bin/m68k-amigaos-as
+@@ -23,7 +23,7 @@ DEFINES= DEFINE=ENABLE_CYBERGRAPHICS DEFINE=inline=__inline  DEFINE=NO_SIGNAL_H
+ INCLUDES = IDIR=./include/SDL
+ 
+ GCCFLAGS = -I$(PREFX)/include -I./include/ -I./include/SDL \
+-		-Ofast -fomit-frame-pointer -m$(CPU) -mhard-float -ffast-math -noixemul \
++		-Os -fomit-frame-pointer -m$(CPU) -mhard-float -ffast-math -noixemul \
+ 		-DNOIXEMUL -D_HAVE_STDINT_H
+ GLFLAGS = -DSHARED_LIB -lamiga
+ GCCFLAGS += -DNO_AMIGADEBUG
+@@ -76,3 +76,9 @@ libSDL.a: $(GOBJS)
+ 
+ clean:
+ 	-rm -f $(GOBJS)
++
++install:
++	cp sdl-config ${INSTALL_PREFIX}/bin/
++	cp libSDL.a ${INSTALL_PREFIX}/lib/
++	cp -r include/GL ${INSTALL_PREFIX}/include/
++	cp -r include/SDL ${INSTALL_PREFIX}/include/
+diff --git a/Makefile.morphos b/Makefile.morphos
+index c1749c1..02509c8 100644
+--- a/Makefile.morphos
++++ b/Makefile.morphos
+@@ -24,7 +24,7 @@ INCLUDES= IDIR=./include/SDL
+ #DEBUG=FULL VERBOSE
+ 
+ GCCFLAGS = -I$(PREF)/include -I./include/ -I./include/SDL -I$(PREF)/m68k-amigaos/libnix/include \
+-			-O3 -fomit-frame-pointer \
++			-O3 -fomit-frame-pointer -noixemul \
+ 			-DNOIXEMUL -D_HAVE_STDINT_H
+ GLFLAGS = -DSHARED_LIB -lamiga
+ GCCFLAGS += -DNO_AMIGADEBUG
+@@ -81,3 +81,9 @@ libSDL.a: $(GOBJS)
+ 
+ clean:
+ 	-rm -f $(GOBJS)
++
++install:
++	cp sdl-config ${INSTALL_PREFIX}/bin/
++	cp libSDL.a ${INSTALL_PREFIX}/lib/
++	cp -r include/GL ${INSTALL_PREFIX}/include/
++	cp -r include/SDL ${INSTALL_PREFIX}/include/
+diff --git a/include/GL/glu.h b/include/GL/glu.h
+index 02a2a21..4a49444 100644
+--- a/include/GL/glu.h
++++ b/include/GL/glu.h
+@@ -298,7 +298,7 @@ GLUAPI void APIENTRY gluQuadricTexture( GLUquadricObj *quadObject,
+                                         GLboolean textureCoords );
+ 
+ GLUAPI void APIENTRY gluQuadricCallback( GLUquadricObj *qobj,
+-                                         GLenum which, void (CALLBACK *fn)() );
++                                         GLenum which, void (CALLBACK *fn)(void) );
+ 
+ GLUAPI void APIENTRY gluCylinder( GLUquadricObj *qobj,
+                                   GLdouble baseRadius,
+@@ -370,7 +370,7 @@ GLUAPI void APIENTRY gluPwlCurve( GLUnurbsObj *nobj, GLint count,
+                                   GLfloat *array, GLint stride, GLenum type );
+ 
+ GLUAPI void APIENTRY gluNurbsCallback( GLUnurbsObj *nobj, GLenum which,
+-                                       void (CALLBACK *fn)() );
++                                       void (CALLBACK *fn)(void) );
+ 
+ 
+ 
+@@ -383,7 +383,7 @@ GLUAPI void APIENTRY gluNurbsCallback( GLUnurbsObj *nobj, GLenum which,
+ GLUAPI GLUtriangulatorObj* APIENTRY gluNewTess( void );
+ 
+ GLUAPI void APIENTRY gluTessCallback( GLUtriangulatorObj *tobj, GLenum which,
+-                                      void (CALLBACK *fn)() );
++                                      void (CALLBACK *fn)(void) );
+ 
+ GLUAPI void APIENTRY gluDeleteTess( GLUtriangulatorObj *tobj );
+ 
+diff --git a/sdl-config b/sdl-config
+new file mode 100755
+index 0000000..5e17c0f
+--- /dev/null
++++ b/sdl-config
+@@ -0,0 +1,20 @@
++#!/bin/sh
++
++set -e
++PREFIX="$(CDPATH= cd -- "$(dirname -- "$0")" && cd .. && pwd)"
++
++while [ "$1" != "" ]; do
++	case "$1" in
++	--prefix)
++		echo "$PREFIX"
++		;;
++	--cflags)
++		echo "-I${PREFIX}/include -I${PREFIX}/include/SDL -D_HAVE_STDINT_H"
++		;;
++	--libs)
++		echo "-L${PREFIX}/lib -lSDL"
++		;;
++	esac
++
++	shift
++done
+diff --git a/thread/amigaos/SDL_systhread.c b/thread/amigaos/SDL_systhread.c
+index 9191065..a1b2bb8 100644
+--- a/thread/amigaos/SDL_systhread.c
++++ b/thread/amigaos/SDL_systhread.c
+@@ -28,7 +28,11 @@ static char rcsid =
+ #endif
+ 
+ #include <proto/dos.h>
++#ifndef __MORPHOS__
+ #include <inline/dos.h>
++#else
++#include <ppcinline/dos.h>
++#endif
+ 
+ #include "../../include/SDL/SDL.h"
+ #include <exec/nodes.h>
+diff --git a/video/amigaos/SDL_amigaevents.c b/video/amigaos/SDL_amigaevents.c
+index f70aead..c1f18d5 100644
+--- a/video/amigaos/SDL_amigaevents.c
++++ b/video/amigaos/SDL_amigaevents.c
+@@ -46,8 +46,13 @@ static char rcsid =
+ 
+ #include <proto/dos.h>
+ #include <proto/keymap.h>
++#ifndef __MORPHOS__
+ #include <inline/dos.h>
+ #include <inline/keymap.h>
++#else
++#include <ppcinline/dos.h>
++#include <ppcinline/keymap.h>
++#endif
+ 
+ /* The translation tables from an Amiga keysym to a SDL keysym */
+ static SDLKey MISC_keymap[256];

@@ -25,6 +25,7 @@
 #include <ctype.h>
 
 #include "../compat.h"
+#include "utils_alloc.h"
 
 #ifdef CONFIG_PLEDGE_UTILS
 #include <unistd.h>

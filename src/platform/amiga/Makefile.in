@@ -4,16 +4,21 @@
 
 ifeq (${PLATFORM},amiga)
 
-platform_amiga_obj := ${platform_obj}/amiga
-platform_amiga_objs := \
+platform_amiga_obj   = ${platform_obj}/amiga
+platform_amiga_objs += \
   ${platform_amiga_obj}/platform_amiga.o \
 
 -include ${platform_amiga_objs:.o=.d}
 ${platform_amiga_objs}: \
- $(filter_out $(wildcard ${platform_amiga_obj}), ${platform_amiga_obj})
+ $(filter-out $(wildcard ${platform_amiga_obj}), ${platform_amiga_obj})
+
+-include ${platform_amiga_obj}/main_amiga.d
+${platform_amiga_obj}/main_amiga.o: \
+ $(filter-out $(wildcard ${platform_amiga_obj}), ${platform_amiga_obj})
 
 build_dirs    += ${platform_amiga_obj}
 platform_objs += ${platform_amiga_objs}
+main_objs     += ${platform_amiga_obj}/main_amiga.o
 core_flags    += -DCONFIG_REPLACE_MAIN
 
 endif

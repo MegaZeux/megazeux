@@ -32,6 +32,10 @@ usage() {
 	echo "  darwin         Mac OS X Unix-like install"
 	echo "  darwin-devel   Mac OS X running from current dir"
 	echo "  darwin-dist    Mac OS X multiarchitecture .app (see arch/darwin/README.md)"
+	echo "  amiga          Amiga-like (provide --host)"
+	echo "  amigaos3       Amiga Workbench 2.04+ (amiga, m68k-amigaos)"
+	echo "  amigaos4       AmigaOS 4 (amiga, ppc-amigaos)"
+	echo "  morphos        MorphOS (amiga, ppc-morphos)"
 	echo "  psp            Experimental PSP port"
 	echo "  gp2x           Experimental GP2X port"
 	echo "  nds            Experimental NDS port"
@@ -42,7 +46,6 @@ usage() {
 	echo "  wiiu           Experimental Wii U port"
 	echo "  psvita         Experimental PS Vita port"
 	echo "  dreamcast      Experimental Dreamcast port"
-	echo "  amiga          Experimental AmigaOS 4 port"
 	echo "  android        Experimental Android port"
 	echo "  pandora        Experimental Pandora port"
 	echo "  emscripten     Experimental HTML5 (Emscripten) port"
@@ -639,6 +642,58 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 	echo "#define PLATFORM \"$UNIX-$ARCHNAME\"" > src/config.h
 	echo "SUBPLATFORM=$UNIX-$ARCHNAME"         >> platform.inc
 	echo "PLATFORM=$DIRNAME"                   >> platform.inc
+elif [ "$PLATFORM" = "amiga" ] || [ "$PLATFORM" = "amigaos3" ] ||
+     [ "$PLATFORM" = "amigaos4" ] || [ "$PLATFORM" = "morphos" ]; then
+	# Generic platform: convert known --host values to the respective
+	# subplatform so it can be separately checked later in config.sh.
+	if [ "$PLATFORM" = "amiga" ]; then case "$TOOL_PREFIX" in
+		"m68k-amigaos")
+			PLATFORM="amigaos3"
+			;;
+		"ppc-amigaos")
+			PLATFORM="amigaos4"
+			;;
+		"ppc-morphos")
+			PLATFORM="morphos"
+			;;
+		*-aros)
+			PLATFORM="aros"
+			;;
+		*)
+			echo "WARNING: unknown Amiga variant, add a subplatform to config.sh."
+		esac
+	fi
+	# Specific platforms: get default --host value.
+	if [ -z "$TOOL_PREFIX" ]; then case "$PLATFORM" in
+		"amigaos3")
+			TOOL_PREFIX="m68k-amigaos"
+			;;
+		"amigaos4")
+			TOOL_PREFIX="ppc-amigaos"
+			;;
+		"morphos")
+			TOOL_PREFIX="ppc-morphos"
+			;;
+		esac
+	fi
+	if [ -n "$TOOL_PREFIX" ]; then
+		if [ -z "$OS" ]; then
+			OS="$(echo "$TOOL_PREFIX" | cut -d- -f2-)"
+		fi
+		if [ -z "$ARCHNAME" ]; then
+			ARCHNAME="$(echo "$TOOL_PREFIX" | cut -d- -f1)"
+		fi
+	fi
+	if [ -z "$OS" ] || [ "$OS" = "amigaos" ]; then
+		OS="amiga"
+	fi
+	if [ -z "$ARCHNAME" ]; then
+		ARCHNAME="unknown"
+	fi
+
+	echo "#define PLATFORM \"$OS-$ARCHNAME\""        > src/config.h
+	echo "SUBPLATFORM=$OS-$ARCHNAME"                >> platform.inc
+	echo "PLATFORM=amiga"                           >> platform.inc
 elif [ "$PLATFORM" = "darwin-dist" ]; then
 	# Multiarchitecture build--let the Makefile patch in a subplatform.
 
@@ -833,7 +888,18 @@ case "$PLATFORM" in
 	POLL="false"
 	;;
 
-"amiga")
+"amiga"* | "morphos" | "aros")
+	echo "Enabling Amiga-specific hacks."
+	echo "#define CONFIG_AMIGA" >> src/config.h
+
+	if [ "$PLATFORM" = "amigaos3" ]; then
+		echo "Force-disabling modular build (Amiga m68k)."
+		MODULAR="false"
+	fi
+
+	echo "Force-disabling runtime icon loading (Amiga)."
+	ICON="false"
+
 	echo "Force-disabling getaddrinfo, poll, and IPv6 (Amiga)."
 	GETADDRINFO="false"
 	POLL="false"
@@ -1967,7 +2033,7 @@ fi
 #
 # stdio redirect, if enabled
 #
-if [ "$SDL" = "1" ]; then
+if [ "$SDL" = "1" ] && [ "$PLATFORM" != "amigaos3" ]; then
 	echo "Using SDL 1.x default stdio redirect behavior."
 elif [ "$STDIO_REDIRECT" = "true" ]; then
 	echo "Redirecting stdio to stdout.txt and stderr.txt."

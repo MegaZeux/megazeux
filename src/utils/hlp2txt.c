@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "utils_alloc.h"
 #include "../compat.h"
 
 #ifdef CONFIG_PLEDGE_UTILS

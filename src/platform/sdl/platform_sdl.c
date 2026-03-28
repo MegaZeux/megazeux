@@ -68,6 +68,10 @@ uint64_t get_ticks(void)
 #endif
 }
 
+/* TODO: Amiga is missing these SDL functions, MorphOS has them hardcoded.
+ * MinGW currently is the only platform to use these functions. */
+#if !defined(CONFIG_AMIGA)
+
 #if SDL_VERSION_ATLEAST(3,0,0)
 typedef SDL_SharedObject *dso_library_ptr;
 #else
@@ -111,6 +115,7 @@ boolean platform_load_function(struct dso_library *library,
   }
   return true;
 }
+#endif /* !CONFIG_AMIGA */
 
 #ifdef __WIN32__
 #ifndef WIN32_LEAN_AND_MEAN

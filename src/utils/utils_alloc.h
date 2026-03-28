@@ -30,6 +30,13 @@
 
 MEGAZEUX_BEGIN_DECLS
 
+#include "../platform/platform_main.h"
+
+/* Hack: maybe one of these days the Amiga toolchains will fix this? */
+#ifdef CONFIG_AMIGA
+#include "../platform/amiga/platform_amiga.c"
+#endif
+
 /* Workaround for linking zip.o */
 FILE *mzxout_h = NULL;
 FILE *mzxerr_h = NULL;
@@ -37,6 +44,7 @@ FILE *mzxerr_h = NULL;
 #ifdef CONFIG_CHECK_ALLOC
 
 #include <stdlib.h>
+#include "../util.h"
 
 static void out_of_memory_check(void *p, const char *file, int line)
 {
