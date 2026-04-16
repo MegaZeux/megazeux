@@ -1,16 +1,17 @@
                      COMMAND NAME                       | CYCLE ENDED |
-                                                        |             |
+														|			  |
+(blank line)                                            |     NO      |
 % "string"                                              |    NO(1)    |
 & "string"                                              |    NO(1)    |
 * "string"                                              |     NO      |
 . "string"                                              |     NO      |
 . "@string"                                             |     NO      |
 / "string"                                              |    YES(2)   |
-: "label"                                               |    NO(3)    |
+: "label"                                               |   NO(0)(3)  |
 ? "counter" "label" "string"                            |    NO(1)    |
 ? "label" "string"                                      |    NO(1)    |
 [ "string"                                              |    NO(1)    |
-| "label"                                               |     NO      |
+| "label"                                               |   NO(0)(3)  |
 ABORT LOOP                                              |     NO      |
 ASK "string"                                            |    NO(1)    |
 AVALANCHE                                               |     NO      |
@@ -99,34 +100,34 @@ FLIP CHAR [char] [dir]                                  |     NO      |
 FREEZETIME #                                            |     NO      |
 GIVE # [item]                                           |     NO      |
 GIVEKEY [color]                                         |     NO      |
-GIVEKEY [color] "label"                                 |    NO(4)    |
-GO [dir] #                                              |    YES(5)   |
-GOTO "label"                                            |    NO(4)    |
+GIVEKEY [color] "label"                                 |     NO      |
+GO [dir] #                                              |    YES(4)   |
+GOTO "label"                                            |     NO      |
 GOTO "#return"                                          |     NO      |
 GOTO "#top"                                             |     NO      |
 GOTOXY # #                                              |     YES     |
 HALF "counter"                                          |     NO      |
-IF "counter" !<>_= # "label"                            |    NO(4)    |
-IF [condition] "label"                                  |    NO(4)    |
-IF # # "label"                                          |    NO(4)    |
-IF [dir] PLAYER [color] [thing] [param] "label"         |    NO(4)    |
-IF [color] [thing] [param] # # "label"                  |    NO(4)    |
-IF [color] [thing] [param] [dir] "label"                |    NO(4)    |
-IF ALIGNEDROBOT "Robot" "label"                         |    NO(4)    |
-IF ANY [color] [thing] [param] "label"                  |    NO(4)    |
-IF FIRST STRING "string" "label"                        |    NO(4)    |
-IF NO [color] [thing] [param] "label"                   |    NO(4)    |
-IF NOT [color] [thing] [param] [dir] "label"            |    NO(4)    |
-IF NOT [condition] "label"                              |    NO(4)    |
-IF PLAYER # # "label"                                   |    NO(4)    |
-IF STRING "string" "label"                              |    NO(4)    |
-IF STRING MATCHES "string" "label"                      |    NO(4)    |
-IF STRING NOT "string" "label"                          |    NO(4)    |
-IF "$string" (equality) # "label"                       |    NO(4)    |
-IF "$string" (equality) "text" "label"                  |    NO(4)    |
-IF "$string" (equality) "$string2" "label"              |    NO(4)    |
-IF c?? Sprite_Colliding pNN # # "label"                 |    NO(4)    |
-IF c?? Sprite p?? # # "label"                           |    NO(4)    |
+IF "counter" !<>_= # "label"                            |     NO      |
+IF [condition] "label"                                  |     NO      |
+IF # # "label"                                          |     NO      |
+IF [dir] PLAYER [color] [thing] [param] "label"         |     NO      |
+IF [color] [thing] [param] # # "label"                  |     NO      |
+IF [color] [thing] [param] [dir] "label"                |     NO      |
+IF ALIGNEDROBOT "Robot" "label"                         |     NO      |
+IF ANY [color] [thing] [param] "label"                  |     NO      |
+IF FIRST STRING "string" "label"                        |     NO      |
+IF NO [color] [thing] [param] "label"                   |     NO      |
+IF NOT [color] [thing] [param] [dir] "label"            |     NO      |
+IF NOT [condition] "label"                              |     NO      |
+IF PLAYER # # "label"                                   |     NO      |
+IF STRING "string" "label"                              |     NO      |
+IF STRING MATCHES "string" "label"                      |     NO      |
+IF STRING NOT "string" "label"                          |     NO      |
+IF "$string" (equality) # "label"                       |     NO      |
+IF "$string" (equality) "text" "label"                  |     NO      |
+IF "$string" (equality) "$string2" "label"              |     NO      |
+IF c?? Sprite_Colliding pNN # # "label"                 |     NO      |
+IF c?? Sprite p?? # # "label"                           |     NO      |
 INC "$string" "text"                                    |     NO      |
 INC "$string" "$string2"                                |     NO      |
 INC "counter" #                                         |     NO      |
@@ -155,8 +156,8 @@ MOD FADE OUT                                            |     NO      |
 MOD SAM # #                                             |     NO      |
 MODULO "counter" #                                      |     NO      |
 MOVE ALL [color] [thing] [param] [dir]                  |     YES     |
-MOVE PLAYER [dir]                                       |     YES     |
-MOVE PLAYER [dir] "label"                               |     YES     |
+MOVE PLAYER [dir]                                       |    YES(5)   |
+MOVE PLAYER [dir] "label"                               |    YES(5)   |
 MULTIPLY "counter" #                                    |     NO      |
 NEUTRAL BULLETCOLOR [color]                             |     NO      |
 NEUTRAL BULLETE [char]                                  |     NO      |
@@ -218,7 +219,7 @@ SEND # # "label"                                        |     NO      |
 SEND "Robot" "label"                                    |     NO      |
 SEND [dir] "label"                                      |     NO      |
 SEND [dir] PLAYER "label"                               |     NO      |
-SET "counter" #                                         |  NO(7)(10)  |
+SET "counter" #                                         |    NO(7)    |
 SET "counter" RANDOM # #                                |     NO      |
 SET "$string" "text"                                    |     NO      |
 SET "$string1" "$string2"                               |     NO      |
@@ -237,46 +238,51 @@ STATUS COUNTER # "counter"                              |     NO      |
 SWAP WORLD "file"                                       |     NO      |
 SWITCH [dir] [dir]                                      |     NO      |
 TAKE # [item]                                           |     NO      |
-TAKE # [item] "label"                                   |    NO(4)    |
+TAKE # [item] "label"                                   |     NO      |
 TAKEKEY [color]                                         |     NO      |
-TAKEKEY [color] "label"                                 |    NO(4)    |
+TAKEKEY [color] "label"                                 |     NO      |
 TELEPORT PLAYER "string" # #                            |    YES(2)   |
-TRADE # [item] # [item] "label"                         |    NO(4)    |
-TRY [dir] "label"                                       |    YES(4)   |
+TRADE # [item] # [item] "label"                         |     NO      |
+TRY [dir] "label"                                       |   YES(10)   |
 UNLOCKPLAYER                                            |     NO      |
 UNLOCKSCROLL                                            |     NO      |
 UNLOCKSELF                                              |     NO      |
 VIEWPORT # #                                            |     NO      |
 VIEWPORT SIZE # #                                       |     NO      |
 VOLUME #                                                |     NO      |
-WAIT #                                                  |    YES(5)   |
-WAIT MOD FADE                                           |     NO      |
-WAIT PLAY                                               |     NO      |
-WAIT PLAY "string"                                      |    YES(2)   |
+WAIT #                                                  |    YES(4)   |
+WAIT MOD FADE                                           |   YES(11)   |
+WAIT PLAY                                               |   YES(12)   |
+WAIT PLAY "string"                                      |   YES(12)   |
 WALK [dir]                                              |    NO(6)    |
 WIND #                                                  |     NO      |
 WRITE OVERLAY [color] "string" # #                      |     NO      |
 ZAP "label" #                                           |     NO      |
 
+(0) = These not only do not end the cycle, but they are also not counted as
+commands and as such do not affect the remaining command count for that cycle.
 (1) = While the cycle does not end, the act of opening default dialog boxes
 suspends (almost) all other game action, including Robot processing, until the
 box is closed. The only exceptions are the play of music/sound and the
 read/write actions of the various fread/fwrite counters during the loading of
 default "["/"%"/"&" boxes.
-(2) = Does not end a cycle if the string is blank or a completely
-invalid/inapplicable string.
+(2) = Does not end a cycle if its string is blank or a completely inapplicable
+string.
 (3) = While it never ends the cycle in current MZX worlds, it can end the cycle
-in special cases in pre-port MZX worlds. If a loop consists of a label, a send
-to the same label, and none of the following commands: DEC, DEC RANDOM, DIVIDE,
-DOUBLE, GIVE, HALF, INC, INC RANDOM, LOOP FOR #, MODULO, MULTIPLY, SET,
-SET RANDOM, TAKE, TAKE "label", TRADE, then the label itself will end the cycle.
-(4) = Attempting to jump to labels that do not exist does not consume a cycle.
-(5) = Does not end a cycle if all # is/are 0.
+in special cases in <v2.80 MZX worlds. If a loop consists of an active label,
+a send to the same label, and none of the following commands: DEC, DIVIDE,
+DOUBLE, GIVE, HALF, INC, LOOP FOR #, MODULO, MULTIPLY, SET, TAKE, TRADE, then
+the label itself will end the cycle.
+(4) = Does not end a cycle if all # is/are 0.
+(5) = Does not end a cycle if the given direction is IDLE or BENEATH.
 (6) = A special case exists where it currently executes a cycle end going
 through a transporter.
 (7) = A special case exists for the SAVE_GAME "special" counter which does end
-the cycle if used.
+the cycle if used, and also makes the command happen at the absolute end of the
+cycle.
 (8) = Does not end a cycle if any or all of the affected objects do not move.
 (9) = Ends a cycle in MZX v2.83 and worlds made in MZX v2.83.
-(10) = If the SAVE_GAME "special" counter is used with this command, the action
-happens at the very end of the cycle.
+(10) = Does not end a cycle if attempting to jump to a label, regardless of
+whether it does so successfully.
+(11) = Does not end a cycle if no fade is happening.
+(12) = Does not end a cycle if the sound queue is empty.
