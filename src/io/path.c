@@ -841,6 +841,33 @@ ssize_t path_clean_current_tokens(char *path, size_t path_len)
 }
 
 /**
+ * Trim slashes and colon off the end of DOS/Amiga-style roots. This should be
+ * used on root tokens only (the return value of path_is_absolute may be
+ * provided as path_len). This function will preserve ":" as a root for Amiga.
+ *
+ * @param  path       Root token to clean trailing slashes/colon off of.
+ * @param  path_len   Length of root token to clean.
+ * @return            New length of root token.
+ */
+ssize_t path_clean_root(char *path, size_t path_len)
+{
+  size_t len = strlen(path);
+  if(len > path_len)
+    len = path_len;
+
+  while(len >= 2 && isslash(path[len - 1]))
+    path[--len] = '\0';
+
+  if(len >= 2 && path[len - 1] == ':')
+    path[--len] = '\0';
+
+  if(len == 1 && isslash(path[0]))
+    path[0] = DIR_SEPARATOR_CHAR;
+
+  return len;
+}
+
+/**
  * Append a relative directory or filename path to an existing base path.
  * This function does not handle ./, ../, etc; to resolve relative paths
  * containing those, use path_navigate() instead. On success, the destination

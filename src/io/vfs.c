@@ -597,14 +597,18 @@ static boolean vfs_setup(vfilesystem *vfs)
   n->flags = VFS_INODE_DIR;
   n->refcount = 0;
   n->parent = VFS_ROOT_INODE;
-#ifdef VIRTUAL_FILESYSTEM_DOS_DRIVE
-  vfs_inode_init_name(n, "C:\\");
+#if defined(VIRTUAL_FILESYSTEM_DOS_DRIVE)
+  vfs_inode_init_name(n, "C");
+  strcpy(vfs->current_path, "C:\\");
+#elif defined(VIRTUAL_FILESYSTEM_AMIGA_DRIVE)
+  vfs_inode_init_name(n, "sys");
+  strcpy(vfs->current_path, "sys:");
 #else
   vfs_inode_init_name(n, "/");
+  strcpy(vfs->current_path, n->name);
 #endif
 
-  strcpy(vfs->current_path, n->name);
-  vfs->current_path_len = strlen(n->name);
+  vfs->current_path_len = strlen(vfs->current_path);
   return true;
 }
 
@@ -695,6 +699,37 @@ static uint32_t vfs_get_next_free_inode(vfilesystem *vfs)
   return (vfs->table_length++);
 }
 
+/* Special pointers for platform-agnostic resolution of parent/current dir
+ * tokens. The content of these doesn't actually matter, as long as they
+ * are different. */
+static const char vfs_special_current_dir[] = "<c>";
+static const char vfs_special_parent_dir[] = "<p>";
+
+/**
+ * Resolve parent/current dir tokens on a per-platform basis into generic
+ * pointers that can be handled in a platform-agnostic manner.
+ */
+static const char *vfs_get_special_inode_name(const char *name,
+ const char *has_next_token)
+{
+#ifndef VIRTUAL_FILESYSTEM_AMIGA_DRIVE
+  (void)has_next_token;
+
+  if(name[0] == '.')
+  {
+    if(name[1] == '\0')
+      return vfs_special_current_dir;
+
+    if(name[1] == '.' && name[2] == '\0')
+      return vfs_special_parent_dir;
+  }
+#else
+  if(name[0] == '\0')
+    return has_next_token ? vfs_special_parent_dir : vfs_special_current_dir;
+#endif
+  return name;
+}
+
 /**
  * Returns the inode of a given name within parent. This name should not include
  * path separators. The value of `index` will be set to the index of the inode
@@ -714,23 +749,18 @@ static uint32_t vfs_get_inode_in_parent_by_name(vfilesystem *vfs,
   if(!name[0])
     return VFS_NO_INODE;
 
-  /* Special case--current and parent dir. */
-  if(name[0] == '.')
+  if(name == vfs_special_current_dir)
   {
-    if(name[1] == '.' && name[2] == '\0')
-    {
-      if(index)
-        *index = VFS_IDX_PARENT;
-      return parent->contents.inodes[VFS_IDX_PARENT];
-    }
-    else
+    if(index)
+      *index = VFS_IDX_SELF;
+    return parent->contents.inodes[VFS_IDX_SELF];
+  }
 
-    if(name[1] == '\0')
-    {
-      if(index)
-        *index = VFS_IDX_SELF;
-      return parent->contents.inodes[VFS_IDX_SELF];
-    }
+  if(name == vfs_special_parent_dir)
+  {
+    if(index)
+      *index = VFS_IDX_PARENT;
+    return parent->contents.inodes[VFS_IDX_PARENT];
   }
 
   while(a <= b)
@@ -775,7 +805,11 @@ static uint32_t vfs_get_path_base_inode(vfilesystem *vfs, const char **path)
   char buffer[32];
 
   if(!*path[0])
+#ifdef VIRTUAL_FILESYSTEM_AMIGA_DRIVE
+    return vfs->current;
+#else
     return vfs_seterror(vfs, VFS_ENOENT);
+#endif
 
   if(len >= (ssize_t)sizeof(buffer))
     return vfs_seterror(vfs, VFS_ENOENT);
@@ -796,7 +830,7 @@ static uint32_t vfs_get_path_base_inode(vfilesystem *vfs, const char **path)
     buffer[len] = '\0';
     *path += len;
 
-    path_clean(buffer, sizeof(buffer));
+    path_clean_root(buffer, sizeof(buffer));
 
     inode = vfs_get_inode_in_parent_by_name(vfs, roots, buffer, NULL);
     if(inode == VFS_NO_INODE)
@@ -804,6 +838,11 @@ static uint32_t vfs_get_path_base_inode(vfilesystem *vfs, const char **path)
 #ifdef VIRTUAL_FILESYSTEM_DOS_DRIVE
       // Windows and DJGPP: / behaves as the root of the current active drive.
       if(!strcmp(buffer, DIR_SEPARATOR))
+        return vfs->current_root;
+#endif
+#ifdef VIRTUAL_FILESYSTEM_AMIGA_DRIVE
+      // Amiga: ':' behaves as the root of the current active drive.
+      if(!strcmp(buffer, ":"))
         return vfs->current_root;
 #endif
 
@@ -824,12 +863,13 @@ static uint32_t vfs_get_inode_by_relative_path(vfilesystem *vfs, uint32_t inode,
  char *relative_path)
 {
   struct vfs_inode *parent;
-  char *current;
+  const char *current;
   char *next;
 
   next = relative_path;
   while((current = path_tokenize(&next)))
   {
+    current = vfs_get_special_inode_name(current, next);
     if(!current[0])
       continue;
 
@@ -895,8 +935,11 @@ static boolean vfs_get_inode_and_parent_by_path(vfilesystem *vfs, const char *pa
     child = strrchr(buffer, DIR_SEPARATOR_CHAR);
     if(child)
     {
-      *(child++) = '\0';
+      /* Preserve the slash in case it is important for an Amiga path. */
+      char tmp = *(++child);
+      *child = '\0';
       parent = vfs_get_inode_by_relative_path(vfs, base, buffer);
+      *child = tmp;
     }
     else
     {
@@ -906,13 +949,15 @@ static boolean vfs_get_inode_and_parent_by_path(vfilesystem *vfs, const char *pa
 
     if(parent)
     {
+      const char *tmp = vfs_get_special_inode_name(child, NULL);
+
       p = vfs_get_inode_ptr(vfs, parent);
       if(VFS_INODE_TYPE(p) != VFS_INODE_DIR)
       {
         vfs_seterror(vfs, VFS_ENOTDIR);
         return false;
       }
-      inode = vfs_get_inode_in_parent_by_name(vfs, p, child, NULL);
+      inode = vfs_get_inode_in_parent_by_name(vfs, p, tmp, NULL);
     }
   }
 
@@ -936,6 +981,8 @@ static boolean vfs_get_inode_path(vfilesystem *vfs, uint32_t inode,
   uint32_t current;
   uint32_t next;
   size_t needed = 0;
+  size_t segments = 0;
+  boolean root_separator = false;
 
   // 1. Get the required size for this string.
   current = inode;
@@ -947,17 +994,26 @@ static boolean vfs_get_inode_path(vfilesystem *vfs, uint32_t inode,
 
     next = n->contents.inodes[VFS_IDX_PARENT];
 
-    // Dir separator, except for the root since it already has one.
-    if(needed && next != current)
-      needed++;
-
     needed += n->name_length;
 
     if(next == current)
+    {
+      if(strcmp(vfs_inode_name(n), DIR_SEPARATOR))
+      {
+        needed += strlen(PATH_ROOT_SEPARATOR);
+        root_separator = true;
+      }
       break;
+    }
+    else
+      segments++;
 
     current = next;
   }
+
+  /* Add separating slashes, not including the root separator. */
+  if(segments > 1)
+    needed += segments - 1;
 
   if(needed + 1 >= buffer_length)
     return false;
@@ -980,6 +1036,8 @@ static boolean vfs_get_inode_path(vfilesystem *vfs, uint32_t inode,
   }
   // Add root name into buffer separately.
   memcpy(buffer, vfs_inode_name(n), n->name_length);
+  if(root_separator)
+    memcpy(buffer + n->name_length, PATH_ROOT_SEPARATOR, strlen(PATH_ROOT_SEPARATOR));
   return true;
 }
 
@@ -1328,7 +1386,6 @@ static inline void vfs_print(vfilesystem *vfs)
 enum vfs_error vfs_make_root(vfilesystem *vfs, const char *name)
 {
   struct vfs_inode *n;
-  char buffer[MAX_PATH];
   uint32_t inode;
   size_t sz;
   size_t i;
@@ -1345,17 +1402,11 @@ enum vfs_error vfs_make_root(vfilesystem *vfs, const char *name)
     if(!isalnum((unsigned char)name[i]))
       return VFS_EINVAL;
 
-#ifdef PATH_DOS_STYLE_ROOTS
-  snprintf(buffer, MAX_PATH, "%s:" DIR_SEPARATOR, name);
-#else
-  snprintf(buffer, MAX_PATH, "%s:" DIR_SEPARATOR DIR_SEPARATOR, name);
-#endif
-
   if(!vfs_write_lock(vfs))
     return vfs_geterror(vfs);
 
   // This will check for existence and insert the new root into the roots list.
-  inode = vfs_make_inode(vfs, VFS_NO_INODE, buffer, 0, VFS_INODE_DIR);
+  inode = vfs_make_inode(vfs, VFS_NO_INODE, name, 0, VFS_INODE_DIR);
   if(!inode)
   {
     enum vfs_error code = vfs_geterror(vfs);
@@ -1420,7 +1471,7 @@ enum vfs_error vfs_create_file_at_path(vfilesystem *vfs, const char *path)
       goto err;
     }
   }
-  if(!parent) // Error is set by vfs_get_inode_by_path.
+  if(!parent) // Error is set by vfs_get_inode_and_parent_by_path.
     goto err;
 
   // If the parent is cached and times out, ignore this call.
@@ -1936,7 +1987,7 @@ enum vfs_error vfs_mkdir(vfilesystem *vfs, const char *path, int mode)
     vfs_seterror(vfs, VFS_EEXIST);
     goto err;
   }
-  if(!parent) // Error is set by vfs_get_inode_by_path.
+  if(!parent) // Error is set by vfs_get_inode_and_parent_by_path.
     goto err;
 
   p = vfs_get_inode_ptr(vfs, parent);
@@ -2000,7 +2051,9 @@ enum vfs_error vfs_rename(vfilesystem *vfs, const char *oldpath, const char *new
     goto err;
 
   // old must have both a parent and an inode and they should be different.
-  if(!old_parent || !old_inode)
+  if(!old_parent) // Error is set by vfs_get_inode_and_parent_by_path.
+    goto err;
+  if(!old_inode)
   {
     vfs_seterror(vfs, VFS_ENOENT);
     goto err;
@@ -2023,11 +2076,8 @@ enum vfs_error vfs_rename(vfilesystem *vfs, const char *oldpath, const char *new
     goto err;
 
   // new must have a parent, and its inode should be different.
-  if(!new_parent)
-  {
-    vfs_seterror(vfs, VFS_ENOENT);
+  if(!new_parent) // Error is set by vfs_get_inode_and_parent_by_path.
     goto err;
-  }
   if(new_parent == new_inode)
   {
     vfs_seterror(vfs, VFS_EBUSY);
@@ -2149,7 +2199,9 @@ enum vfs_error vfs_unlink(vfilesystem *vfs, const char *path)
     goto err;
 
   // Both must exist and be different.
-  if(!parent || !inode)
+  if(!parent) // Error is set by vfs_get_inode_and_parent_by_path.
+    goto err;
+  if(!inode)
   {
     vfs_seterror(vfs, VFS_ENOENT);
     goto err;
@@ -2231,7 +2283,9 @@ enum vfs_error vfs_rmdir(vfilesystem *vfs, const char *path)
     goto err;
 
   // Both must exist and be different.
-  if(!parent || !inode)
+  if(!parent) // Error is set by vfs_get_inode_and_parent_by_path.
+    goto err;
+  if(!inode)
   {
     vfs_seterror(vfs, VFS_ENOENT);
     goto err;
@@ -2769,7 +2823,7 @@ enum vfs_error vfs_cache_directory(vfilesystem *vfs, const char *path, const str
     vfs_seterror(vfs, VFS_EEXIST);
     goto err;
   }
-  if(!parent) // Error is set by vfs_get_inode_by_path.
+  if(!parent) // Error is set by vfs_get_inode_and_parent_by_path.
     goto err;
 
   p = vfs_get_inode_ptr(vfs, parent);
@@ -2846,7 +2900,7 @@ enum vfs_error vfs_cache_file_callback(vfilesystem *vfs, const char *path,
       vfs_seterror(vfs, VFS_EISDIR);
     goto err;
   }
-  if(!parent) // Error is set by vfs_get_inode_by_path.
+  if(!parent) // Error is set by vfs_get_inode_and_parent_by_path.
     goto err;
 
   p = vfs_get_inode_ptr(vfs, parent);

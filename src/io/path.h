@@ -60,16 +60,30 @@ __M_BEGIN_DECLS
 #endif /* DIR_SEPARATOR */
 
 /* Standalone current/parent directory string for file manager usage.
- * Amiga has a parent directory token, but not a current directory token. */
+ * Amiga has a parent directory token, but not a current directory token.
+ * These defines are only guaranteed to work as standalone paths. */
 #ifndef PATH_PARENT_DIR
 #if defined(CONFIG_AMIGA)
+#define PATH_CURRENT_ROOT ":"
 #define PATH_CURRENT_DIR ""
 #define PATH_PARENT_DIR "/"
 #else
+#define PATH_CURRENT_ROOT DIR_SEPARATOR
 #define PATH_CURRENT_DIR "."
 #define PATH_PARENT_DIR ".."
 #endif
 #endif /* PATH_PARENT_DIR */
+
+/* Normalized root separator string for constructing paths. */
+#ifndef PATH_ROOT_SEPARATOR
+#if defined(PATH_AMIGA_STYLE_ROOTS)
+#define PATH_ROOT_SEPARATOR ":"
+#elif defined(PATH_DOS_STYLE_ROOTS)
+#define PATH_ROOT_SEPARATOR ":" DIR_SEPARATOR
+#else
+#define PATH_ROOT_SEPARATOR ":" DIR_SEPARATOR DIR_SEPARATOR
+#endif
+#endif
 
 enum path_safe_mask
 {
@@ -134,6 +148,7 @@ UTILS_LIBSPEC size_t path_clean_copy(char *dest, size_t dest_len, const char *pa
 UTILS_LIBSPEC size_t path_clean_copy_posixdos(char *dest, size_t dest_len,
  const char *path);
 UTILS_LIBSPEC ssize_t path_clean_current_tokens(char *path, size_t path_len);
+UTILS_LIBSPEC ssize_t path_clean_root(char *path, size_t path_len);
 UTILS_LIBSPEC ssize_t path_append(char *path, size_t buffer_len, const char *rel);
 UTILS_LIBSPEC ssize_t path_join(char *dest, size_t dest_len, const char *base,
  const char *rel);
