@@ -26,6 +26,9 @@ USERS
   partial charset wildcards on DOS/Windows.
 + Fixed out-of-memory error on some platforms when attempting to
   flood fill the player in the editor.
++ Numerous help file updates including clarifications for
+  editing, commands, counters, the title screen, standalone
+  mode, and more. (Terryn)
 + Fixed checkres testing of 2.90X through 2.92X worlds with
   custom sound effects tables.
 + Added file manager support for handling Amiga paths.
