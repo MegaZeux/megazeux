@@ -25,7 +25,7 @@
 #include "../../src/network/Scoped.hpp"
 #include "../../src/network/Manifest.hpp"
 
-static const char *DATA_DIR = "../data";
+static const char *DATA_DIR = "unit/network/data";
 static const char *TEMP_FILE = "DELETE_ME.txt";
 
 class pushd

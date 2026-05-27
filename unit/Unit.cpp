@@ -26,7 +26,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
+#include <algorithm>
 #include <csignal>
 #include <type_traits>
 #include <utility>
@@ -67,24 +69,19 @@ static void sigabrt_handler(int signal)
 
 int main(int argc, char *argv[])
 {
-  if(argc && argv && argv[0])
+  struct stat st;
+  if(stat(UNIT_TMP_DIR, &st) != 0)
   {
-    char *fpos = strrchr(argv[0], '/');
-    char *bpos = strrchr(argv[0], '\\');
-    char tmp;
-
-    if(fpos || bpos)
-    {
-      fpos = (fpos > bpos) ? fpos : bpos;
-      tmp = *fpos;
-      *fpos = '\0';
-      chdir(argv[0]);
-      *fpos = tmp;
-    }
+    Uerr("Make directory '" UNIT_TMP_DIR "' and try running again.");
+    return 1;
   }
 
   if(!Unit::self_check())
     return 1;
+
+  if(argc > 1)
+    for(int i = 1; i < argc; i++)
+      Unit::unittestrunner::get().set_filter(argv[i]);
 
   std::signal(SIGABRT, sigabrt_handler);
   return !(Unit::unittestrunner::get().run());
@@ -587,6 +584,16 @@ namespace Unit
       this->skipped_sections++;
   }
 
+  bool unittest::match_filter(const char *filter)
+  {
+    if(strstr(this->file_name, filter))
+      return true;
+    if(strstr(this->test_name, filter))
+      return true;
+
+    return false;
+  }
+
 
   /************************************************************************
    * Unit::unittestrunner_cls and support functions.
@@ -597,6 +604,12 @@ namespace Unit
   {
     static std::vector<unittest *> tests;
     return tests;
+  }
+
+  static std::vector<const char *> &getfilters()
+  {
+    static std::vector<const char *> filters;
+    return filters;
   }
 
   unittestrunner &unittestrunner::get()
@@ -634,14 +647,41 @@ namespace Unit
 
   bool unittestrunner::run()
   {
+    const std::vector<const char *> &filters = getfilters();
+    char execdir[1024];
     count = 0;
     passed = 0;
     failed = 0;
     skipped = 0;
     total = gettests().size();
 
+    /* Fix static initialization ignoring link order. For now, this compares
+     * pointers, which should preserve link order and function order. */
+    std::stable_sort(gettests().begin(), gettests().end());
+
+    getcwd(execdir, sizeof(execdir));
+
     for(unittest *t : gettests())
     {
+      if(filters.size())
+      {
+        bool should_run = false;
+        for(const char *filter : filters)
+        {
+          if(t->match_filter(filter))
+          {
+            should_run = true;
+            break;
+          }
+        }
+        if(!should_run)
+        {
+          skipped++;
+          continue;
+        }
+      }
+      chdir(execdir);
+
       count++;
       current_test = t;
       bool result = t->run();
@@ -676,6 +716,11 @@ namespace Unit
   void unittestrunner::addtest(unittest *t)
   {
     gettests().push_back(t);
+  }
+
+  void unittestrunner::set_filter(const char *filter)
+  {
+    getfilters().push_back(filter);
   }
 
 

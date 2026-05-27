@@ -62,6 +62,13 @@ else
 EMSCRIPTEN_FRONTEND_BUILD_PROFILE = build-release
 endif
 
+ARCH_EMZIP_LDFLAGS := \
+	-s ENVIRONMENT=web \
+	-s ALLOW_MEMORY_GROWTH=1 \
+	-s MODULARIZE=1 \
+	-s EXPORT_NAME="'emzip'" \
+	-s "EXPORTED_RUNTIME_METHODS=['_main', 'UTF8ToString']" \
+
 clean:
 	$(if ${V},,@echo "  RM      " arch/emscripten/web/mzxrun_web.js"*")
 	$(if ${V},,@echo "  RM      " mzxrun.js.orig.js)
@@ -75,22 +82,6 @@ clean:
 	${RM} -f emzip.js* emzip.wasm
 
 all: emzip.js
-
-# NOTE: hack, core_obj and io_obj aren't defined yet...
-emzip_objs := \
-  src/io/.build/vio_no_vfs.o \
-  src/io/.build/zip.o \
-  src/io/.build/zip_stream.o
-
-emzip.js: arch/emscripten/emzip.c ${emzip_objs}
-	$(if ${V},,@echo "  LINK    " $@)
-	${CC} -O3 \
-	-s ENVIRONMENT=web \
-	-s ALLOW_MEMORY_GROWTH=1 \
-	-s MODULARIZE=1 \
-	-s EXPORT_NAME="'emzip'" \
-	-s "EXPORTED_RUNTIME_METHODS=['_main', 'UTF8ToString']" \
-	$< ${emzip_objs} ${ZLIB_LDFLAGS} -o $@
 
 ${build}/mzxrun.js: ${build}
 	@cp mzxrun.js ${build}/

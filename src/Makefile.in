@@ -16,17 +16,19 @@ include contrib/libxmp/Makefile.megazeux
 #
 LINK_CC ?= ${CC}
 
-core_src = src
-core_obj = src/.build
+core_src      = src
+core_obj      = ${build_base}/${core_src}
 
-audio_src = src/audio
-audio_obj = src/audio/.build
+audio_src     = ${core_src}/audio
+audio_obj     = ${build_base}/${audio_src}
 
-io_src = src/io
-io_obj = src/io/.build
+io_src        = ${core_src}/io
+io_obj        = ${build_base}/${io_src}
 
-network_src = src/network
-network_obj = src/network/.build
+network_src   = ${core_src}/network
+network_obj   = ${build_base}/${network_src}
+
+build_dirs   += ${core_obj} ${audio_obj} ${io_obj} ${network_obj}
 
 core_flags   += -ffast-math -funsigned-char
 core_flags   += -Wmissing-format-attribute
@@ -52,26 +54,6 @@ ${core_obj}/run_stubs.o: ${core_src}/run_stubs.c
 ${core_obj}/updater.o: ${core_src}/updater.cpp
 	$(if ${V},,@echo "  CXX     " $<)
 	${CC} -MD ${core_cxxflags} ${core_flags} -c $< -o $@
-
-${audio_obj}/%.o: ${audio_src}/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} ${core_spec} -c $< -o $@
-
-${audio_obj}/%.o: ${audio_src}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CC} -MD ${core_cxxflags} ${core_flags} ${core_spec} -c $< -o $@
-
-${io_obj}/%.o: ${io_src}/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} ${core_spec} -c $< -o $@
-
-${network_obj}/%.o: ${network_src}/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} ${core_spec} -c $< -o $@
-
-${network_obj}/%.o: ${network_src}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} -c $< -o $@
 
 ${core_obj}/%.o: ${core_src}/%.c
 	$(if ${V},,@echo "  CC      " $<)

@@ -7,7 +7,8 @@
 .SUFFIXES: .cpp
 
 libmodplug_src = contrib/libmodplug/src
-libmodplug_obj = contrib/libmodplug/src/.build
+libmodplug_obj = ${build_base}/${libmodplug_src}
+build_dirs += ${libmodplug_obj}
 
 libmodplug_cflags = -DHAVE_INTTYPES_H -I${libmodplug_src} \
                     -I${libmodplug_src}/libmodplug \

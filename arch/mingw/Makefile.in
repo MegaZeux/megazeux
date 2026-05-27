@@ -2,7 +2,7 @@
 # mingw makefile generics
 #
 
-PEFIX   = ${pefix}
+PEFIX   = ./pefix
 BINEXT  = .exe
 
 DSOLDFLAGS = -shared
@@ -50,30 +50,10 @@ ifdef DEBUG
 ARCH_LDFLAGS += -mconsole
 endif
 
-#
-# Don't use BINEXT here; if the host is MinGW it will automatically
-# append .exe, and if it isn't the extension would just be confusing.
-#
-pefix := arch/mingw/pefix
+all: pefix
 
--include arch/mingw/pefix.d
-
-arch/mingw/pefix.o: arch/mingw/pefix.c
-	$(if ${V},,@echo "  HOSTCC  " $<)
-	${HOST_CC} -MD ${CFLAGS} -c $< -o $@
-
-${pefix}: arch/mingw/pefix.o
-	$(if ${V},,@echo "  HOSTLINK" ${pefix})
-	${HOST_CC} arch/mingw/pefix.o -o ${pefix}
-
-all: ${pefix}
-
-clean: msvc_clean pefix_clean
-.PHONY: msvc_clean pefix_clean
-
-pefix_clean:
-	$(if ${V},,@echo "  RM      " ${pefix} arch/mingw/pefix.o arch/mingw/pefix.d)
-	${RM} ${pefix} arch/mingw/pefix.o arch/mingw/pefix.d
+clean: msvc_clean
+.PHONY: msvc_clean
 
 # Clean up MSVC files just in case; they break linking MinGW.
 msvc_clean:

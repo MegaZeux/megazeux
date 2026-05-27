@@ -27,7 +27,7 @@
 #include "../../src/io/zip_stream.h"
 
 static const size_t BUFFER_SIZE = (1 << 17);
-static const char DATA_DIR[] = "../data";
+static const char DATA_DIR[] = "unit/io/data";
 
 struct pair
 {
@@ -949,7 +949,7 @@ UNITTEST(ZipWrite)
   char *ext_buffer = (char *)cmalloc(32);
   size_t ext_buffer_size = 32;
 
-  static const char OUTPUT_FILE[] = "_output_file.zip";
+  static const char OUTPUT_FILE[] = UNIT_TMP_DIR "/_output_file.zip";
   static const char LABEL[4][20] = { "File", "File(Zip64)", "MemoryExt", "MemoryExt(Zip64)" };
   struct zip_archive *zp;
   enum zip_error result;

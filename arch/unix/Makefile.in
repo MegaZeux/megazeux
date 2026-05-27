@@ -8,6 +8,11 @@ DSOPOST    = .so
 DSORPATH   = -Wl,-rpath,${LIBDIR}
 DSOSONAME  = -Wl,-soname,
 
+# Prefix utility names so they can be installed to PATH.
+ifneq (${SHAREDIR},.)
+BINPRE     = megazeux-
+endif
+
 # Enable 64-bit off_t and ino_t types for fseeko, ftello, readdir, and *stat.
 # This fixes issues with readdir() failing with EOVERFLOW when called from a
 # 32-bit executable running on a large filesystem.

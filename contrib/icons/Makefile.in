@@ -7,7 +7,9 @@
 .SUFFIXES: .rc
 
 icons_src = contrib/icons
-icons_obj = contrib/icons/.build
+icons_obj = ${build_base}/${icons_src}
+build_dirs += ${icons_obj}
+
 icons_gen = contrib/icons/generated
 icons_windows = ${icons_gen}
 icons_nds = ${icons_gen}

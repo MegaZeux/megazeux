@@ -58,7 +58,8 @@ SRC_OBJS = \
   virtual.o       \
 
 SRC_PATH	= $(libxmp_base)/src
-SRC_OBJ = $(SRC_PATH)/.build
+SRC_OBJ	= ${build_base}/$(SRC_PATH)
+build_dirs += ${SRC_OBJ}
 
 
 libxmp_objs += $(addprefix $(SRC_OBJ)/,$(SRC_OBJS))
@@ -97,7 +98,8 @@ LOADERS_OBJS = \
   $(LOADERS)
 
 LOADERS_PATH	= $(libxmp_base)/src/loaders
-LOADERS_OBJ	= $(LOADERS_PATH)/.build
+LOADERS_OBJ	= ${build_base}/$(LOADERS_PATH)
+build_dirs	+= ${LOADERS_OBJ}
 
 
 libxmp_objs += $(addprefix $(LOADERS_OBJ)/,$(LOADERS_OBJS))

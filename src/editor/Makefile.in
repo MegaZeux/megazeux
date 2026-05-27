@@ -4,8 +4,9 @@
 
 .PHONY: editor_clean editor_target_clean
 
-editor_src = src/editor
-editor_obj = src/editor/.build
+editor_src = ${core_src}/editor
+editor_obj = ${build_base}/${editor_src}
+build_dirs += ${editor_obj}
 
 editor_flags := ${core_flags}
 

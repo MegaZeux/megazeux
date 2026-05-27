@@ -68,6 +68,7 @@ static constexpr int VFSAFEGETS_BUFFER = 64;
 static constexpr int MAX_LINES = 10;
 
 static char execdir[1024];
+static char writedir[1024];
 
 struct vfsafegets_data
 {
@@ -651,9 +652,12 @@ static void test_vungetc(vfile *vf)
   ASSERTEQ(value, first_qword, "vfgetd NOT 0x78");
 
   // ftell should subtract the buffered char count from the cursor for binary
-  // streams. Calling ftell when (cursor - buffered char count)<0 is undefined.
-  ret = vfseek(vf, 128, SEEK_SET);
+  // streams. Calling ftell when (cursor - buffered char count)<0 is undefined,
+  // so read a char after seek (avoids Wine bugs not present in Windows).
+  ret = vfseek(vf, 127, SEEK_SET);
   ASSERTEQ(ret, 0, "vfseek");
+  ret = vfgetc(vf);
+  ASSERTEQ(ret, 0x16, "vfgetc 0x16");
   ret = vungetc(0x9A, vf);
   ASSERTEQ(ret, 0x9A, "vungetc 0x9A");
   pos = vftell(vf);
@@ -700,10 +704,28 @@ static void test_vfsafegets(vfile *vf, const char *filename,
   /*if(!is_append) { SECTION(write_vfseektell)  test_vfseek_vftell_rewind_write(vf); } */ \
 } while(0)
 
-UNITTEST(Init)
+static void exec_dir()
+{
+  int ret = chdir(execdir);
+  ASSERTEQ(ret, 0, "change to exec dir");
+}
+
+static void write_dir()
+{
+  int ret = chdir(writedir);
+  ASSERTEQ(ret, 0, "change to write dir");
+}
+
+UNITTEST(VioInit)
 {
   char *t = getcwd(execdir, sizeof(execdir));
   ASSERTEQ(t, execdir, "");
+
+  int ret = chdir(UNIT_TMP_DIR);
+  ASSERTEQ(ret, 0, "change to write dir");
+
+  t = getcwd(writedir, sizeof(writedir));
+  ASSERTEQ(t, writedir, "");
 
   FILE *fp = fopen_unsafe(TEST_READ_FILENAME, "wb");
   ASSERT(fp, "fopen_unsafe");
@@ -786,6 +808,8 @@ UNITTEST(ModeFlags)
 
 UNITTEST(FileRead)
 {
+  write_dir();
+
   ScopedFile<vfile, vfclose> vf_in =
    vfopen_unsafe_ext(TEST_READ_FILENAME, "rb", V_SMALL_BUFFER);
   ASSERT(vf_in, "");
@@ -795,6 +819,8 @@ UNITTEST(FileRead)
 
 UNITTEST(FileWrite)
 {
+  write_dir();
+
   ScopedFile<vfile, vfclose> vf_out = vfopen_unsafe(TEST_WRITE_FILENAME, "w+b");
   ASSERT(vf_out, "");
   ASSERT(~vfile_get_flags(vf_out) & VF_VIRTUAL, "");
@@ -803,6 +829,8 @@ UNITTEST(FileWrite)
 
 UNITTEST(FileAppend)
 {
+  write_dir();
+
   ScopedFile<vfile, vfclose> vf_out = vfopen_unsafe(TEST_WRITE_FILENAME, "a+b");
   ASSERT(vf_out, "");
   ASSERT(~vfile_get_flags(vf_out) & VF_VIRTUAL, "");
@@ -894,6 +922,8 @@ UNITTEST(MemoryAppendExt)
 
 UNITTEST(vfsafegets)
 {
+  write_dir();
+
   SECTION(FileBinary)
   {
     for(const vfsafegets_data &d : vfsafegets_test_data)
@@ -935,6 +965,8 @@ UNITTEST(vfsafegets)
 
 UNITTEST(vtempfile)
 {
+  write_dir();
+
   SECTION(File)
   {
     ScopedFile<vfile, vfclose> vf = vtempfile(0);
@@ -964,14 +996,12 @@ UNITTEST(Filesystem)
   struct stat stat_info{}; // 0-init to silence MemorySanitizer.
   int ret;
 
-  ret = vchdir(execdir);
-  ASSERTEQ(ret, 0, "");
+  write_dir();
 
   SECTION(vchdir)
   {
-    ret = vchdir("..");
-    ASSERTEQ(ret, 0, "");
-    ret = vchdir("data");
+    exec_dir();
+    ret = vchdir("unit/io/data");
     ASSERTEQ(ret, 0, "");
 
     ScopedFile<vfile, vfclose> vf = vfopen_unsafe("CT_LEVEL.MOD", "rb");
@@ -1038,10 +1068,10 @@ UNITTEST(Filesystem)
     ret = vaccess(".", R_OK|W_OK|X_OK);
     ASSERTEQ(ret, 0, "");
 
-    ret = vchdir("..");
+    exec_dir();
+    ret = vchdir("unit/io/data");
     ASSERTEQ(ret, 0, "");
-    ret = vchdir("data");
-    ASSERTEQ(ret, 0, "");
+
     ret = access("CT_LEVEL.MOD", R_OK|W_OK);
     ASSERTEQ(ret, 0, "");
     ret = vaccess("CT_LEVEL.MOD", R_OK|W_OK);
@@ -1058,10 +1088,10 @@ UNITTEST(Filesystem)
     ASSERT(S_ISDIR(stat_info.st_mode), "");
     ASSERT(S_ISDIR(stat_info2.st_mode), "");
 
-    ret = vchdir("..");
+    exec_dir();
+    ret = vchdir("unit/io/data");
     ASSERTEQ(ret, 0, "");
-    ret = vchdir("data");
-    ASSERTEQ(ret, 0, "");
+
     ret = stat("CT_LEVEL.MOD", &stat_info);
     ASSERTEQ(ret, 0, "");
     ret = vstat("CT_LEVEL.MOD", &stat_info2);
@@ -1292,6 +1322,8 @@ UNITTEST(dirent)
   char buffer[1024];
   int ret;
 
+  write_dir();
+
   for(const char *filename : TEST_DIRENT_NONEMPTY)
   {
     snprintf(buffer, sizeof(buffer), "%s" DIR_SEPARATOR "%s", TEST_DIRENT_DIR, filename);
@@ -1436,8 +1468,7 @@ UNITTEST(VirtualRead)
   size_t sz;
   int ret;
 
-  ret = vchdir(execdir);
-  ASSERTEQ(ret, 0, "");
+  write_dir();
 
   vfssetup a(false);
 
@@ -1469,6 +1500,8 @@ UNITTEST(VirtualWrite)
 
   vfssetup a(false);
   int ret;
+
+  write_dir();
 
   ret = vio_virtual_file(write_file);
   ASSERT(ret, "");
@@ -1531,8 +1564,7 @@ UNITTEST(VirtualFilesystem)
   // Safety--some files need to be uncached for testing.
   vio_filesystem_exit();
 
-  ret = vchdir(execdir);
-  ASSERTEQ(ret, 0, "");
+  write_dir();
 
   // Make a real directory with no overlay or cache initially.
   vunlink(dir_real_file);
@@ -1569,6 +1601,8 @@ UNITTEST(VirtualFilesystem)
   ASSERT(ret, "");
 
   // Make virtual directories and file that use relative path tokens.
+  ret = vio_virtual_directory("../data");
+  ASSERT(ret, "");
   ret = vio_virtual_directory("../data/vdir");
   ASSERT(ret, "");
   ret = vio_virtual_directory("../data/./vdir/./vdir2");
@@ -1583,9 +1617,9 @@ UNITTEST(VirtualFilesystem)
     char expected[MAX_PATH];
     char expected2[MAX_PATH];
     char expected3[MAX_PATH];
-    path_join(expected, MAX_PATH, execdir, dir_virt);
-    path_join(expected2, MAX_PATH, execdir, dir_over);
-    memcpy(expected3, execdir, MAX_PATH);
+    path_join(expected, MAX_PATH, writedir, dir_virt);
+    path_join(expected2, MAX_PATH, writedir, dir_over);
+    memcpy(expected3, writedir, MAX_PATH);
     path_navigate_no_check(expected3, MAX_PATH, "../data/vdir/vdir2");
 
     ret = vchdir(dir_virt);
@@ -1602,7 +1636,7 @@ UNITTEST(VirtualFilesystem)
     ret = vchdir(buf);
     ASSERTEQ(ret, 0, "vchdir into uncached directory");
     char expected_real[MAX_PATH];
-    path_join(expected_real, MAX_PATH, execdir, dir_real);
+    path_join(expected_real, MAX_PATH, writedir, dir_real);
     t = vgetcwd(buf, MAX_PATH);
     ASSERT(t, "vgetcwd from uncached directory");
     ASSERTCMP(t, expected_real, "vgetcwd from uncached directory");
@@ -1618,7 +1652,7 @@ UNITTEST(VirtualFilesystem)
     ASSERTEQ(ret, 0, "vchdir back into a real dir");
     t = getcwd(buf, MAX_PATH);
     ASSERT(t, "real getcwd should be the original dir");
-    ASSERTCMP(t, execdir, "real getcwd should be the original dir");
+    ASSERTCMP(t, writedir, "real getcwd should be the original dir");
 
     ret = vchdir("../data/vdir/vdir2");
     ASSERTEQ(ret, 0, "vchdir into the directories made at ..");
@@ -1632,17 +1666,17 @@ UNITTEST(VirtualFilesystem)
     // called, causing the real CWD and VFS CWD to desynchronize. This bug
     // required the initial CWD to also be a real/cached directory.
     // If the virtual file opens this is probably okay.
-    ret = vchdir("../../zip64");
+    ret = vchdir("../../..");
     ASSERTEQ(ret, 0, "vchdir into a real dir 2");
-    ret = vchdir("../../.build");
+    ret = vchdir("../" UNIT_TMP_DIR);
     ASSERTEQ(ret, 0, "vchdir back into the original dir");
 
     t = getcwd(buf, MAX_PATH);
     ASSERT(t, "real getcwd should be the original dir");
-    ASSERTCMP(t, execdir, "real getcwd should be the original dir");
+    ASSERTCMP(t, writedir, "real getcwd should be the original dir");
     t = vgetcwd(buf, MAX_PATH);
     ASSERT(t, "vgetcwd should be the original dir");
-    ASSERTCMP(t, execdir, "vgetcwd should be the original dir");
+    ASSERTCMP(t, writedir, "vgetcwd should be the original dir");
 
     // See above.
     {
@@ -1666,7 +1700,7 @@ UNITTEST(VirtualFilesystem)
     // vmkdir should be able to make real directories in real dirs while
     // the current directory is a virtual dir, too.
     char expected[MAX_PATH];
-    path_join(expected, MAX_PATH, execdir, "a_real_dir");
+    path_join(expected, MAX_PATH, writedir, "a_real_dir");
 
     ret = vmkdir("../../a_real_dir", 0755);
     ASSERTEQ(ret, 0, "vmkdir a real directory from a virtual directory");
@@ -1832,7 +1866,7 @@ UNITTEST(VirtualFilesystem)
     ASSERTEQ(ret, 0, "return to initial directory");
     t = vgetcwd(buf, MAX_PATH);
     ASSERT(t, "check initial directory");
-    ASSERTCMP(t, execdir, "check initial directory");
+    ASSERTCMP(t, writedir, "check initial directory");
 
     ScopedFile<vdir, vdir_close> dir = vdir_open(".");
     ASSERT(dir, "");
@@ -1934,8 +1968,7 @@ UNITTEST(CacheRead)
   SKIP();
 #endif
 
-  int ret = vchdir(execdir);
-  ASSERTEQ(ret, 0, "");
+  write_dir();
 
   vfssetup a(true);
 
@@ -1962,6 +1995,8 @@ UNITTEST(CacheWrite)
   char buf[MAX_PATH];
   size_t sz;
   int ret;
+
+  write_dir();
 
   vfssetup a(true);
   vunlink(test_writeback);
@@ -2057,6 +2092,8 @@ UNITTEST(CacheFilesystem)
   struct stat st{};
   size_t sz;
   int ret;
+
+  write_dir();
 
   path_join(buf, sizeof(buf), cached_dir, cached_file);
   path_join(buf2, sizeof(buf), cached_dir_renamed, cached_file);
@@ -2252,6 +2289,8 @@ UNITTEST(CacheMemoryLimit)
   size_t single_usage;
   size_t total;
 
+  write_dir();
+
   vfssetup a(true);
 
   total = vio_filesystem_total_cached_usage();
@@ -2333,13 +2372,10 @@ UNITTEST(vfile_force_to_memory)
   SKIP();
 #endif
 
-  int ret;
-
   // Safety--make sure this really is disabled.
   vio_filesystem_exit();
 
-  ret = vchdir(execdir);
-  ASSERTEQ(ret, 0, "");
+  write_dir();
 
   const auto &common_test = [](const char *mode, boolean expected_ret)
   {

@@ -175,7 +175,7 @@ static boolean write_config(const char *path, const char *config)
 
 static void load_arg_file(const char *arg, boolean is_game_config)
 {
-  static const char CONFIG_FILENAME[] = "_config_tmp";
+  static const char CONFIG_FILENAME[] = UNIT_TMP_DIR "/_config_tmp";
 
   if(write_config(CONFIG_FILENAME, arg))
   {
@@ -1901,21 +1901,21 @@ UNITTEST(Include)
   SECTION(Include)
   {
     // This version only works from a config file.
-    boolean ret = write_config("a.cnf", "include b.cnf");
-    ret &= write_config("b.cnf", "mzx_speed = 4");
+    boolean ret = write_config(UNIT_TMP_DIR "/a.cnf", "include " UNIT_TMP_DIR "/b.cnf");
+    ret &= write_config(UNIT_TMP_DIR "/b.cnf", "mzx_speed = 4");
     ASSERTEQ(ret, true, "");
 
     conf->mzx_speed = 2;
 
-    set_config_from_file(SYSTEM_CNF, "a.cnf");
+    set_config_from_file(SYSTEM_CNF, UNIT_TMP_DIR "/a.cnf");
     ASSERTEQ(conf->mzx_speed, 4, "");
   }
 
   SECTION(IncludeEquals)
   {
     // This version works from both the config file and the command line.
-    char include_conf[] = "include=c.cnf";
-    boolean ret = write_config("c.cnf", "mzx_speed = 6");
+    char include_conf[] = "include=" UNIT_TMP_DIR "/c.cnf";
+    boolean ret = write_config(UNIT_TMP_DIR "/c.cnf", "mzx_speed = 6");
     ASSERTEQ(ret, true, "");
 
     conf->mzx_speed = 1;
@@ -1933,9 +1933,9 @@ UNITTEST(Include)
   {
     // Make sure a sane amount of recursive includes work.
     // Also make sure this works for both the main and editor configuration.
-    boolean ret = write_config("a.cnf", "include b.cnf");
-    ret &= write_config("b.cnf", "include c.cnf");
-    ret &= write_config("c.cnf", "mzx_speed=5\nboard_editor_hide_help=1");
+    boolean ret = write_config(UNIT_TMP_DIR "/a.cnf", "include " UNIT_TMP_DIR "/b.cnf");
+    ret &= write_config(UNIT_TMP_DIR "/b.cnf", "include " UNIT_TMP_DIR "/c.cnf");
+    ret &= write_config(UNIT_TMP_DIR "/c.cnf", "mzx_speed=5\nboard_editor_hide_help=1");
     ASSERTEQ(ret, true, "");
 
     conf->mzx_speed = 1;
@@ -1943,7 +1943,7 @@ UNITTEST(Include)
     econf->board_editor_hide_help = false;
 #endif
 
-    load_arg((char *)"include=a.cnf");
+    load_arg((char *)"include=" UNIT_TMP_DIR "/a.cnf");
     ASSERTEQ(conf->mzx_speed, 5, "");
 #ifdef CONFIG_EDITOR
     ASSERTEQ(econf->board_editor_hide_help, true, "");
@@ -1956,10 +1956,10 @@ UNITTEST(Include)
     // was added this would happen due to MZX hitting the maximum allowed number
     // of file descriptors prior to running out of stack. This is pretty much
     // a freebie, it just needs to not crash or run out of memory.
-    boolean ret = write_config("a.cnf", "include a.cnf");
+    boolean ret = write_config(UNIT_TMP_DIR "/a.cnf", "include " UNIT_TMP_DIR "/a.cnf");
     ASSERTEQ(ret, true, "");
 
-    set_config_from_file(SYSTEM_CNF, "a.cnf");
+    set_config_from_file(SYSTEM_CNF, UNIT_TMP_DIR "/a.cnf");
   }
 }
 

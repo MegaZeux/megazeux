@@ -9,8 +9,9 @@
 
 .PHONY: utils utils.debug utils_clean
 
-utils_src = src/utils
-utils_obj = src/utils/.build
+utils_src = ${core_src}/utils
+utils_obj = ${build_base}/${utils_src}
+build_dirs += ${utils_obj}
 
 # Some core objects are required for file format purposes.
 # Define UTILS_LIBSPEC so these properly link.
@@ -28,55 +29,66 @@ ifneq (${LIBPNG},)
 img_flags += ${UTILS_LIBPNG_LDFLAGS} ${UTILS_ZLIB_LDFLAGS} -lm
 endif
 
-checkres := ${utils_src}/checkres${BINEXT}
+checkres := ${BINPRE}checkres${BINEXT}
 checkres_objs := ${utils_obj}/checkres.o \
                  ${io_obj}/fsafeopen.o \
                  ${zip_objs}
 checkres_ldflags := ${UTILS_ZLIB_LDFLAGS}
+utils_objs += ${checkres_objs}
 
-downver := ${utils_src}/downver${BINEXT}
+downver := ${BINPRE}downver${BINEXT}
 downver_objs := ${utils_obj}/downver.o ${zip_objs}
 downver_ldflags := ${UTILS_ZLIB_LDFLAGS}
+utils_objs += ${downver_objs}
 
-hlp2html := ${utils_src}/hlp2html${BINEXT}
+emzip := emzip${BINEXT}
+emzip_objs := ${utils_obj}/emzip.o ${zip_objs}
+emzip_ldflags += ${UTILS_ZLIB_LDFLAGS}
+utils_objs += ${emzip_objs}
+
+hlp2html := ${BINPRE}hlp2html${BINEXT}
 hlp2html_objs := ${utils_obj}/hlp2html.o
+utils_objs += ${hlp2html_objs}
 
-hlp2txt := ${utils_src}/hlp2txt${BINEXT}
+hlp2txt := ${BINPRE}hlp2txt${BINEXT}
 hlp2txt_objs := ${utils_obj}/hlp2txt.o
+utils_objs += ${hlp2txt_objs}
 
-txt2hlp := ${utils_src}/txt2hlp${BINEXT}
+txt2hlp := ${BINPRE}txt2hlp${BINEXT}
 txt2hlp_objs := ${utils_obj}/txt2hlp.o
+utils_objs += ${txt2hlp_objs}
 
-png2smzx := ${utils_src}/png2smzx${BINEXT}
+png2smzx := ${BINPRE}png2smzx${BINEXT}
 png2smzx_objs := ${utils_obj}/png2smzx.o ${utils_obj}/smzxconv.o
 png2smzx_objs += ${img_objs}
 png2smzx_ldflags := ${img_flags}
+utils_objs += ${png2smzx_objs}
 
-y4m2smzx := ${utils_src}/y4m2smzx${BINEXT}
+y4m2smzx := ${BINPRE}y4m2smzx${BINEXT}
 y4m2smzx_objs := ${utils_obj}/y4m2smzx.o ${utils_obj}/smzxconv.o ${utils_obj}/y4m.o
 y4m2smzx_ldflags :=
 ifeq (${PTHREAD},1)
 y4m2smzx_ldflags += ${PTHREAD_LDFLAGS}
 endif
+utils_objs += ${y4m2smzx_objs}
 
-ccv := ${utils_src}/ccv${BINEXT}
+ccv := ${BINPRE}ccv${BINEXT}
 ccv_objs := ${utils_obj}/ccv.o
 ccv_objs += ${img_objs}
 ccv_ldflags := ${img_flags}
+utils_objs += ${ccv_objs}
+
+pefix := pefix
+pefix_objs := ${utils_src}/pefix.c
 
 ${utils_obj}/%.o: ${utils_src}/%.c src/config.h
 	$(if ${V},,@echo "  CC      " $<)
 	${CC} -MD ${CFLAGS} ${utils_cflags} -I${core_src} \
 	  ${ZLIB_CFLAGS} -c $< -o $@
 
--include $(checkres_objs:.o=.d)
--include $(downver_objs:.o=.d)
--include $(hlp2html_objs:.o=.d)
--include $(hlp2txt_objs:.o=.d)
--include $(txt2hlp_objs:.o=.d)
--include $(png2smzx_objs:.o=.d)
--include $(y4m2smzx_objs:.o=.d)
--include $(ccv_objs:.o=.d)
+-include $(utils_objs:.o=.d)
+
+${utils_objs}: $(filter-out $(wildcard ${utils_obj}), ${utils_obj})
 
 ${checkres}: ${checkres_objs}
 	$(if ${V},,@echo "  LINK    " ${checkres})
@@ -87,6 +99,11 @@ ${downver}: ${downver_objs}
 	$(if ${V},,@echo "  LINK    " ${downver})
 	${CC} ${downver_objs} -o ${downver} \
 	  ${ARCH_EXE_LDFLAGS} ${LDFLAGS} ${downver_ldflags} ${ARCH_LIBS}
+
+# Special: Emscripten target only.
+${emzip}: ${emzip_objs}
+	$(if ${V},,@echo "  LINK    " ${emzip})
+	${CC} -O3 $^ -o $@ ${ARCH_EMZIP_LDFLAGS} ${emzip_ldflags} ${ARCH_LIBS}
 
 ${hlp2html}: ${hlp2html_objs}
 	$(if ${V},,@echo "  LINK    " ${hlp2html})
@@ -118,7 +135,10 @@ ${ccv}: ${ccv_objs}
 	${CC} ${ccv_objs} -o ${ccv} \
 	  ${ARCH_EXE_LDFLAGS} ${LDFLAGS} ${ccv_ldflags} ${ARCH_LIBS}
 
-utils: $(filter-out $(wildcard ${utils_obj}), ${utils_obj})
+# Special: MinGW targets only, compiled for native host, skip intermediate obj.
+${pefix}: ${pefix_objs}
+	$(if ${V},,@echo "  HOSTLINK" ${pefix})
+	${HOST_CC} -O3 -g -Wall -W ${pefix_objs} -o ${pefix}
 
 utils: ${checkres} ${downver} ${hlp2html} ${hlp2txt} ${txt2hlp}
 utils: ${ccv} ${png2smzx} ${y4m2smzx}
@@ -134,6 +154,8 @@ utils_clean:
 	${RM} ${checkres} ${checkres}.debug
 	$(if ${V},,@echo "  RM      " ${downver} ${downver}.debug)
 	${RM} ${downver} ${downver}.debug
+	$(if ${V},,@echo "  RM      " ${emzip} ${emzip}.debug)
+	${RM} ${emzip} ${emzip}.debug
 	$(if ${V},,@echo "  RM      " ${hlp2html} ${hlp2html}.debug)
 	${RM} ${hlp2html} ${hlp2html}.debug
 	$(if ${V},,@echo "  RM      " ${hlp2txt} ${hlp2txt}.debug)
@@ -146,3 +168,5 @@ utils_clean:
 	${RM} ${y4m2smzx} ${y4m2smzx}.debug
 	$(if ${V},,@echo "  RM      " ${ccv} ${ccv}.debug)
 	${RM} ${ccv} ${ccv}.debug
+	$(if ${V},,@echo "  RM      " ${pefix} ${pefix}.debug)
+	${RM} ${pefix} ${pefix}.debug
