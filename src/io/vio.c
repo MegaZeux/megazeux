@@ -122,9 +122,9 @@ static boolean vio_cache_directory_recursively(vfilesystem *vfs, const char *pat
   path_clean_copy(tmp, MAX_PATH, path);
   next = tmp;
   len = path_is_absolute(tmp);
-  if(len > 1)
+  if(len >= 1 && !(len == 1 && isslash(tmp[0])))
   {
-#ifdef PATH_DOS_STYLE_ROOTS
+#if defined(PATH_DOS_STYLE_ROOTS) || defined(PATH_AMIGA_STYLE_ROOTS)
     int skip = 0;
     int colon_pos = -1;
 
@@ -160,20 +160,24 @@ static boolean vio_cache_directory_recursively(vfilesystem *vfs, const char *pat
 #endif
 
     path_tokenize(&next);
-    tmp[colon_pos] = '\0';
-
-    code = vfs_make_root(vfs, tmp + skip);
-    if(code != 0 && code != VFS_EEXIST)
+    /* Amiga: a colon at the start signifies the current active disk. */
+    if(colon_pos > 0)
     {
-      trace("--VIO-- vio_cache_directory_recursively: failed vfs_make_root '%s' (%s)\n",
-       tmp + skip, path);
-      return false;
-    }
+      tmp[colon_pos] = '\0';
 
-    // Repair current fragment.
-    tmp[colon_pos] = ':';
-    if(colon_pos < len - 1)
-      tmp[len - 1] = DIR_SEPARATOR_CHAR;
+      code = vfs_make_root(vfs, tmp + skip);
+      if(code != 0 && code != VFS_EEXIST)
+      {
+        trace("--VIO-- vio_cache_directory_recursively: failed vfs_make_root '%s' (%s)\n",
+         tmp + skip, path);
+        return false;
+      }
+
+      // Repair current fragment.
+      tmp[colon_pos] = ':';
+      if(colon_pos < len - 1)
+        tmp[len - 1] = DIR_SEPARATOR_CHAR;
+    }
 #else
     // DOS-style roots are only supported as VFS roots and should never
     // make it here!

@@ -931,6 +931,50 @@ UNITTEST(path_clean)
       ASSERTCMP(buffer, d.posix.result, "%s", d.path);
     }
   }
+
+  SECTION(path_clean_root)
+  {
+    static constexpr const path_clean_data root_clean_data[] =
+    {
+      path_clean_data::all(
+        "/",
+        { DIR_SEPARATOR }
+      ),
+      path_clean_data::all(
+        "fat:/",
+        { "fat" }
+      ),
+      path_clean_data::all(
+        "fat://",
+        { "fat" }
+      ),
+      path_clean_data::all(
+        "C:\\",
+        { "C" }
+      ),
+      path_clean_data::all(
+        "sys:",
+        { "sys" }
+      ),
+      path_clean_data::all(
+        ":",
+        { ":" }
+      ),
+      path_clean_data::all(
+        "hello",
+        { "hello" }
+      ),
+    };
+
+    for(const path_clean_data &d : root_clean_data)
+    {
+      snprintf(buffer, MAX_PATH, "%s", d.path);
+      buffer[MAX_PATH - 1] = '\0';
+
+      path_clean_root(buffer, MAX_PATH);
+      ASSERTCMP(buffer, d.posix.result, "%s", d.path);
+    }
+  }
 }
 
 

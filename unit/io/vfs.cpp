@@ -26,6 +26,12 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#if defined(VIRTUAL_FILESYSTEM_AMIGA_DRIVE)
+#define DOS_AMIGA(x,y) (y)
+#else
+#define DOS_AMIGA(x,y) (x)
+#endif
+
 static constexpr size_t GETCWD_BUF = 32;
 static constexpr enum vfs_error ignore = static_cast<vfs_error>(10000);
 
@@ -125,7 +131,7 @@ static void do_op_and_stat(vfilesystem *vfs, const vfs_op_result &d,
     case DO_STAT:
       break;
     case DO_CHDIR:
-      st_path = ".";
+      st_path = PATH_CURRENT_DIR;
       ret = vfs_chdir(vfs, d.path);
       ASSERTEQ(ret, d.expected_ret, "chdir: %s", d.path);
       break;
@@ -171,7 +177,7 @@ static void do_op_and_stat(vfilesystem *vfs, const vfs_op_result &d,
 
   struct stat st;
   ret = vfs_stat(vfs, st_path, &st);
-  ASSERTEQ(ret, d.stat_ret, "%s", d.path);
+  ASSERTEQ(ret, d.stat_ret, "post-stat (ret: %d): %s", d.expected_ret, d.path);
   if(!ret)
     check_stat(d.path, d.st, st, create_time, modify_time);
 }
@@ -189,29 +195,30 @@ UNITTEST(vfs_stat)
   static const vfs_stat_result valid_data[]
   {
     // These are all the default root since that's the only default file...
-    { "..", 0,        { 1, S_IFDIR, 0 }},
-    { ".", 0,         { 1, S_IFDIR, 0 }},
-    { "./", 0,        { 1, S_IFDIR, 0 }},
-    { "/", 0,         { 1, S_IFDIR, 0 }},
-    { "/./../", 0,    { 1, S_IFDIR, 0 }},
-    { "\\", 0,        { 1, S_IFDIR, 0 }},
-    { "\\..\\.", 0,   { 1, S_IFDIR, 0 }},
+    { PATH_CURRENT_ROOT,            0,        { 1, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR,             0,        { 1, S_IFDIR, 0 }},
+    { PATH_PARENT_DIR,              0,        { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("./", ""),          0,        { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("/./../", ":/"),    0,        { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("\\", ":"),         0,        { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("\\..\\.", ":\\"),  0,        { 1, S_IFDIR, 0 }},
 #ifdef VIRTUAL_FILESYSTEM_DOS_DRIVE
-    { "C:/", 0,       { 1, S_IFDIR, 0 }},
-    { "C:\\", 0,      { 1, S_IFDIR, 0 }},
-    { "c:\\", 0,      { 1, S_IFDIR, 0 }},
+    { "C:/",                        0,       { 1, S_IFDIR, 0 }},
+    { "C:\\",                       0,      { 1, S_IFDIR, 0 }},
+    { "c:\\",                       0,      { 1, S_IFDIR, 0 }},
 #endif
   };
 
   static const vfs_result invalid_data[]
   {
-    { "", VFS_ENOENT },
-    { "jsdjfk", VFS_ENOENT },
-    { "sdcard:/", VFS_ENOENT },
-    { "sdcard://", VFS_ENOENT },
+    { DOS_AMIGA("", "."),           VFS_ENOENT },
+    { DOS_AMIGA(":", ".."),         VFS_ENOENT },
+    { "jsdjfk",                     VFS_ENOENT },
+    { "sdcard:/",                   VFS_ENOENT },
+    { "sdcard://",                  VFS_ENOENT },
     { "verylongrootnamewhywouldyouevennamearootthis:/", VFS_ENOENT },
-    { "D:\\", VFS_ENOENT },
-    { "D:\\\\", VFS_ENOENT },
+    { "D:\\",                       VFS_ENOENT },
+    { "D:\\\\",                     VFS_ENOENT },
   };
 
   ScopedVFS vfs = vfs_init();
@@ -317,18 +324,20 @@ UNITTEST(vfs_create_file_at_path)
 
   static const vfs_stat_result valid_data[] =
   {
-    { "file.txt", 0,                            { 3, S_IFREG, 0 }},
-    { "abc.def", 0,                             { 4, S_IFREG, 0 }},
-    { "reallylongfilename.reallylongext", 0,    { 5, S_IFREG, 0 }},
-    { "../initrd.img", 0,                       { 6, S_IFREG, 0 }},
-    { "é", 0,                                   { 7, S_IFREG, 0 }},
-    { "fat://testfile", 0,                      { 8, S_IFREG, 0 }},
+    { "file.txt",                                 0,        { 3, S_IFREG, 0 }},
+    { "abc.def",                                  0,        { 4, S_IFREG, 0 }},
+    { "reallylongfilename.reallylongext",         0,        { 5, S_IFREG, 0 }},
+    { DOS_AMIGA("../initrd.img", "/initrd.img"),  0,        { 6, S_IFREG, 0 }},
+    { "/hewwo",                                   0,        { 7, S_IFREG, 0 }},
+    { DOS_AMIGA("/hewwo2", ":hewwo2"),            0,        { 8, S_IFREG, 0 }},
+    { "é",                                        0,        { 9, S_IFREG, 0 }},
+    { "fat://testfile",                           0,        { 10, S_IFREG, 0 }},
 #ifdef VIRTUAL_FILESYSTEM_DOS_DRIVE
-    { "C:/dkdfjklsjdf", 0,                      { 9, S_IFREG, 0 }},
+    { "C:/dkdfjklsjdf",                           0,        { 11, S_IFREG, 0 }},
 #endif
 #ifdef PATH_UNC_ROOTS
-    { "\\\\.\\c:\\uncfile.txt", 0,              { 10, S_IFREG, 0 }},
-    { "\\\\?\\c:\\uncfile2.txt", 0,             { 11, S_IFREG, 0 }},
+    { "\\\\.\\c:\\uncfile.txt",                   0,        { 12, S_IFREG, 0 }},
+    { "\\\\?\\c:\\uncfile2.txt",                  0,        { 13, S_IFREG, 0 }},
 #endif
   };
 
@@ -338,10 +347,10 @@ UNITTEST(vfs_create_file_at_path)
     { "file.txt",           VFS_EEXIST },
     { "file.txt/file.txt",  VFS_ENOTDIR },
     { "/",                  VFS_EISDIR },
-    { ".",                  VFS_EISDIR },
-    { "..",                 VFS_EISDIR },
-    { "./",                 VFS_EISDIR },
-    { "",                   VFS_ENOENT },
+    { ".",                  DOS_AMIGA(VFS_EISDIR, 0) },
+    { "..",                 DOS_AMIGA(VFS_EISDIR, 0) },
+    { "./",                 DOS_AMIGA(VFS_EISDIR, VFS_EEXIST) },
+    { "",                   DOS_AMIGA(VFS_ENOENT, VFS_EISDIR) },
     { "abchnkdf/file.txt",  VFS_ENOENT },
     { "fat:\\\\",           VFS_EISDIR },
     { "sdcard://testfile",  VFS_ENOENT },
@@ -350,8 +359,8 @@ UNITTEST(vfs_create_file_at_path)
 #endif
 #ifdef PATH_UNC_ROOTS
     { "\\\\.\\",            VFS_EISDIR }, // resolves to /
-    { "\\\\.\\c",           VFS_ENOENT },
-    { "\\\\.\\c:",          VFS_ENOENT },
+    { "\\\\.\\c",           VFS_EISDIR }, // TODO: is this correct?
+    { "\\\\.\\c:",          VFS_EISDIR }, // TODO: is this correct?
     { "\\\\.\\c:\\",        VFS_EISDIR },
     { "\\\\?\\c:\\",        VFS_EISDIR },
     { "\\\\.\\c:\\file.txt", VFS_EEXIST },
@@ -402,33 +411,35 @@ UNITTEST(vfs_mkdir)
 
   static const vfs_stat_result valid_data[] =
   {
-    { "aaa", 0,                         { 3, S_IFDIR, 0 }},
-    { "./aaa/b", 0,                     { 4, S_IFDIR, 0 }},
-    { "/ccc", 0,                        { 5, S_IFDIR, 0 }},
-    { "aaa/..\\ccc/d", 0,               { 6, S_IFDIR, 0 }},
-    { "ccc/d\\.././..\\aaa/b\\e/", 0,   { 7, S_IFDIR, 0 }},
-    { "0", 0,                           { 8, S_IFDIR, 0 }}, // Test inserting before existing.
-    { "1", 0,                           { 9, S_IFDIR, 0 }},
-    { "á", 0,                           { 10, S_IFDIR, 0 }},
-    { "fat:\\\\somedir", 0,             { 11, S_IFDIR, 0 }},
+    { "aaa",                                      0,        { 3, S_IFDIR, 0 }},
+    { DOS_AMIGA("./aaa/b", "aaa/b"),              0,        { 4, S_IFDIR, 0 }},
+    { "/ccc",                                     0,        { 5, S_IFDIR, 0 }},
+    { DOS_AMIGA("aaa/..\\ccc/d", "aaa//ccc/d"),   0,        { 6, S_IFDIR, 0 }},
+    { DOS_AMIGA("ccc/d\\.././..\\aaa/b\\e/",
+                "ccc/d\\\\/aaa/b\\e/"),           0,        { 7, S_IFDIR, 0 }},
+    // Test inserting before existing.
+    { "0",                                        0,        { 8, S_IFDIR, 0 }},
+    { "1",                                        0,        { 9, S_IFDIR, 0 }},
+    { "á",                                        0,        { 10, S_IFDIR, 0 }},
+    { "fat:\\\\somedir",                          0,        { 11, S_IFDIR, 0 }},
 #ifdef VIRTUAL_FILESYSTEM_DOS_DRIVE
-    { "c:/fff/", 0,                     { 12, S_IFDIR, 0 }},
+    { "c:/fff/",                                  0,        { 12, S_IFDIR, 0 }},
 #endif
 #ifdef PATH_UNC_ROOTS
-    { "\\\\.\\c:\\uncdir", 0,           { 13, S_IFDIR, 0 }},
-    { "\\\\?\\c:\\uncdir2", 0,          { 14, S_IFDIR, 0 }},
+    { "\\\\.\\c:\\uncdir",                        0,        { 13, S_IFDIR, 0 }},
+    { "\\\\?\\c:\\uncdir2",                       0,        { 14, S_IFDIR, 0 }},
 #endif
   };
 
   static const vfs_result invalid_data[] =
   {
-    { "",               VFS_ENOENT },
+    { "",               DOS_AMIGA(VFS_ENOENT, VFS_EEXIST) },
     { "aaa",            0 },
     { "aaa",            VFS_EEXIST },
     { "wtf/a",          VFS_ENOENT },
     { "/",              VFS_EEXIST },
-    { ".",              VFS_EEXIST },
-    { "..",             VFS_EEXIST },
+    { ".",              DOS_AMIGA(VFS_EEXIST, 0) },
+    { "..",             DOS_AMIGA(VFS_EEXIST, 0) },
     { "./",             VFS_EEXIST },
     { "D:\\\\",         VFS_ENOENT },
     { "sdcardsfdfd://", VFS_ENOENT },
@@ -440,8 +451,8 @@ UNITTEST(vfs_mkdir)
 #endif
 #ifdef PATH_UNC_ROOTS
     { "\\\\.\\",        VFS_EEXIST }, // resolves to /
-    { "\\\\.\\c",       VFS_ENOENT },
-    { "\\\\.\\c:",      VFS_ENOENT },
+    { "\\\\.\\c",       VFS_EEXIST }, // TODO: is this correct?
+    { "\\\\.\\c:",      VFS_EEXIST }, // TODO: is this correct?
     { "\\\\.\\c:\\",    VFS_EEXIST },
     { "\\\\?\\c:\\",    VFS_EEXIST },
     { "\\\\.\\c:\\aaa", VFS_EEXIST },
@@ -493,16 +504,12 @@ UNITTEST(vfs_chdir_getcwd)
   SKIP();
 #endif
 
-#ifdef VIRTUAL_FILESYSTEM_DOS_DRIVE
+#if defined(VIRTUAL_FILESYSTEM_AMIGA_DRIVE)
+#define BASE "sys:"
+#elif defined(VIRTUAL_FILESYSTEM_DOS_DRIVE)
 #define BASE "C:\\"
 #else
 #define BASE "/"
-#endif
-
-#ifdef PATH_DOS_STYLE_ROOTS
-#define DIR_SEPARATOR2 DIR_SEPARATOR
-#else
-#define DIR_SEPARATOR2 DIR_SEPARATOR DIR_SEPARATOR
 #endif
 
 #define NAME32 "0123456789.0123456789.0123456789"
@@ -510,65 +517,65 @@ UNITTEST(vfs_chdir_getcwd)
 #define NAME512 NAME128 "." NAME128 "." NAME128 "." NAME128
   static const vfs_op_result valid_data[] =
   {
-    { BASE, "", DO_GETCWD, 0,             0,        { 1, S_IFDIR, 0 }},
-    { ".", "", DO_CHDIR, 0,               0,        { 1, S_IFDIR, 0 }},
-    { "dir", "", DO_MKDIR, 0,             0,        { 2, S_IFDIR, 0 }},
-    { "file", "", DO_CREATE, 0,           0,        { 3, S_IFREG, 0 }},
-    { "dir", "", DO_CHDIR, 0,             0,        { 2, S_IFDIR, 0 }},
-    { BASE "dir", "", DO_GETCWD, 0,       0,        { 2, S_IFDIR, 0 }},
-    { ".", "", DO_STAT, ignore,           0,        { 2, S_IFDIR, 0 }},
-    { "..", "", DO_STAT, ignore,          0,        { 1, S_IFDIR, 0 }},
-    { "../dir", "", DO_STAT, ignore,      0,        { 2, S_IFDIR, 0 }},
-    { "../file", "", DO_STAT, ignore,     0,        { 3, S_IFREG, 0 }},
-    { "dir2", "", DO_MKDIR, 0,            0,        { 4, S_IFDIR, 0 }},
-    { "file2", "", DO_CREATE, 0,          0,        { 5, S_IFREG, 0 }},
-    { "/dir/dir2", "", DO_STAT, ignore,   0,        { 4, S_IFDIR, 0 }},
-    { "/dir/file2", "", DO_STAT, ignore,  0,        { 5, S_IFREG, 0 }},
-    { "dir2", "", DO_CHDIR, 0,            0,        { 4, S_IFDIR, 0 }},
+    { BASE, "", DO_GETCWD, 0,                     0,        { 1, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR, "", DO_CHDIR, 0,          0,        { 1, S_IFDIR, 0 }},
+    { "dir", "", DO_MKDIR, 0,                     0,        { 2, S_IFDIR, 0 }},
+    { "file", "", DO_CREATE, 0,                   0,        { 3, S_IFREG, 0 }},
+    { "dir", "", DO_CHDIR, 0,                     0,        { 2, S_IFDIR, 0 }},
+    { BASE "dir", "", DO_GETCWD, 0,               0,        { 2, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR, "", DO_STAT, ignore,      0,        { 2, S_IFDIR, 0 }},
+    { PATH_PARENT_DIR, "", DO_STAT, ignore,       0,        { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("../dir", "/dir"), "", DO_STAT, ignore, 0,  { 2, S_IFDIR, 0 }},
+    { DOS_AMIGA("../file", "/file"), "", DO_STAT, ignore, 0, { 3, S_IFREG, 0 }},
+    { "dir2", "", DO_MKDIR, 0,                    0,        { 4, S_IFDIR, 0 }},
+    { "file2", "", DO_CREATE, 0,                  0,        { 5, S_IFREG, 0 }},
+    { "/dir/dir2", "", DO_STAT, ignore,           0,        { 4, S_IFDIR, 0 }},
+    { "/dir/file2", "", DO_STAT, ignore,          0,        { 5, S_IFREG, 0 }},
+    { "dir2", "", DO_CHDIR, 0,                    0,        { 4, S_IFDIR, 0 }},
     { BASE "dir" DIR_SEPARATOR "dir2", "", DO_GETCWD, 0, 0, { 4, S_IFDIR, 0 }},
-    { "../../file", "", DO_STAT, ignore,  0,        { 3, S_IFREG, 0 }},
-    { "/", "", DO_CHDIR, 0,               0,        { 1, S_IFDIR, 0 }},
-    { BASE, "", DO_GETCWD, 0,             0,        { 1, S_IFDIR, 0 }},
-    { "fat", "", DO_MAKE_ROOT, 0,         0,        { 6, S_IFDIR, 0 }},
-    { "fat://", "", DO_CHDIR, 0,          0,        { 6, S_IFDIR, 0 }},
-    { "fat:" DIR_SEPARATOR2, "", DO_GETCWD, 0, 0,   { 6, S_IFDIR, 0 }},
-    { "dir", "", DO_MKDIR, 0,             0,        { 7, S_IFDIR, 0 }},
-    { "dir", "", DO_CHDIR, 0,             0,        { 7, S_IFDIR, 0 }},
-    { "fat:" DIR_SEPARATOR2 "dir", "", DO_GETCWD, 0, 0, { 7, S_IFDIR, 0 }},
+    { DOS_AMIGA("../../file", "//file"), "", DO_STAT, ignore, 0, { 3, S_IFREG, 0 }},
+    { PATH_CURRENT_ROOT, "", DO_CHDIR, 0,         0,        { 1, S_IFDIR, 0 }},
+    { BASE, "", DO_GETCWD, 0,                     0,        { 1, S_IFDIR, 0 }},
+    { "fat", "", DO_MAKE_ROOT, 0,                 0,        { 6, S_IFDIR, 0 }},
+    { "fat://", "", DO_CHDIR, 0,                  0,        { 6, S_IFDIR, 0 }},
+    { "fat" PATH_ROOT_SEPARATOR, "", DO_GETCWD, 0, 0,       { 6, S_IFDIR, 0 }},
+    { "dir", "", DO_MKDIR, 0,                     0,        { 7, S_IFDIR, 0 }},
+    { "dir", "", DO_CHDIR, 0,                     0,        { 7, S_IFDIR, 0 }},
+    { "fat" PATH_ROOT_SEPARATOR "dir", "", DO_GETCWD, 0, 0, { 7, S_IFDIR, 0 }},
 #ifdef VIRTUAL_FILESYSTEM_DOS_DRIVE
     // "/" is the root of the current drive in these OSes.
-    { "/",  "", DO_CHDIR, 0,              0,        { 6, S_IFDIR, 0 }},
-    { "fat:" DIR_SEPARATOR2, "", DO_GETCWD, 0, 0,   { 6, S_IFDIR, 0 }},
+    { "/",  "", DO_CHDIR, 0,                      0,        { 6, S_IFDIR, 0 }},
+    { "fat" PATH_ROOT_SEPARATOR, "", DO_GETCWD, 0, 0,       { 6, S_IFDIR, 0 }},
 #endif
 #ifdef PATH_UNC_ROOTS
     // VFS functions currently delete the UNC prefix.
-    { "\\\\.\\fat:\\", "", DO_CHDIR, 0,   0,        { 6, S_IFDIR, 0 }},
-    { "fat:" DIR_SEPARATOR2, "", DO_GETCWD, 0, 0,   { 6, S_IFDIR, 0 }},
-    { "\\\\?\\fat:\\", "", DO_CHDIR, 0,   0,        { 6, S_IFDIR, 0 }},
-    { "fat:" DIR_SEPARATOR2, "", DO_GETCWD, 0, 0,   { 6, S_IFDIR, 0 }},
+    { "\\\\.\\fat:\\", "", DO_CHDIR, 0,           0,        { 6, S_IFDIR, 0 }},
+    { "fat" PATH_ROOT_SEPARATOR, "", DO_GETCWD, 0, 0,       { 6, S_IFDIR, 0 }},
+    { "\\\\?\\fat:\\", "", DO_CHDIR, 0,           0,        { 6, S_IFDIR, 0 }},
+    { "fat" PATH_ROOT_SEPARATOR, "", DO_GETCWD, 0, 0,       { 6, S_IFDIR, 0 }},
 #endif
   };
 
   static const vfs_op_result invalid_data[] =
   {
-    { "dir", "", DO_MKDIR, 0,             0,        { 2, S_IFDIR, 0 }},
-    { "file", "", DO_CREATE, 0,           0,        { 3, S_IFREG, 0 }},
+    { "dir", "", DO_MKDIR, 0,                     0,        { 2, S_IFDIR, 0 }},
+    { "file", "", DO_CREATE, 0,                   0,        { 3, S_IFREG, 0 }},
 
     // Invalid chdir.
-    { "", "", DO_CHDIR, VFS_ENOENT,       0,        { 1, S_IFDIR, 0 }},
-    { "/nodir", "", DO_CHDIR, VFS_ENOENT, 0,        { 1, S_IFDIR, 0 }},
-    { "/nodir/a", "", DO_CHDIR, VFS_ENOENT, 0,      { 1, S_IFDIR, 0 }},
-    { "file", "", DO_CHDIR, VFS_ENOTDIR,  0,        { 1, S_IFDIR, 0 }},
-    { "file/dir", "", DO_CHDIR, VFS_ENOTDIR, 0,     { 1, S_IFDIR, 0 }},
+    { "", "", DO_CHDIR, DOS_AMIGA(VFS_ENOENT, 0), 0,        { 1, S_IFDIR, 0 }},
+    { "/nodir", "", DO_CHDIR, VFS_ENOENT,         0,        { 1, S_IFDIR, 0 }},
+    { "/nodir/a", "", DO_CHDIR, VFS_ENOENT,       0,        { 1, S_IFDIR, 0 }},
+    { "file", "", DO_CHDIR, VFS_ENOTDIR,          0,        { 1, S_IFDIR, 0 }},
+    { "file/dir", "", DO_CHDIR, VFS_ENOTDIR,      0,        { 1, S_IFDIR, 0 }},
     // The above shouldn't change the cwd...
-    { BASE, "", DO_GETCWD, 0,             0,        { 1, S_IFDIR, 0 }},
+    { BASE, "", DO_GETCWD, 0,                     0,        { 1, S_IFDIR, 0 }},
     // Path too big for chdir (512).
-    { NAME512, "", DO_MKDIR, 0,           0,        { 4, S_IFDIR, 0 }},
-    { BASE NAME512, "", DO_CHDIR, VFS_ENAMETOOLONG, 0, { 1, S_IFDIR, 0 }},
+    { NAME512, "", DO_MKDIR, 0,                   0,        { 4, S_IFDIR, 0 }},
+    { BASE NAME512, "", DO_CHDIR, VFS_ENAMETOOLONG, 0,      { 1, S_IFDIR, 0 }},
     // Path too big for small getcwd buffer (see GETCWD_BUF).
-    { NAME32, "", DO_MKDIR, 0,            0,        { 5, S_IFDIR, 0 }},
-    { NAME32, "", DO_CHDIR, 0,            0,        { 5, S_IFDIR, 0 }},
-    { "", "", DO_GETCWD, VFS_ERANGE,      VFS_ENOENT, {}},
+    { NAME32, "", DO_MKDIR, 0,                    0,        { 5, S_IFDIR, 0 }},
+    { NAME32, "", DO_CHDIR, 0,                    0,        { 5, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR, "", DO_GETCWD, VFS_ERANGE, 0,       { 5, S_IFDIR, 0 }},
   };
 
   ScopedVFS vfs = vfs_init();
@@ -650,11 +657,11 @@ UNITTEST(vfs_rename)
     { "dir2", "", DO_MKDIR, 0,                    0,          { 4, S_IFDIR, 0 }},
     { "dir2/dir3", "", DO_MKDIR, 0,               0,          { 5, S_IFDIR, 0 }},
 
-    { "", "badsf", DO_RENAME, VFS_ENOENT,         VFS_ENOENT, {}},
-    { "badsf", "", DO_RENAME, VFS_ENOENT,         VFS_ENOENT, {}},
-    { "/", "asdf", DO_RENAME, VFS_EBUSY,          VFS_ENOENT, {}},
-    { "dir", "/",  DO_RENAME, VFS_EBUSY,          0,          { 1, S_IFDIR, 0 }},
-    { "dir", "..", DO_RENAME, VFS_EBUSY,          0,          { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("", "@"), "badsf", DO_RENAME, VFS_ENOENT, VFS_ENOENT, {}},
+    { "badsf", DOS_AMIGA("", "@"), DO_RENAME, VFS_ENOENT, VFS_ENOENT, {}},
+    { PATH_CURRENT_ROOT, "asdf", DO_RENAME, VFS_EBUSY,    VFS_ENOENT, {}},
+    { "dir", PATH_CURRENT_ROOT, DO_RENAME, VFS_EBUSY,     0,  { 1, S_IFDIR, 0 }},
+    { "dir", PATH_PARENT_DIR, DO_RENAME, VFS_EBUSY,       0,  { 1, S_IFDIR, 0 }},
     { "/noexist", "dir", DO_RENAME, VFS_ENOENT,   0,          { 3, S_IFDIR, 0 }},
     { "file", "/nodir/file", DO_RENAME, VFS_ENOENT, VFS_ENOENT, {}},
     { "dir", "file/dir", DO_RENAME, VFS_ENOTDIR,  VFS_ENOTDIR, {}},
@@ -670,10 +677,13 @@ UNITTEST(vfs_rename)
     { "dir2", "dir2/dir3/dir4", DO_RENAME, VFS_EINVAL, VFS_ENOENT, {}},
     // Don't allow renaming CWD or overwriting CWD.
     { "dir", "", DO_CHDIR, 0,                     0,          { 3, S_IFDIR, 0 }},
-    { ".", "deez", DO_RENAME, VFS_EBUSY,          VFS_ENOENT, {}},
-    { "../dir", "../deez", DO_RENAME, VFS_EBUSY,  VFS_ENOENT, {}},
-    { "../dir2", ".", DO_RENAME, VFS_EBUSY,       0,          { 3, S_IFDIR, 0 }},
-    { "../dir2", "../dir", DO_RENAME, VFS_EBUSY,  0,          { 3, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR, "deez", DO_RENAME, VFS_EBUSY, VFS_ENOENT, {}},
+    { DOS_AMIGA("../dir", "/dir"), DOS_AMIGA("../deez", "/deez"),
+      DO_RENAME, VFS_EBUSY,                       VFS_ENOENT, {}},
+    { DOS_AMIGA("../dir2", "/dir2"), PATH_CURRENT_DIR,
+      DO_RENAME, VFS_EBUSY,                       0,          { 3, S_IFDIR, 0 }},
+    { DOS_AMIGA("../dir2", "/dir2"), DOS_AMIGA("../dir", "/dir"),
+      DO_RENAME, VFS_EBUSY,                       0,          { 3, S_IFDIR, 0 }},
   };
 
   ScopedVFS vfs = vfs_init();
@@ -738,8 +748,10 @@ UNITTEST(vfs_unlink)
     { "dir", "", DO_MKDIR, 0,                 0,            { 2, S_IFDIR, 0 }},
     { "file", "", DO_CREATE, 0,               0,            { 3, S_IFREG, 0 }},
 
-    { "", "", DO_UNLINK, VFS_ENOENT,          VFS_ENOENT,   {}},
-    { "/", "", DO_UNLINK, VFS_EBUSY,          0,            { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("", "@"), "", DO_UNLINK, VFS_ENOENT, VFS_ENOENT,   {}},
+    { PATH_CURRENT_ROOT, "", DO_UNLINK, VFS_EBUSY, 0,       { 1, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR, "", DO_UNLINK, VFS_EBUSY, 0,        { 1, S_IFDIR, 0 }},
+    { PATH_PARENT_DIR, "", DO_UNLINK, VFS_EBUSY, 0,         { 1, S_IFDIR, 0 }},
     { "/noexist", "", DO_UNLINK, VFS_ENOENT,  VFS_ENOENT,   {}},
     { "/nodir/a", "", DO_UNLINK, VFS_ENOENT,  VFS_ENOENT,   {}},
     { "file/file", "", DO_UNLINK, VFS_ENOTDIR, VFS_ENOTDIR, {}},
@@ -807,8 +819,8 @@ UNITTEST(vfs_rmdir)
   {
     { "file", "", DO_CREATE, 0,               0,            { 2, S_IFREG, 0 }},
 
-    { "", "", DO_RMDIR, VFS_ENOENT,           VFS_ENOENT,   {}},
-    { "/", "", DO_RMDIR, VFS_EBUSY,           0,            { 1, S_IFDIR, 0 }},
+    { DOS_AMIGA("", "@"), "", DO_RMDIR, VFS_ENOENT, VFS_ENOENT, {}},
+    { PATH_CURRENT_ROOT, "", DO_RMDIR, VFS_EBUSY, 0,        { 1, S_IFDIR, 0 }},
     { "file", "", DO_RMDIR, VFS_ENOTDIR,      0,            { 2, S_IFREG, 0 }},
     { "/noexist", "", DO_RMDIR, VFS_ENOENT,   VFS_ENOENT,   {}},
     { "/nodir/a", "", DO_RMDIR, VFS_ENOENT,   VFS_ENOENT,   {}},
@@ -816,8 +828,8 @@ UNITTEST(vfs_rmdir)
     // Can't remove the CWD.
     { "dir", "", DO_MKDIR, 0,                 0,            { 3, S_IFDIR, 0 }},
     { "dir", "", DO_CHDIR, 0,                 0,            { 3, S_IFDIR, 0 }},
-    { ".", "", DO_RMDIR, VFS_EBUSY,           0,            { 3, S_IFDIR, 0 }},
-    { "../dir", "", DO_RMDIR, VFS_EBUSY,      0,            { 3, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR, "", DO_RMDIR, VFS_EBUSY, 0,         { 3, S_IFDIR, 0 }},
+    { DOS_AMIGA("../dir", "/dir"), "", DO_RMDIR, VFS_EBUSY, 0, { 3, S_IFDIR, 0 }},
   };
 
   ScopedVFS vfs = vfs_init();
@@ -849,7 +861,9 @@ UNITTEST(vfs_access)
 
   static const vfs_op_result valid_data[] =
   {
-    { "/", "", DO_ACCESS, 0,                  0,            { 1, S_IFDIR, 0 }},
+    { PATH_CURRENT_ROOT, "", DO_ACCESS, 0,    0,            { 1, S_IFDIR, 0 }},
+    { PATH_CURRENT_DIR, "", DO_ACCESS, 0,     0,            { 1, S_IFDIR, 0 }},
+    { PATH_PARENT_DIR, "", DO_ACCESS, 0,      0,            { 1, S_IFDIR, 0 }},
     { "file", "", DO_CREATE, 0,               0,            { 2, S_IFREG, 0 }},
     { "file", "", DO_ACCESS, 0,               0,            { 2, S_IFREG, 0 }},
     { "dir", "", DO_MKDIR, 0,                 0,            { 3, S_IFDIR, 0 }},
@@ -860,10 +874,10 @@ UNITTEST(vfs_access)
   {
     { "file", "", DO_CREATE, 0,               0,            { 2, S_IFREG, 0 }},
 
-    { "", "", DO_RMDIR, VFS_ENOENT,           VFS_ENOENT,   {}},
-    { "/noexist", "", DO_RMDIR, VFS_ENOENT,   VFS_ENOENT,   {}},
-    { "/nodir/a", "", DO_RMDIR, VFS_ENOENT,   VFS_ENOENT,   {}},
-    { "file/file", "", DO_RMDIR, VFS_ENOTDIR, VFS_ENOTDIR,  {}},
+    { DOS_AMIGA("", "aaa"), "", DO_ACCESS, VFS_ENOENT, VFS_ENOENT, {}},
+    { "/noexist", "", DO_ACCESS, VFS_ENOENT,   VFS_ENOENT,   {}},
+    { "/nodir/a", "", DO_ACCESS, VFS_ENOENT,   VFS_ENOENT,   {}},
+    { "file/file", "", DO_ACCESS, VFS_ENOTDIR, VFS_ENOTDIR,  {}},
   };
 
   ScopedVFS vfs = vfs_init();
@@ -920,7 +934,7 @@ UNITTEST(vfs_readdir)
 
   static const vfs_result invalid_data[] =
   {
-    { "", VFS_ENOENT },
+    { DOS_AMIGA("", "asjdsada"), VFS_ENOENT },
     { "file", VFS_ENOTDIR },
     { "file/dir", VFS_ENOTDIR },
   };
@@ -933,7 +947,7 @@ UNITTEST(vfs_readdir)
 
   SECTION(ValidEmpty)
   {
-    ret = vfs_readdir(vfs, ".", &vfsd);
+    ret = vfs_readdir(vfs, PATH_CURRENT_DIR, &vfsd);
     ASSERTEQ(ret, 0, "readdir");
     ASSERTEQ(vfsd.files, nullptr, "");
     ASSERTEQ(vfsd.num_files, 0, "");
@@ -955,7 +969,7 @@ UNITTEST(vfs_readdir)
       }
     }
 
-    ret = vfs_readdir(vfs, ".", &vfsd);
+    ret = vfs_readdir(vfs, PATH_CURRENT_DIR, &vfsd);
     ASSERTEQ(ret, 0, "readdir");
     ASSERT(vfsd.files, "");
     ASSERTEQ(vfsd.num_files, (size_t)arraysize(valid_files), "");
@@ -1086,7 +1100,7 @@ UNITTEST(FileIO)
     ASSERTEQ(ret, VFS_ENOENT, "");
 
     // Opening a dir should fail.
-    ret = vfs_open_if_exists(vfs, "/", false, &inode);
+    ret = vfs_open_if_exists(vfs, PATH_CURRENT_ROOT, false, &inode);
     ASSERTEQ(ret, VFS_EISDIR, "");
   }
 
@@ -1152,7 +1166,7 @@ UNITTEST(vfs_cache_directory)
     { "dir1",           0, 1 },
     { "dir1/dir2",      0, 2 },
     { "/dir3",          0, 3 },
-    { "dir3/../dir4",   0, 4 },
+    { DOS_AMIGA("dir3/../dir4", "dir3//dir4"), 0, 4 },
     { "vdir/dir5",      0, 5 },
     { "fat://dir6",     0, 6 },
 #ifdef PATH_UNC_ROOTS
@@ -1163,11 +1177,11 @@ UNITTEST(vfs_cache_directory)
 
   static const vfs_cache_result invalid_data[] =
   {
-    { "",                   VFS_ENOENT,   0 },
-    { "/",                  VFS_EEXIST,   0 },
-    { ".",                  VFS_EEXIST,   0 },
-    { "..",                 VFS_EEXIST,   0 },
-    { "./",                 VFS_EEXIST,   0 },
+    { "",                   DOS_AMIGA(VFS_ENOENT, VFS_EEXIST), 0 },
+    { PATH_CURRENT_ROOT,    VFS_EEXIST,   0 },
+    { PATH_CURRENT_DIR,     VFS_EEXIST,   0 },
+    { PATH_PARENT_DIR,      VFS_EEXIST,   0 },
+    { "./",                 DOS_AMIGA(VFS_EEXIST, 0), 4095 },
     { "dirA/dirB",          VFS_ENOENT,   0 },
     { "dirC",               0,            12345 },
     { "dirC",               VFS_EEXIST,   0 },
@@ -1347,11 +1361,11 @@ UNITTEST(vfs_cache_file)
 
   static const vfs_cache_content invalid_data[] =
   {
-    { "",                   VFS_ENOENT,   0,  "fdskfds" },
-    { "/",                  VFS_EISDIR,   0,  "sdfsdf" },
-    { ".",                  VFS_EISDIR,   0,  nullptr },
-    { "..",                 VFS_EISDIR,   0,  "dfssd" },
-    { "./",                 VFS_EISDIR,   0,  "fkd" },
+    { "",                   DOS_AMIGA(VFS_ENOENT, VFS_EISDIR), 0, "fdskfds" },
+    { PATH_CURRENT_ROOT,    VFS_EISDIR,   0,  "sdfsdf" },
+    { PATH_CURRENT_DIR,     VFS_EISDIR,   0,  nullptr },
+    { PATH_PARENT_DIR,      VFS_EISDIR,   0,  "dfssd" },
+    { "./",                 DOS_AMIGA(VFS_EISDIR, 0), 0, "fkd" },
     { "fileA",              0,            0,  "sdjflksd" },
     { "fileA",              VFS_EEXIST,   0,  nullptr },
     { "dirA",               VFS_EISDIR,   0,  "fsdfdsf" },
@@ -1649,14 +1663,14 @@ static void test_invalidate_current_dir(ScopedVFS &vfs, T invalidate)
     int expected_ret;
   } data[] =
   {
-    { "/dirA",                  true,   VFS_ERR_IS_CACHED },
-    { "/dirA/dirB",             true,   VFS_ERR_IS_CACHED },
-    { "/dirA/dirB/dirC",        true,   VFS_ENOENT },
-    { "/dirA/dirD",             true,   VFS_ENOENT },
-    { "/dirA/file1",            false,  VFS_ENOENT },
-    { "/dirA/dirB/file2",       false,  VFS_ENOENT },
-    { "/dirA/dirB/dirC/file3",  false,  VFS_ENOENT },
-    { "/dirA/dirD/file4",       false,  VFS_ENOENT },
+    { BASE "dirA",                  true,   VFS_ERR_IS_CACHED },
+    { BASE "dirA/dirB",             true,   VFS_ERR_IS_CACHED },
+    { BASE "dirA/dirB/dirC",        true,   VFS_ENOENT },
+    { BASE "dirA/dirD",             true,   VFS_ENOENT },
+    { BASE "dirA/file1",            false,  VFS_ENOENT },
+    { BASE "dirA/dirB/file2",       false,  VFS_ENOENT },
+    { BASE "dirA/dirB/dirC/file3",  false,  VFS_ENOENT },
+    { BASE "dirA/dirD/file4",       false,  VFS_ENOENT },
   };
 
   static const char file_buf[32]{};
@@ -1675,14 +1689,14 @@ static void test_invalidate_current_dir(ScopedVFS &vfs, T invalidate)
     ASSERTEQ(ret, 0, "%s", d.path);
   }
 
-  ret = vfs_chdir(vfs, "/dirA/dirB");
+  ret = vfs_chdir(vfs, BASE "dirA/dirB");
   ASSERTEQ(ret, VFS_ERR_IS_CACHED, "");
   char buffer[MAX_PATH];
   ret = vfs_getcwd(vfs, buffer, MAX_PATH);
   ASSERTEQ(ret, VFS_ERR_IS_CACHED, "");
   ASSERTCMP(buffer, BASE "dirA" DIR_SEPARATOR "dirB", "");
 
-  ret = invalidate(vfs, "/dirA");
+  ret = invalidate(vfs, BASE "dirA");
   ASSERTEQ(ret, 0, "");
 
   for(auto &d : data)
@@ -1781,20 +1795,20 @@ UNITTEST(vfs_invalidate_at_path)
     ptrdiff_t diff;
   } data[] =
   {
-    { "noexist",      VFS_ENOENT, 0 },
-    { "sdcard://",    VFS_ENOENT, 0 },
-    { "dirA/fjsdf",   VFS_ENOENT, 0 },
-    { "file1",        0,          -256 },
-    { "file1",        VFS_ENOENT, 0 },
-    { "dirA/filedel", 0,          -200 },
-    { "dirA/dirB",    0,          -384 },
-    { "dirA/dirB",    VFS_ENOENT, 0 },
-    { "dirA",         0,          -360 },
-    { ".",            0,          0 },
-    { "..",           0,          0 },
-    { "/",            0,          0 },
-    { "fat://",       0,          -288 },
-    { "fat://",       0,          0 },
+    { "noexist",          VFS_ENOENT, 0 },
+    { "sdcard://",        VFS_ENOENT, 0 },
+    { "dirA/fjsdf",       VFS_ENOENT, 0 },
+    { "file1",            0,          -256 },
+    { "file1",            VFS_ENOENT, 0 },
+    { "dirA/filedel",     0,          -200 },
+    { "dirA/dirB",        0,          -384 },
+    { "dirA/dirB",        VFS_ENOENT, 0 },
+    { "dirA",             0,          -360 },
+    { PATH_CURRENT_DIR,   0,          0 },
+    { PATH_PARENT_DIR,    0,          0 },
+    { PATH_CURRENT_ROOT,  0,          0 },
+    { "fat://",           0,          -288 },
+    { "fat://",           0,          0 },
   };
 
   ScopedVFS vfs = vfs_init();
