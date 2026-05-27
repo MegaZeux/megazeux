@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2021-2024 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2021-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -24,7 +24,7 @@
 #include "../../src/utils/image_file.c"
 #include "../../src/utils/image_gif.c"
 
-#define DATA_BASEDIR "../image_file/"
+#define DATA_BASEDIR "unit/utils/image_file/"
 
 struct image_file_const
 {

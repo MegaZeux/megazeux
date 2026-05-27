@@ -22,6 +22,9 @@ CODESIGN_CHK ?= codesign --verify --deep --strict -vvvv
 
 ifeq (${SUBPLATFORM},darwin)
 
+# Prefix utility names so they can be installed to PATH.
+BINPRE     = megazeux-
+
 include arch/install.inc
 
 # No platform-specific files to install

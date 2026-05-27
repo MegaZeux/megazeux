@@ -46,18 +46,17 @@
 #define PATH_SELECTOR posix
 #endif
 
-
-#define PATH_FILE_EXISTS        "path_file_exists"
-#define PATH_DIR_EXISTS         "path_dir_exists"
+#define PATH_FILE_EXISTS        UNIT_TMP_DIR DIR_SEPARATOR "path_file_exists"
+#define PATH_DIR_EXISTS         UNIT_TMP_DIR DIR_SEPARATOR "path_dir_exists"
 #define PATH_DIR_EXISTS_2       PATH_DIR_EXISTS DIR_SEPARATOR "path_dir_exists"
-#define PATH_DIR_NOT_EXISTS     "path_dir_kgdfsdlf"
-#define PATH_DIR_RECURSIVE      "path_dir_recursive"
-#define PATH_DIR_RECURSIVE_2    "path_dir_recursive" DIR_SEPARATOR PATH_DIR_RECURSIVE
-#define PATH_DIR_RECURSIVE_3    "path_dir_recursive" DIR_SEPARATOR PATH_DIR_RECURSIVE_2
-#define PATH_FILE_RECURSIVE     PATH_DIR_RECURSIVE DIR_SEPARATOR PATH_FILE_EXISTS
+#define PATH_DIR_NOT_EXISTS     UNIT_TMP_DIR DIR_SEPARATOR "path_dir_kgdfsdlf"
+#define PATH_DIR_RECURSIVE      UNIT_TMP_DIR DIR_SEPARATOR "path_dir_recursive"
+#define PATH_DIR_RECURSIVE_2    PATH_DIR_RECURSIVE DIR_SEPARATOR "path_dir_recursive"
+#define PATH_DIR_RECURSIVE_3    PATH_DIR_RECURSIVE_2 DIR_SEPARATOR "path_dir_recursive"
+#define PATH_FILE_RECURSIVE     PATH_DIR_RECURSIVE DIR_SEPARATOR "path_file_exists"
 
 
-UNITTEST(Init)
+UNITTEST(PathInit)
 {
   vfile *vf;
   vrmdir(PATH_DIR_RECURSIVE_3);
@@ -66,8 +65,10 @@ UNITTEST(Init)
   vmkdir(PATH_DIR_EXISTS_2, 0755);
   vmkdir(PATH_DIR_RECURSIVE, 0755);
   vf = vfopen_unsafe(PATH_FILE_EXISTS, "wb");
+  ASSERT(vf, "");
   vfclose(vf);
   vf = vfopen_unsafe(PATH_FILE_RECURSIVE, "wb");
+  ASSERT(vf, "");
   vfclose(vf);
 }
 
@@ -1144,13 +1145,13 @@ UNITTEST(path_split_functions)
     // a directory stat succeeds for the input path.
     path_split_data::all(
       PATH_DIR_EXISTS,
-      { 15, PATH_DIR_EXISTS },
+      { 26, PATH_DIR_EXISTS },
       { 0, "" },
       true
     ),
     path_split_data::all(
       PATH_DIR_EXISTS_2,
-      { 31, PATH_DIR_EXISTS_2 },
+      { 42, PATH_DIR_EXISTS_2 },
       { 0, "" },
       true
     ),
@@ -1246,7 +1247,7 @@ UNITTEST(path_split_functions)
       if(!strcmp(d.path, PATH_DIR_EXISTS))
       {
         result = path_get_parent(dir_buffer, MAX_PATH, PATH_DIR_EXISTS);
-        ASSERTEQ(result, 0, "%s", PATH_DIR_EXISTS);
+        ASSERTEQ(result, 10, "%s", PATH_DIR_EXISTS);
         continue;
       }
       if(!strcmp(d.path, PATH_DIR_EXISTS_2))
@@ -2141,15 +2142,15 @@ UNITTEST(path_navigate)
     path_target_output::posixroot(
       ".",
       PATH_DIR_EXISTS,
-      { 17, "./" PATH_DIR_EXISTS },
-      { 17, ".\\" PATH_DIR_EXISTS },
+      { 28, "./" PATH_DIR_EXISTS },
+      { 28, ".\\" PATH_DIR_EXISTS },
       { -1, nullptr }
     ),
     path_target_output::posixroot(
       PATH_FILE_RECURSIVE,
       "..",
-      { 18, PATH_DIR_RECURSIVE },
-      { 18, PATH_DIR_RECURSIVE },
+      { 29, PATH_DIR_RECURSIVE },
+      { 29, PATH_DIR_RECURSIVE },
       { -1, nullptr }
     ),
     path_target_output::posixroot(
@@ -2157,7 +2158,7 @@ UNITTEST(path_navigate)
       "/",
       { 1, "/" },
       { 1, "\\" },
-      { 18, PATH_DIR_RECURSIVE }
+      { 29, PATH_DIR_RECURSIVE }
     ),
   };
   char buffer[MAX_PATH];
@@ -2204,7 +2205,7 @@ UNITTEST(path_create_parent_recursively)
   static const path_mkdir_data data[] =
   {
     // Parent does not exist, call succeeds.
-    { PATH_DIR_RECURSIVE_3 DIR_SEPARATOR PATH_FILE_EXISTS,
+    { PATH_DIR_RECURSIVE_3 DIR_SEPARATOR "path_file_exists",
       PATH_CREATE_SUCCESS },
     // No parent in the input path, call succeeds.
     { "config.txt", PATH_CREATE_SUCCESS },
@@ -2213,7 +2214,7 @@ UNITTEST(path_create_parent_recursively)
     // Parent exists, call succeeds.
     { PATH_FILE_RECURSIVE, PATH_CREATE_SUCCESS },
     // mkdir fails due to existing file.
-    { PATH_FILE_RECURSIVE DIR_SEPARATOR PATH_DIR_RECURSIVE,
+    { PATH_FILE_RECURSIVE DIR_SEPARATOR "path_dir_recursive",
       PATH_CREATE_ERR_FILE_EXISTS },
     // TODO: PATH_CREATE_ERR_MKDIR_FAILED is returned when mkdir fails.
     // TODO: PATH_CREATE_ERR_STAT_ERROR is returned when stat fails.

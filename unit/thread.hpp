@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2023 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2023-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -42,7 +42,11 @@ static THREAD_RES thread_basic_fn(void *opaque)
   THREAD_RETURN;
 }
 
+#ifdef WIN32_FALLBACK_TEST
+UNITTEST(ThreadWin32)
+#else
 UNITTEST(Thread)
+#endif
 {
   platform_thread thread;
   boolean check = false;
@@ -85,7 +89,11 @@ static THREAD_RES mutex_fn(void *opaque)
   THREAD_RETURN;
 }
 
+#ifdef WIN32_FALLBACK_TEST
+UNITTEST(MutexWin32)
+#else
 UNITTEST(Mutex)
+#endif
 {
   platform_thread threads[NUM_THREADS];
   struct mutex_data d{};
@@ -224,7 +232,11 @@ static THREAD_RES cond_write_fn(void *opaque)
   THREAD_RETURN;
 }
 
+#ifdef WIN32_FALLBACK_TEST
+UNITTEST(CondWin32)
+#else
 UNITTEST(Cond)
+#endif
 {
   platform_thread workers[NUM_THREADS];
   platform_thread ctrl;
@@ -397,7 +409,11 @@ static THREAD_RES semaphore_ctrl_fn(void *opaque)
   THREAD_RETURN;
 }
 
+#ifdef WIN32_FALLBACK_TEST
+UNITTEST(SemaphoreWin32)
+#else
 UNITTEST(Semaphore)
+#endif
 {
   platform_thread workers[NUM_THREADS];
   platform_thread ctrl;

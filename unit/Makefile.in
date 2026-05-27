@@ -7,65 +7,62 @@
 .PHONY: unit unittest unit_clean
 
 unit_src        := unit
-unit_obj        := unit/.build
-unit_src_audio  := unit/audio
-unit_obj_audio  := unit/audio/.build
-unit_src_editor := unit/editor
-unit_obj_editor := unit/editor/.build
-unit_src_io     := unit/io
-unit_obj_io     := unit/io/.build
-unit_src_network:= unit/network
-unit_obj_network:= unit/network/.build
-unit_src_utils  := unit/utils
-unit_obj_utils  := unit/utils/.build
+unit_obj        := ${build_base}/${unit_src}
+unit_src_audio  := ${unit_src}/audio
+unit_obj_audio  := ${build_base}/${unit_src_audio}
+unit_src_editor := ${unit_src}/editor
+unit_obj_editor := ${build_base}/${unit_src_editor}
+unit_src_io     := ${unit_src}/io
+unit_obj_io     := ${build_base}/${unit_src_io}
+unit_src_network:= ${unit_src}/network
+unit_obj_network:= ${build_base}/${unit_src_network}
+unit_src_utils  := ${unit_src}/utils
+unit_obj_utils  := ${build_base}/${unit_src_utils}
 
-ifneq (${BINEXT},)
-unit_ext        := ${BINEXT}
-else
-unit_ext        := .test
-endif
+build_dirs += ${unit_obj} ${unit_obj_audio} ${unit_obj_editor}
+build_dirs += ${unit_obj_io} ${unit_obj_network} ${unit_obj_utils}
 
-unit_common_objs := \
-  ${unit_obj}/Unit.o                   \
-  ${unit_obj}/UnitIO.o                 \
+unit_target = mzxunit${BINEXT}
 
 unit_objs := \
-  ${unit_obj}/align${unit_ext}         \
-  ${unit_obj}/expr${unit_ext}          \
-  ${unit_obj}/render${unit_ext}        \
-  ${unit_obj}/memcasecmp${unit_ext}    \
-  ${unit_obj_audio}/mixer${unit_ext}   \
-  ${unit_obj_io}/bitstream${unit_ext}  \
-  ${unit_obj_io}/memfile${unit_ext}    \
-  ${unit_obj_io}/path${unit_ext}       \
-  ${unit_obj_io}/vfs${unit_ext}        \
-  ${unit_obj_io}/vio${unit_ext}        \
-  ${unit_obj_io}/zip${unit_ext}        \
+  ${unit_obj}/Unit.o                   \
+  ${unit_obj}/UnitIO.o                 \
+  ${unit_obj}/align.o                  \
+  ${unit_obj}/expr.o                   \
+  ${unit_obj}/render.o                 \
+  ${unit_obj}/memcasecmp.o             \
+  ${unit_obj_audio}/mixer.o            \
+  ${unit_obj_io}/bitstream.o           \
+  ${unit_obj_io}/memfile.o             \
+  ${unit_obj_io}/path.o                \
+  ${unit_obj_io}/vfs.o                 \
+  ${unit_obj_io}/vio.o                 \
+  ${unit_obj_io}/zip.o                 \
 
 ifneq (${BUILD_EDITOR},)
 
 unit_objs += \
-  ${unit_obj_editor}/stringsearch${unit_ext}
+  ${unit_obj_editor}/stringsearch.o
 
 endif
 
 ifneq (${BUILD_NETWORK},)
 
 unit_objs += \
-  ${unit_obj_network}/sha256${unit_ext}
+  ${unit_obj_network}/sha256.o
 
 endif
 
 ifneq (${BUILD_UTILS},)
 
 unit_objs += \
-  ${unit_obj_utils}/image_file${unit_ext} \
+  ${unit_obj_utils}/image_file.o
 
 endif
 
 ifeq (${PLATFORM},mingw)
 unit_objs += \
-  ${unit_obj}/thread_win32${unit_ext}
+  ${unit_obj}/thread_win32.o
 endif
 
 #
@@ -76,23 +73,23 @@ endif
 ifneq (${BUILD_MODULAR},)
 
 unit_objs += \
-  ${unit_obj}/configure${unit_ext}     \
-  ${unit_obj}/intake${unit_ext}        \
-  ${unit_obj}/sfx${unit_ext}           \
-  ${unit_obj}/thread${unit_ext}        \
-  ${unit_obj}/world${unit_ext}         \
+  ${unit_obj}/configure.o              \
+  ${unit_obj}/intake.o                 \
+  ${unit_obj}/sfx.o                    \
+  ${unit_obj}/thread.o                 \
+  ${unit_obj}/world.o                  \
 
-unit_ldflags += -L. -lcore
+unit_ldflags += ${DSORPATH} -L. -lcore
 ${unit_objs}: ${core_target}
 
 ifneq (${BUILD_EDITOR},)
-unit_ldflags += -L. -leditor
+unit_ldflags += ${DSORPATH} -L. -leditor
 ${unit_objs}: ${editor_target}
 endif
 
 ifneq (${BUILD_NETWORK},)
 unit_objs += \
-  ${unit_obj_network}/Manifest${unit_ext}
+  ${unit_obj_network}/Manifest.o
 endif
 
 else # !BUILD_MODULAR
@@ -101,7 +98,7 @@ else # !BUILD_MODULAR
 # Certain tests that don't rely on many core MZX features can be patched in
 # by directly linking their objects.
 #
-unit_common_objs += \
+unit_objs += \
   ${io_obj}/path.o        \
   ${io_obj}/vfs.o         \
   ${io_obj}/vio.o         \
@@ -128,6 +125,7 @@ endif
 #
 unit_cflags ?= ${CXXFLAGS}
 unit_cflags += ${UNIT_OPTIMIZE_FLAGS} -UDEBUG -UNDEBUG -DMZX_UNIT_TESTS
+unit_cflags += -DUNIT_BUILD_BASE='"${build_base}"'
 unit_cflags += -fexceptions -funsigned-char -std=gnu++11
 unit_ldflags += ${UNIT_OPTIMIZE_FLAGS}
 
@@ -147,7 +145,12 @@ unit_ldflags += ${PTHREAD_LDFLAGS}
 endif
 
 # System libs need to be last in the search order.
-unit_ldflags += ${ARCH_LIBS}
+unit_ldflags += ${ARCH_LDFLAGS} ${ARCH_LIBS}
+
+# TODO: mingw hack
+ifeq (${PLATFORM},mingw)
+unit_ldflags += ${LINK_STATIC_IF_MIXED} -lstdc++ -lwinpthread
+endif
 
 ifneq (${HAS_CXX_11},1)
 
@@ -158,61 +161,32 @@ unit_clean:
 
 else
 
-${unit_objs}: ${unit_common_objs}
-
 ${unit_obj}/%.o: ${unit_src}/%.cpp
 	$(if ${V},,@echo "  CXX     " $<)
 	${CXX} -MD ${unit_cflags} -c $< -o $@
 
-${unit_obj}/%${unit_ext}: ${unit_src}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${unit_cflags} $< -o $@ ${unit_common_objs} ${unit_ldflags}
+${unit_target}: ${unit_objs}
+	$(if ${V},,@echo "  LINK    " $@)
+	${CXX} ${unit_cflags} -o $@ ${unit_objs} ${unit_ldflags}
 
-${unit_obj_audio}/%${unit_ext}: ${unit_src_audio}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${unit_cflags} $< -o $@ ${unit_common_objs} ${unit_ldflags}
+-include ${unit_objs:.o=.d}
 
-${unit_obj_editor}/%${unit_ext}: ${unit_src_editor}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${unit_cflags} $< -o $@ ${unit_common_objs} ${unit_ldflags}
+${unit_objs}: $(filter-out $(wildcard ${unit_obj}), ${unit_obj})
+${unit_objs}: $(filter-out $(wildcard ${unit_obj_audio}), ${unit_obj_audio})
+${unit_objs}: $(filter-out $(wildcard ${unit_obj_editor}), ${unit_obj_editor})
+${unit_objs}: $(filter-out $(wildcard ${unit_obj_io}), ${unit_obj_io})
+${unit_objs}: $(filter-out $(wildcard ${unit_obj_network}), ${unit_obj_network})
+${unit_objs}: $(filter-out $(wildcard ${unit_obj_utils}), ${unit_obj_utils})
 
-${unit_obj_io}/%${unit_ext}: ${unit_src_io}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${unit_cflags} $< -o $@ ${unit_common_objs} ${unit_ldflags}
-
-${unit_obj_network}/%${unit_ext}: ${unit_src_network}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${unit_cflags} $< -o $@ ${unit_common_objs} ${unit_ldflags}
-
-${unit_obj_utils}/%${unit_ext}: ${unit_src_utils}/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${unit_cflags} $< -o $@ ${unit_common_objs} ${unit_ldflags}
-
--include ${unit_objs:${unit_ext}=.d}
--include ${unit_common_objs:.o=.d}
-
-${unit_objs} ${unit_common_objs}: $(filter-out $(wildcard ${unit_obj}), ${unit_obj})
-${unit_objs} ${unit_common_objs}: $(filter-out $(wildcard ${unit_obj_audio}), ${unit_obj_audio})
-${unit_objs} ${unit_common_objs}: $(filter-out $(wildcard ${unit_obj_editor}), ${unit_obj_editor})
-${unit_objs} ${unit_common_objs}: $(filter-out $(wildcard ${unit_obj_io}), ${unit_obj_io})
-${unit_objs} ${unit_common_objs}: $(filter-out $(wildcard ${unit_obj_network}), ${unit_obj_network})
-${unit_objs} ${unit_common_objs}: $(filter-out $(wildcard ${unit_obj_utils}), ${unit_obj_utils})
-
-unit unittest: ${unit_objs}
-	@failcount=0; \
-	for t in ${unit_objs}; do \
-		LD_LIBRARY_PATH="." LIBRARY_PATH="$$LIBRARY_PATH:." ./$$t ; \
-		if [ "$$?" != "0" ] ; then \
-			failcount=$$(($$failcount + 1)); \
-		fi; \
-	done; \
-	if [ "$$failcount" -gt "0" ]; then \
-		echo "Failed $$failcount test set(s)."; \
-		exit 1; \
-	fi;
+unit unittest: ${unit_target}
+	${RM} -r "${build_base}/tmp"
+	${MKDIR} -p "${build_base}/tmp"
+	LD_LIBRARY_PATH="." LIBRARY_PATH="$$LIBRARY_PATH:." ./${unit_target}
 
 unit_clean:
-	$(if ${V},,@echo "  RM      " ${unit_obj} ${unit_obj_audio} ${unit_obj_editor} ${unit_obj_io} ${unit_obj_network} ${unit_obj_utils})
-	${RM} -r ${unit_obj} ${unit_obj_audio} ${unit_obj_editor} ${unit_obj_io} ${unit_obj_network} ${unit_obj_utils}
+	$(if ${V},,@echo "  RM      " ${unit_obj})
+	${RM} -r ${unit_obj}
+	$(if ${V},,@echo "  RM      " ${unit_target})
+	${RM} -r ${unit_target}
 
 endif

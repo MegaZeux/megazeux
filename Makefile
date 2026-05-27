@@ -27,12 +27,14 @@ all:
 include version.inc
 
 #
+# ${build_base}: where temporary object/dependency files should be stored.
 # ${build_root}: base location where builds are copied to be archived for release.
 # ${build}: location where the MegaZeux executable and data files should be placed.
 # Defaults to ${build_root}, but the architecture Makefile may override this to
 # use a subdirectory instead. This is useful when a platform expects a particular
 # path hierarchy within the archive (e.g. MacOS .app bundles).
 #
+build_base ?= .build
 build_root := build/${SUBPLATFORM}
 build := ${build_root}
 
@@ -532,10 +534,6 @@ ifeq (${BUILD_MODPLUG},1)
 BUILD_GDM2S3M=1
 endif
 
-%/.build:
-	$(if ${V},,@echo "  MKDIR   " $@)
-	${MKDIR} $@
-
 %.debug: %
 	$(if ${V},,@echo "  OBJCOPY " --only-keep-debug $< $@)
 	${OBJCOPY} --only-keep-debug $< $@
@@ -559,8 +557,8 @@ all: mzx
 debuglink: all mzx.debug
 endif
 
-ifeq (${BUILD_UTILS},1)
 include src/utils/Makefile.in
+ifeq (${BUILD_UTILS},1)
 clean: utils_clean
 ifneq (${SUPPRESS_CC_TARGETS},1)
 debuglink: utils utils.debug
@@ -692,5 +690,10 @@ endif # !SUPPRESS_HOST_TARGETS
 
 test_clean:
 	@rm -rf testworlds/log
+
+# At the end because build_dirs is affected by most fragments.
+${build_dirs}:
+	$(if ${V},,@echo "  MKDIR   " $@)
+	${MKDIR} -p $@
 
 endif # !SUPPRESS_ALL_TARGETS

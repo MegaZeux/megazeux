@@ -39,7 +39,8 @@
  *   }
  * }
  *
- * The file can contain multiple UNITTEST() {...}. Each must have a unique name.
+ * The file can contain multiple UNITTEST() {...}. Each must have a different
+ * name, including different UNITTEST() invocations between compilation units.
  * The following macros can be used in tests:
  *
  * [mfmt,...] = optional message to display on failure, passed to vsnprintf.
@@ -82,7 +83,24 @@
 #include <string.h>
 
 #define __STDC_FORMAT_MACROS
+#define __STDC_LIMIT_MACROS
 #include <inttypes.h>
+
+#ifndef UNIT_DIR_SEPARATOR
+#if defined(_WIN32) || defined(CONFIG_DJGPP)
+#define UNIT_DIR_SEPARATOR "\\"
+#else
+#define UNIT_DIR_SEPARATOR "/"
+#endif
+#endif
+
+#ifndef UNIT_BUILD_BASE
+#define UNIT_BUILD_BASE ".build"
+#endif
+
+#ifndef UNIT_TMP_DIR
+#define UNIT_TMP_DIR UNIT_BUILD_BASE UNIT_DIR_SEPARATOR "tmp"
+#endif
 
 /**
  * Utility templates.
@@ -367,6 +385,7 @@ namespace Unit
     bool run();
     void signal_fail();
     void addtest(unittest *t);
+    void set_filter(const char *filter);
   };
 
   /**
@@ -400,6 +419,7 @@ namespace Unit
 
     bool run();
     void signal_fail();
+    bool match_filter(const char *filter);
 
   private:
     void run_section(void);

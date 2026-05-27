@@ -27,7 +27,7 @@
 
 //#define GENERATE_TEST_FILES
 
-#define DATA_BASE_DIR "../mixer"
+#define DATA_BASE_DIR "unit/audio/mixer"
 
 void destruct_audio_stream(struct audio_stream *a_src)
 {

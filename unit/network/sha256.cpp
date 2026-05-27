@@ -22,8 +22,8 @@
 
 #include "../../src/network/sha256.c"
 
-#define ASSETS_DIR "../../../assets"
-#define IO_DATA_DIR "../../io/data"
+#define ASSETS_DIR "assets"
+#define IO_DATA_DIR "unit/io/data"
 
 struct SHA256_data
 {

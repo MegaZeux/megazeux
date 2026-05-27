@@ -23,10 +23,12 @@
  * copied into module memory, but supports more decompression methods than UZIP.
  */
 
-#include "../../src/io/zip.h"
-#include "../../src/utils/utils_alloc.h"
+#include "../io/zip.h"
+#include "utils_alloc.h"
 #include <stdlib.h>
 #include <emscripten.h>
+
+#pragma clang diagnostic ignored "-Wmissing-prototypes"
 
 int error(const char *message, unsigned int a, unsigned int b, unsigned int c)
 {

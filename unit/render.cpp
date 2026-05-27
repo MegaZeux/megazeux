@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2024-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2024-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -35,7 +35,7 @@ typedef void (*render_layer_fp)(void * RESTRICT pixels,
 
 //#define GENERATE_FILES
 
-#define DIR ".." DIR_SEPARATOR "render" DIR_SEPARATOR
+#define DIR "unit" DIR_SEPARATOR "render" DIR_SEPARATOR
 
 enum smzx_type
 {
@@ -269,9 +269,9 @@ static void init_graphics_base(struct graphics_data &graphics)
   static std::vector<uint8_t> edit_chr;
 
   if(!default_chr.size())
-    default_chr = unit::io::load("../../assets/default.chr");
+    default_chr = unit::io::load("assets/default.chr");
   if(!edit_chr.size())
-    edit_chr = unit::io::load("../../assets/edit.chr");
+    edit_chr = unit::io::load("assets/edit.chr");
 
   memcpy(graphics.charset, default_chr.data(), CHARSET_SIZE * CHAR_H);
   memcpy(graphics.charset + PRO_CH * CHAR_H, edit_chr.data(), CHARSET_SIZE * CHAR_H);

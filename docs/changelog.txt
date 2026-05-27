@@ -11,6 +11,10 @@ GIT - MZX 2.93e
 
 USERS
 
++ Unix/Darwin: installed utilities are now prefixed with
+  "megazeux-" so they can be installed to PATH. Package
+  maintainers should move --bindir from LIBDIR/bin to the normal
+  system bin directory.
 + fsafetranslate now rejects paths containing invalid characters
   for NTFS/VFAT/exFAT filenames and paths containing reserved
   DOS/Windows devices. There is no compatibility check for this,
@@ -40,6 +44,11 @@ USERS
 
 DEVELOPERS
 
++ Object/dependency files are now compiled to a mirror tree in
+  the directory ".build" instead of individual ".build" dirs in
+  each source directory.
++ Utilities and the unit tests are now compiled to the source
+  root instead of to src/utils/ and unit .build dirs.
 + Renamed enum thing __TEXT to TEXT_ID to fix conflicts with
   libnix BSD sockets headers.
 + Fix vfwrite return value for size 0 on DragonFly BSD.
