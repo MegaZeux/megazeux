@@ -29,7 +29,6 @@
 #include "const.h"
 #include "counter.h"
 #include "error.h"
-#include "event.h"
 #include "expr.h"
 #include "extmem.h"
 #include "game_ops.h"
@@ -49,6 +48,8 @@
 #include "world_struct.h"
 #include "io/memfile.h"
 #include "io/zip.h"
+
+#include "event/event.h"
 
 void create_blank_robot(struct robot *cur_robot)
 {

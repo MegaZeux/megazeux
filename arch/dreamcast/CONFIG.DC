@@ -5,4 +5,4 @@
 ./config.sh --platform dreamcast --prefix "$KOS_BASE" --optimize-size --enable-lto \
             --disable-editor --disable-helpsys --disable-utils \
             --disable-screenshots --disable-stack-protector \
-            --enable-meter --disable-libpng --enable-tremor --enable-release
+            --enable-meter --disable-libpng --enable-tremor --enable-release "$@"

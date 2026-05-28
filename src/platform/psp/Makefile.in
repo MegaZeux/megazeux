@@ -1,0 +1,18 @@
+##
+# PSP platform Makefile fragment
+##
+
+ifeq (${PLATFORM},psp)
+
+platform_psp_obj  := ${platform_obj}/psp
+platform_psp_objs += \
+  ${platform_psp_obj}/platform_psp.o \
+
+-include ${platform_psp_objs:.o=.d}
+${platform_psp_objs}: \
+ $(filter-out $(wildcard ${platform_psp_obj}), ${platform_psp_obj})
+
+build_dirs    += ${platform_psp_obj}
+platform_objs += ${platform_psp_objs}
+
+endif

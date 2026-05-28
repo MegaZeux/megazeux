@@ -24,7 +24,6 @@
 #include <ctype.h>
 
 #include "configure.h"
-#include "event.h"
 #include "data.h"
 #include "scrdisp.h"
 #include "window.h"
@@ -34,6 +33,8 @@
 #include "world.h"
 #include "world_struct.h"
 #include "robot.h"
+
+#include "event/event.h"
 
 static const char scr_nm_strs[5][12] =
  { "  Scroll   ", "   Sign    ", "Edit Scroll", "   Help    ", "" };

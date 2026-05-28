@@ -1,0 +1,23 @@
+##
+# DJGPP renderer Makefile fragment
+##
+
+ifeq (${BUILD_DJGPP},1)
+
+render_djgpp_obj  := ${render_obj}/djgpp
+render_djgpp_objs += \
+  ${render_djgpp_obj}/renderer_ega.o \
+
+ifeq (${BUILD_DOS_SVGA},1)
+render_djgpp_objs += ${render_djgpp_obj}/renderer_svga.o
+render_layer_software = 1
+endif
+
+-include ${render_djgpp_objs:.o=.d}
+${render_djgpp_objs}: \
+ $(filter-out $(wildcard ${render_djgpp_obj}), ${render_djgpp_obj})
+
+build_dirs   += ${render_djgpp_obj}
+render_objs  += ${render_djgpp_objs}
+
+endif

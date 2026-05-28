@@ -40,9 +40,9 @@
 
 #include "const.h" // for MAX_PATH
 #include "error.h"
-#include "platform.h"
 #include "io/path.h"
 #include "io/vio.h"
+#include "platform/platform.h"
 
 struct mzx_resource
 {

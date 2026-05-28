@@ -1,0 +1,20 @@
+##
+# Win32 platform Makefile fragment
+##
+
+ifeq (${PLATFORM},mingw)
+
+platform_win32_obj  := ${platform_obj}/win32
+platform_win32_objs += \
+  ${platform_win32_obj}/clipboard_win32.o \
+
+-include ${platform_win32_objs:.o=.d}
+${platform_win32_objs}: \
+ $(filter-out $(wildcard ${platform_win32_obj}), ${platform_win32_obj})
+
+build_dirs    += ${platform_win32_obj}
+platform_objs += ${platform_win32_objs}
+
+has_clipboard = 1
+
+endif

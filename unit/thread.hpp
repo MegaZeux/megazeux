@@ -29,8 +29,8 @@
 #undef SKIP_SDL
 #endif
 
-#include "../src/platform.h"
 #include "../src/util.h"
+#include "../src/platform/platform_thread.h"
 
 #define NUM_THREADS 3
 #define REPEAT_TIMES 100

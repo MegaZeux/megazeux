@@ -34,7 +34,6 @@
 #include "core.h"
 #include "data.h"
 #include "error.h"
-#include "event.h"
 #include "game.h"
 #include "game_menu.h"
 #include "game_player.h"
@@ -49,6 +48,7 @@
 
 #include "audio/audio.h"
 #include "audio/sfx.h"
+#include "event/event.h"
 
 static const char *const world_ext[] = { ".MZX", NULL };
 static const char *const save_ext[] = { ".SAV", NULL };

@@ -1,0 +1,73 @@
+##
+# MegaZeux audio Makefile fragment
+##
+
+ifeq (${BUILD_AUDIO},1)
+
+audio_src      = ${core_src}/audio
+audio_obj      = ${build_base}/${audio_src}
+audio_cobjs   += \
+  ${audio_obj}/audio.o \
+  ${audio_obj}/ext.o \
+  ${audio_obj}/sfx.o \
+
+# TODO: need a better solution to this
+ifneq (${BUILD_NDS},1)
+audio_cobjs   += \
+  ${audio_obj}/audio_pcs.o \
+  ${audio_obj}/audio_wav.o \
+
+audio_cxxobjs += \
+  ${audio_obj}/sampled_stream.o
+endif
+
+ifneq (${VORBIS},)
+core_flags    += ${VORBIS_CFLAGS}
+core_ldflags  += ${VORBIS_LDFLAGS}
+audio_cobjs   += ${audio_obj}/audio_vorbis.o
+endif
+
+ifeq (${BUILD_MODPLUG},1)
+core_flags    += -I${libmodplug_src} -I${libmodplug_src}/libmodplug -DHAVE_INTTYPES_H
+audio_cxxobjs += ${audio_obj}/audio_modplug.o ${libmodplug_objs}
+endif
+
+ifeq (${BUILD_MIKMOD},1)
+core_flags    += ${MIKMOD_CFLAGS}
+core_ldflags  += ${MIKMOD_LDFLAGS}
+audio_cobjs   += ${audio_obj}/audio_mikmod.o
+endif
+
+ifeq (${BUILD_XMP},1)
+core_cflags   += ${XMP_CFLAGS} ${libxmp_include}
+core_ldflags  += ${XMP_LDFLAGS}
+audio_cobjs   += ${audio_obj}/audio_xmp.o ${libxmp_objs}
+endif
+
+ifeq (${BUILD_OPENMPT},1)
+core_cflags   += ${OPENMPT_CFLAGS}
+core_ldflags  += ${OPENMPT_LDFLAGS}
+audio_cobjs   += ${audio_obj}/audio_openmpt.o
+endif
+
+ifeq (${BUILD_REALITY},1)
+audio_cxxobjs += ${audio_obj}/audio_reality.o
+endif
+
+include src/audio/*/Makefile.in
+
+audio_objs = ${audio_cobjs} ${audio_cxxobjs}
+
+-include ${audio_objs:.o=.d}
+${audio_objs}: $(filter-out $(wildcard ${audio_obj}), ${audio_obj})
+
+build_dirs   += ${audio_obj}
+core_cobjs   += ${audio_cobjs}
+core_cxxobjs += ${audio_cxxobjs}
+
+else
+# TODO: this needs to be moved out of the audio tree
+ifeq (${BUILD_EDITOR},1)
+core_cobjs   += ${core_obj}/audio/sfx.o
+endif
+endif

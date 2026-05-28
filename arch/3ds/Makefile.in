@@ -75,40 +75,6 @@ LIBPNG_CFLAGS =
 LIBPNG_LDFLAGS = -lpng16
 
 #
-# Vile hack, remove me ASAP
-# (also, vile hack in a vile hack to get the shaders to build parallel)
-#
-arch/3ds/%.o: arch/3ds/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -Wno-unused-macros -c $< -o $@
-
-arch/3ds/%.o: arch/3ds/%.cpp arch/3ds/shader_2d.shbin.o arch/3ds/shader_playfield.shbin.o
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${core_cxxflags} ${core_flags} -Wno-unused-macros -c $< -o $@
-
-# Do not delete these, since doing so will retrigger .o rebuilds above
-.SECONDARY: arch/3ds/shader_2d_shbin.h arch/3ds/shader_playfield_shbin.h
-
-arch/3ds/%.shbin: arch/3ds/%.v.pica arch/3ds/%.g.pica
-	$(if ${V},,@echo "  PICASSO " $^)
-	@picasso -o $@ $^
-
-arch/3ds/%.shbin.o: arch/3ds/%.shbin arch/3ds/%_shbin.h
-	$(if ${V},,@echo "  AS      " $<)
-	@bin2s $< > $<.S
-	@# Shut up the assembler since bin2s doesn't emit a trailing newline:
-	@echo '' >> $<.S
-	$(AS) $<.S -o $@
-
-arch/3ds/%_shbin.h: arch/3ds/%.shbin
-	$(eval CURLOC := $(patsubst %_shbin.h,%.shbin,$@))
-	$(eval CURBIN := $(patsubst %_shbin.h,%.shbin,$(notdir $@)))
-	$(if ${V},,@echo "  ECHO    " $@)
-	@echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"_end[];" > `(echo $(CURLOC) | tr . _)`.h
-	@echo "extern const u8" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`"[];" >> `(echo $(CURLOC) | tr . _)`.h
-	@echo "extern const u32" `(echo $(CURBIN) | sed -e 's/^\([0-9]\)/_\1/' | tr . _)`_size";" >> `(echo $(CURLOC) | tr . _)`.h
-
-#
 # Target-specific variables to force the .3dsx files to have different titles...
 #
 mzxrun.smdh: APP_TITLE=${APP_TITLE_MZXRUN}
@@ -122,7 +88,6 @@ endif
 
 clean:
 	${RM} ${mzxrun}.smdh ${mzxrun}.3dsx ${mzx}.smdh ${mzx}.3dsx
-	${RM} arch/3ds/*.d arch/3ds/*.o arch/3ds/*shbin*
 
 build := ${build_root}/3ds/megazeux
 build: package ${build}

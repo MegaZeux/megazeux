@@ -30,7 +30,6 @@
 
 #include "../core.h"
 #include "../counter.h"
-#include "../event.h"
 #include "../expr.h"
 #include "../graphics.h"
 #include "../robot.h"
@@ -38,6 +37,8 @@
 #include "../util.h"
 #include "../window.h"
 #include "../world_struct.h"
+
+#include "../event/event.h"
 
 #define MATCH_STRING_MAX 61
 

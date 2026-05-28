@@ -12,7 +12,7 @@ build_dirs += ${libmodplug_obj}
 
 libmodplug_cflags = -DHAVE_INTTYPES_H -I${libmodplug_src} \
                     -I${libmodplug_src}/libmodplug \
-                    -include src/platform_endian.h
+                    -include src/platform/platform_endian.h
 
 libmodplug_cflags += -Wno-missing-declarations
 

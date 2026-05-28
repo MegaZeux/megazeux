@@ -2,11 +2,6 @@
 # MegaZeux Utils Makefile fragment
 ##
 
-#
-# FIXME: This whole file is a giant wart on the new build system
-#        and needs some love (and refactoring) to fix it
-#
-
 .PHONY: utils utils.debug utils_clean
 
 utils_src = ${core_src}/utils
@@ -29,40 +24,47 @@ ifneq (${LIBPNG},)
 img_flags += ${UTILS_LIBPNG_LDFLAGS} ${UTILS_ZLIB_LDFLAGS} -lm
 endif
 
+# For dependencies only, do not build off of this list.
+utils_objs += \
+  ${utils_obj}/checkres.o \
+  ${utils_obj}/downver.o \
+  ${utils_obj}/emzip.o \
+  ${utils_obj}/hlp2html.o \
+  ${utils_obj}/hlp2txt.o \
+  ${utils_obj}/txt2hlp.o \
+  ${utils_obj}/image_file.o \
+  ${utils_obj}/image_gif.o \
+  ${utils_obj}/smzxconv.o \
+  ${utils_obj}/png2smzx.o \
+  ${utils_obj}/y4m2smzx.o \
+  ${utils_obj}/y4m.o \
+  ${utils_obj}/ccv.o \
+  ${utils_obj}/pefix.o \
+
 checkres := ${BINPRE}checkres${BINEXT}
-checkres_objs := ${utils_obj}/checkres.o \
-                 ${io_obj}/fsafeopen.o \
-                 ${zip_objs}
+checkres_objs := ${utils_obj}/checkres.o ${io_obj}/fsafeopen.o ${zip_objs}
 checkres_ldflags := ${UTILS_ZLIB_LDFLAGS}
-utils_objs += ${checkres_objs}
 
 downver := ${BINPRE}downver${BINEXT}
 downver_objs := ${utils_obj}/downver.o ${zip_objs}
 downver_ldflags := ${UTILS_ZLIB_LDFLAGS}
-utils_objs += ${downver_objs}
 
 emzip := emzip${BINEXT}
 emzip_objs := ${utils_obj}/emzip.o ${zip_objs}
 emzip_ldflags += ${UTILS_ZLIB_LDFLAGS}
-utils_objs += ${emzip_objs}
 
 hlp2html := ${BINPRE}hlp2html${BINEXT}
 hlp2html_objs := ${utils_obj}/hlp2html.o
-utils_objs += ${hlp2html_objs}
 
 hlp2txt := ${BINPRE}hlp2txt${BINEXT}
 hlp2txt_objs := ${utils_obj}/hlp2txt.o
-utils_objs += ${hlp2txt_objs}
 
 txt2hlp := ${BINPRE}txt2hlp${BINEXT}
 txt2hlp_objs := ${utils_obj}/txt2hlp.o
-utils_objs += ${txt2hlp_objs}
 
 png2smzx := ${BINPRE}png2smzx${BINEXT}
-png2smzx_objs := ${utils_obj}/png2smzx.o ${utils_obj}/smzxconv.o
-png2smzx_objs += ${img_objs}
+png2smzx_objs := ${utils_obj}/png2smzx.o ${utils_obj}/smzxconv.o ${img_objs}
 png2smzx_ldflags := ${img_flags}
-utils_objs += ${png2smzx_objs}
 
 y4m2smzx := ${BINPRE}y4m2smzx${BINEXT}
 y4m2smzx_objs := ${utils_obj}/y4m2smzx.o ${utils_obj}/smzxconv.o ${utils_obj}/y4m.o
@@ -70,13 +72,11 @@ y4m2smzx_ldflags :=
 ifeq (${PTHREAD},1)
 y4m2smzx_ldflags += ${PTHREAD_LDFLAGS}
 endif
-utils_objs += ${y4m2smzx_objs}
 
 ccv := ${BINPRE}ccv${BINEXT}
 ccv_objs := ${utils_obj}/ccv.o
 ccv_objs += ${img_objs}
 ccv_ldflags := ${img_flags}
-utils_objs += ${ccv_objs}
 
 pefix := pefix
 pefix_objs := ${utils_src}/pefix.c

@@ -32,7 +32,6 @@
 #include "counter.h"
 #include "data.h"
 #include "error.h"
-#include "event.h"
 #include "expr.h"
 #include "game.h"
 #include "game_ops.h"
@@ -53,6 +52,7 @@
 
 #include "audio/audio.h"
 #include "audio/sfx.h"
+#include "event/event.h"
 
 #define parsedir(a, b, c, d) \
  parsedir(mzx_world, a, b, c, d, _bl[0], _bl[1], _bl[2], _bl[3])

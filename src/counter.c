@@ -34,14 +34,12 @@
 #include "counter.h"
 #include "data.h"
 #include "error.h"
-#include "event.h"
 #include "expr.h"
 #include "game_ops.h"
 #include "graphics.h"
 #include "idarray.h"
 #include "idput.h"
 #include "memcasecmp.h"
-#include "platform.h"
 #include "rasm.h"
 #include "robot.h"
 #include "sprite.h"
@@ -53,6 +51,8 @@
 #include "io/vio.h"
 
 #include "audio/audio.h"
+#include "event/event.h"
+#include "platform/platform.h"
 
 /**
  * TODO: Counter lookups are currently case-insensitive, which is somewhat of

@@ -22,10 +22,8 @@
 #include "const.h"
 #include "core.h"
 #include "error.h"
-#include "event.h"
 #include "graphics.h"
 #include "helpsys.h"
-#include "platform.h"
 #include "updater.h"
 #include "util.h"
 #include "window.h"
@@ -34,6 +32,8 @@
 #include "io/vio.h"
 
 #include "editor/window.h"
+#include "event/event.h"
+#include "platform/platform.h"
 
 #include "network/HTTPHost.hpp"
 #include "network/Manifest.hpp"

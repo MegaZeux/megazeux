@@ -36,12 +36,10 @@
 #include "counter.h"
 #include "data.h"
 #include "error.h"
-#include "event.h"
 #include "game_menu.h"
 #include "graphics.h"
 #include "helpsys.h"
 #include "intake.h"
-#include "platform.h"
 #include "robot.h"
 #include "window.h"
 #include "world.h"
@@ -50,6 +48,8 @@
 #include "io/vio.h"
 
 #include "audio/sfx.h"
+#include "event/event.h"
+#include "platform/platform.h"
 
 #ifdef CONFIG_NDS
 // Should be sufficient with a disabled editor.

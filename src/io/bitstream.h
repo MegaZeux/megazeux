@@ -27,7 +27,7 @@ __M_BEGIN_DECLS
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "../platform_endian.h"
+#include "../platform/platform_endian.h"
 
 /**
  * Most zip compression methods require treating the input as a stream of

@@ -1,0 +1,18 @@
+##
+# Dreamcast audio Makefile fragment
+##
+
+ifeq (${BUILD_DREAMCAST},1)
+
+audio_dreamcast_obj  := ${audio_obj}/dreamcast
+audio_dreamcast_objs += \
+  ${audio_dreamcast_obj}/audio_dreamcast.o
+
+-include ${audio_dreamcast_objs:.o=.d}
+${audio_dreamcast_objs}: \
+ $(filter-out $(wildcard ${audio_dreamcast_obj}), ${audio_dreamcast_obj})
+
+build_dirs   += ${audio_dreamcast_obj}
+audio_cobjs  += ${audio_dreamcast_objs}
+
+endif

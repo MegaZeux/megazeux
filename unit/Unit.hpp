@@ -76,7 +76,7 @@
 #define EDITOR_LIBSPEC
 #define SKIP_SDL
 #include "../src/compat.h"
-#include "../src/platform_attribute.h"
+#include "../src/platform/platform_attribute.h"
 
 #include <stdio.h>
 #include <stdlib.h>

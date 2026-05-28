@@ -1,0 +1,20 @@
+##
+# 3DS event Makefile fragment
+##
+
+ifeq (${BUILD_3DS},1)
+ifeq (${BUILD_SDL},)
+
+event_3ds_obj   = ${event_obj}/3ds
+event_3ds_objs += \
+  ${event_3ds_obj}/event_3ds.o \
+  ${event_3ds_obj}/keyboard.o \
+
+-include ${event_3ds_objs:.o=.d}
+${event_3ds_objs}: $(filter-out $(wildcard ${event_3ds_obj}), ${event_3ds_obj})
+
+build_dirs   += ${event_3ds_obj}
+event_objs   += ${event_3ds_objs}
+
+endif
+endif

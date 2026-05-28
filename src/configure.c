@@ -30,15 +30,15 @@
 
 #include "configure.h"
 #include "counter.h"
-#include "event.h"
 #include "rasm.h"
 #include "util.h"
 #include "io/fsafeopen.h"
 #include "io/path.h"
 #include "io/vio.h"
+#include "event/event.h"
 
 #ifdef CONFIG_SDL
-#include "SDLmzx.h"
+#include "platform/sdl/SDLmzx.h"
 #endif
 
 #define MAX_INCLUDE_DEPTH 16

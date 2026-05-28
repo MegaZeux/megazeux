@@ -18,17 +18,7 @@ LINK_CC ?= ${CC}
 
 core_src      = src
 core_obj      = ${build_base}/${core_src}
-
-audio_src     = ${core_src}/audio
-audio_obj     = ${build_base}/${audio_src}
-
-io_src        = ${core_src}/io
-io_obj        = ${build_base}/${io_src}
-
-network_src   = ${core_src}/network
-network_obj   = ${build_base}/${network_src}
-
-build_dirs   += ${core_obj} ${audio_obj} ${io_obj} ${network_obj}
+build_dirs   += ${core_obj}
 
 core_flags   += -ffast-math -funsigned-char
 core_flags   += -Wmissing-format-attribute
@@ -63,6 +53,14 @@ ${core_obj}/%.o: ${core_src}/%.cpp
 	$(if ${V},,@echo "  CXX     " $<)
 	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} -c $< -o $@
 
+${core_obj}/%.o: ${core_src}/%.m
+	$(if ${V},,@echo "  OBJC    " $<)
+	${CC} -MD ${core_cflags} ${core_flags} ${core_spec} -c $< -o $@
+
+${core_obj}/%.o: ${core_src}/%.S
+	$(if ${V},,@echo "  AS      " $<)
+	${AS} $< -o $@
+
 #
 # Lists mandatory C language sources (mangled to object names) required
 # to build the main binary. Please keep this sorted alphabetically.
@@ -78,7 +76,6 @@ core_cobjs := \
   ${core_obj}/counter.o           \
   ${core_obj}/data.o              \
   ${core_obj}/error.o             \
-  ${core_obj}/event.o             \
   ${core_obj}/expr.o              \
   ${core_obj}/game.o              \
   ${core_obj}/game_menu.o         \
@@ -96,9 +93,6 @@ core_cobjs := \
   ${core_obj}/legacy_robot.o      \
   ${core_obj}/legacy_world.o      \
   ${core_obj}/mzm.o               \
-  ${core_obj}/platform_time.o     \
-  ${core_obj}/pngops.o            \
-  ${core_obj}/render.o            \
   ${core_obj}/robot.o             \
   ${core_obj}/run_robot.o         \
   ${core_obj}/scrdisp.o           \
@@ -108,12 +102,18 @@ core_cobjs := \
   ${core_obj}/util.o              \
   ${core_obj}/window.o            \
   ${core_obj}/world.o             \
-  ${io_obj}/fsafeopen.o           \
-  ${io_obj}/path.o                \
-  ${io_obj}/vfs.o                 \
-  ${io_obj}/vio.o                 \
-  ${io_obj}/zip.o                 \
-  ${io_obj}/zip_stream.o
+
+ifeq (${BUILD_EXTRAM},1)
+core_cobjs += ${core_obj}/extmem.o
+endif
+
+ifeq (${BUILD_HELPSYS},1)
+core_cobjs += ${core_obj}/helpsys.o
+endif
+
+ifeq (${BUILD_DEBYTECODE},1)
+core_cobjs += ${core_obj}/rasm.o
+endif
 
 #
 # Lists mandatory C++ language sources (mangled to object names) required
@@ -121,242 +121,28 @@ core_cobjs := \
 #
 core_cxxobjs :=
 
-render_layer_software = 0
+#
+# MegaZeux subsystem Makefiles.
+#
+include src/io/Makefile.in
+
+include src/audio/Makefile.in
+include src/event/Makefile.in
+include src/platform/Makefile.in
+include src/network/Makefile.in
+include src/render/Makefile.in
 
 #
-# These are really just hacks and should be moved elsewhere
+# Library flags
+# See src/audio/Makefile.in for audio-specific libraries.
 #
-ifeq (${BUILD_NDS},1)
-core_cobjs += arch/nds/protected_palette.bin.o
-core_cobjs += arch/nds/audio.o
-core_cobjs += arch/nds/platform.o arch/nds/event.o
-core_cobjs += arch/nds/render.o arch/nds/evq.o
-ifeq (${BUILD_EXTRAM},1)
-core_cobjs += arch/nds/dlmalloc.o
-core_cobjs += arch/nds/ram.o arch/nds/extmem.o
-endif
-endif
-
-ifeq (${BUILD_3DS},1)
-# SDL and platform_sdl.c takes care of all of this when enabled.
-ifeq (${BUILD_SDL},)
-core_cobjs += arch/3ds/shader_2d.shbin.o arch/3ds/shader_playfield.shbin.o
-core_cobjs += arch/3ds/platform.o arch/3ds/render.o
-core_cobjs += arch/3ds/event.o arch/3ds/audio.o
-core_cobjs += arch/3ds/keyboard.o
-endif
-endif
-
-ifeq (${BUILD_WII},1)
-# SDL and platform_sdl.c takes care of all of this when enabled.
-ifeq (${BUILD_SDL},)
-core_cobjs += arch/wii/event.o arch/wii/platform.o
-core_cobjs += arch/wii/render_xfb.o
-render_layer_software = 1
-ifeq (${BUILD_RENDER_GX},1)
-core_cobjs += arch/wii/render_gx.o
-endif
-ifeq (${BUILD_AUDIO},1)
-core_cobjs += arch/wii/audio.o
-endif
-endif
-# Required regardless of whether SDL is enabled or not...
-ifeq (${BUILD_NETWORK},1)
-core_cxxobjs += arch/wii/network.o
-endif
-endif
-
-ifeq (${BUILD_SWITCH},1)
-# Switch libraries require C++
-LINK_CC := ${CXX}
-endif
-
-ifeq (${BUILD_PSP},1)
-core_cobjs += arch/psp/platform.o
-endif
-
-ifeq (${BUILD_DJGPP},1)
-core_cobjs += arch/djgpp/event.o arch/djgpp/interrupt.o arch/djgpp/platform.o
-core_cobjs += arch/djgpp/audio.o
-core_cobjs += arch/djgpp/render_ega.o
-ifeq (${BUILD_DOS_SVGA},1)
-core_cobjs += arch/djgpp/render_svga.o
-render_layer_software = 1
-endif
-endif
-
-ifeq (${BUILD_DREAMCAST},1)
-core_cobjs += arch/dreamcast/platform.o arch/dreamcast/render_fb.o
-core_cobjs += arch/dreamcast/audio.o arch/dreamcast/event.o
-core_cobjs += arch/dreamcast/render.o
-render_layer_software = 1
-endif
-
-#
-# Other modular stuff
-#
-
-ifeq (${BUILD_HELPSYS},1)
-core_cobjs += ${core_obj}/helpsys.o
-endif
-
-ifeq (${BUILD_EXTRAM},1)
-core_cobjs += ${core_obj}/extmem.o
-endif
-
-ifeq (${BUILD_RENDER_SOFT},1)
-core_cobjs += ${core_obj}/render_soft.o
-render_layer_software = 1
-endif
-
-# Accelerated SDL software renderer
-ifeq (${BUILD_RENDER_SOFTSCALE},1)
-core_cobjs += ${core_obj}/render_softscale.o
-render_layer_software = 1
-endif
-
-# Accelerated SDL fixed function hardware renderer
-ifeq (${BUILD_RENDER_SDLACCEL},1)
-core_cobjs += ${core_obj}/render_sdlaccel.o
-endif
-
-# GL shared
-ifneq ($(or ${BUILD_RENDER_GL_FIXED},${BUILD_RENDER_GL_PROGRAM}),)
-core_cobjs += ${core_obj}/render_gl.o
-endif
-
-# Fixed function renderers (OGL=1, OGLES=1)
-ifeq (${BUILD_RENDER_GL_FIXED},1)
-core_cobjs += ${core_obj}/render_gl1.o ${core_obj}/render_gl2.o
-render_layer_software = 1
-endif
-
-# Shader renderers (OGL>=2, OGLES=2)
-ifeq (${BUILD_RENDER_GL_PROGRAM},1)
-core_cobjs += ${core_obj}/render_glsl.o
-render_layer_software = 1
-endif
-
-#
-# Currently only usable with GL, but could theoretically be used
-# with OpenVG in the future.
-#
-ifeq (${BUILD_EGL},1)
-core_cobjs += ${core_obj}/render_egl.o
-core_ldflags += -lEGL
-endif
-
-# Overlay renderers
-ifeq (${BUILD_RENDER_YUV},1)
-core_cobjs += ${core_obj}/render_yuv.o
-render_layer_software = 1
-endif
-
-# GP2X Half-resolution renderer
-ifeq (${BUILD_RENDER_GP2X},1)
-core_cobjs += ${core_obj}/render_gp2x.o
-endif
-
-# Screenshots require the software layer renderer.
-ifeq (${BUILD_ENABLE_SCREENSHOTS},1)
-render_layer_software = 1
-endif
-
-# The editor requires the software layer renderer
-# (board screenshot export).
-ifeq (${BUILD_EDITOR},1)
-render_layer_software = 1
-endif
-
-# Software layer renderer
-# This one tends to take forever for many builds. Prefix it to
-# the list so hopefully it starts sooner during parallel builds.
-ifeq (${render_layer_software},1)
-core_cobjs := ${core_obj}/render_layer.o ${core_cobjs}
-endif
-
-ifeq (${BUILD_MODPLUG},1)
-core_flags += -I${libmodplug_src} -I${libmodplug_src}/libmodplug -DHAVE_INTTYPES_H
-core_cxxobjs += ${audio_obj}/audio_modplug.o ${libmodplug_objs}
-endif
-
-ifeq (${BUILD_MIKMOD},1)
-core_flags += ${MIKMOD_CFLAGS}
-core_ldflags += ${MIKMOD_LDFLAGS}
-core_cobjs += ${audio_obj}/audio_mikmod.o
-endif
-
-ifeq (${BUILD_XMP},1)
-core_cflags += ${XMP_CFLAGS}
-core_ldflags += ${XMP_LDFLAGS}
-core_cobjs += ${audio_obj}/audio_xmp.o
-core_flags += ${libxmp_include}
-core_cobjs += ${libxmp_objs}
-endif
-
-ifeq (${BUILD_OPENMPT},1)
-core_flags += ${OPENMPT_CFLAGS}
-core_ldflags += ${OPENMPT_LDFLAGS}
-core_cobjs += ${audio_obj}/audio_openmpt.o
-endif
-
-ifeq (${BUILD_REALITY},1)
-core_cxxobjs += ${audio_obj}/audio_reality.o
-endif
 
 ifeq (${LIBPNG},1)
 core_flags += $(LIBPNG_CFLAGS)
 core_ldflags += $(LIBPNG_LDFLAGS)
 endif
 
-ifeq (${BUILD_AUDIO},1)
-ifeq (${BUILD_NDS},1)
-# NDS has a custom audio implementation
-audio_cobjs := \
- ${audio_obj}/audio.o          \
- ${audio_obj}/ext.o            \
- ${audio_obj}/sfx.o
-else
-audio_cobjs := \
- ${audio_obj}/audio.o          \
- ${audio_obj}/audio_pcs.o      \
- ${audio_obj}/audio_wav.o      \
- ${audio_obj}/ext.o            \
- ${audio_obj}/sfx.o
-
-audio_cxxobjs := \
- ${audio_obj}/sampled_stream.o
-
-ifneq (${VORBIS},)
-core_flags += ${VORBIS_CFLAGS}
-core_ldflags += ${VORBIS_LDFLAGS}
-audio_cobjs += \
- ${audio_obj}/audio_vorbis.o
-endif
-endif
-
-core_cobjs += ${audio_cobjs}
-core_cxxobjs += ${audio_cxxobjs}
-else
-# The editor needs this for sfx_strs...
-ifeq (${BUILD_EDITOR},1)
-core_cobjs += ${audio_obj}/sfx.o
-endif
-endif
-
 ifneq (${BUILD_SDL},)
-
-core_cobjs += ${core_obj}/event_sdl.o ${core_obj}/platform_sdl.o
-core_cobjs += ${core_obj}/render_sdl.o
-
-ifeq (${BUILD_AUDIO},1)
-ifeq (${BUILD_SDL},3)
-core_cobjs += ${audio_obj}/driver_sdl3.o
-else
-core_cobjs += ${audio_obj}/audio_sdl.o
-endif
-endif
-
 core_flags   += $(SDL_CFLAGS)
 core_ldflags += $(SDL_LDFLAGS)
 
@@ -367,10 +153,6 @@ endif
 
 else
 
-ifeq ($(or ${BUILD_WII},${BUILD_NDS},${BUILD_3DS},${BUILD_DJGPP},${BUILD_DREAMCAST}),)
-
-core_cobjs += ${core_obj}/platform_dummy.o
-
 #
 # Normally SDL would provide us with pthread, but in the case
 # we're not using SDL or any other platform mutex implementation,
@@ -378,8 +160,6 @@ core_cobjs += ${core_obj}/platform_dummy.o
 #
 ifeq (${PTHREAD},1)
 core_ldflags += ${PTHREAD_LDFLAGS}
-endif
-
 endif
 
 endif
@@ -393,35 +173,11 @@ core_ldflags += ${X11_LDFLAGS}
 endif
 endif
 
-ifeq (${BUILD_NETWORK},1)
-core_cobjs += ${network_obj}/sha256.o
-core_cxxobjs += \
-  ${network_obj}/DNS.o \
-  ${network_obj}/Host.o \
-  ${network_obj}/HTTPHost.o \
-  ${network_obj}/Manifest.o \
-  ${network_obj}/Socket.o \
-  ${network_obj}/network.o
-
-ifeq (${BUILD_UPDATER},1)
-mzx_objs += ${core_obj}/updater.o
-endif
-
-ifeq (${PLATFORM},amiga)
-core_ldflags += -lnet
-endif
-
-endif
-
 #
 # Append mandatory libraries last.
 #
 core_cflags := ${core_cflags} ${ZLIB_CFLAGS}
 core_ldflags := ${core_ldflags} ${ZLIB_LDFLAGS} -lm
-
-ifeq (${BUILD_DEBYTECODE},1)
-core_cobjs += ${core_obj}/rasm.o
-endif
 
 #
 # Link libstdc++-less compatibility implementations of various functions.
@@ -438,14 +194,15 @@ core_cxxobjs := ${core_obj}/nostdc++.o ${core_cxxobjs}
 endif
 endif
 
+# Switch libraries also require C++ linking
+ifeq (${BUILD_SWITCH},1)
+LINK_CC := ${CXX}
+endif
+
 core_objs := ${core_cobjs} ${core_cxxobjs}
 
 -include ${core_objs:.o=.d}
-
 ${core_objs}: $(filter-out $(wildcard ${core_obj}), ${core_obj})
-${core_objs}: $(filter-out $(wildcard ${audio_obj}), ${audio_obj})
-${core_objs}: $(filter-out $(wildcard ${io_obj}), ${io_obj})
-${core_objs}: $(filter-out $(wildcard ${network_obj}), ${network_obj})
 
 ifeq (${BUILD_MODULAR},1)
 
@@ -472,9 +229,10 @@ ifeq (${BUILD_EDITOR},1)
 
 include src/editor/Makefile.in
 
-mzx_objs := ${mzx_objs} ${core_obj}/main.o
+mzx_objs += ${core_obj}/main.o
 
 -include ${mzx_objs:.o=.d}
+${mzx_objs}: $(filter-out $(wildcard ${core_obj}), ${core_obj})
 
 ifeq (${EMBED_ICONS},1)
 mzx_objs += ${icons}
@@ -508,9 +266,10 @@ endif
 
 ifeq (${BUILD_MZXRUN},1)
 
-mzxrun_objs := ${core_obj}/main.o ${core_obj}/run_stubs.o
+mzxrun_objs += ${core_obj}/main.o ${core_obj}/run_stubs.o
 
 -include ${mzxrun_objs:.o=.d}
+${mzxrun_objs}: $(filter-out $(wildcard ${core_obj}), ${core_obj})
 
 ifeq (${EMBED_ICONS},1)
 mzxrun_objs += ${icons}
@@ -539,8 +298,8 @@ ${mzxrun}.debug:
 endif
 
 mzx_clean: core_target_clean gdm2s3m_clean icons_clean libmodplug_clean libxmp_clean
-	$(if ${V},,@echo "  RM      " ${core_obj} ${audio_obj} ${io_obj} ${network_obj})
-	${RM} -r ${core_obj} ${audio_obj} ${io_obj} ${network_obj}
+	$(if ${V},,@echo "  RM      " ${build_base})
+	${RM} -r ${build_base}
 	$(if ${V},,@echo "  RM      " ${mzxrun} ${mzxrun}.debug)
 	${RM} ${mzxrun} ${mzxrun}.debug
 	$(if ${V},,@echo "  RM      " ${mzx} ${mzx}.debug)

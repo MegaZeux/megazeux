@@ -38,9 +38,9 @@
 
 #include "../configure.h"
 #include "../data.h"
-#include "../platform.h"
 #include "../util.h"
 #include "../io/fsafeopen.h"
+#include "../platform/platform.h"
 
 #if defined(CONFIG_MODPLUG) + defined(CONFIG_MIKMOD) + \
  defined(CONFIG_XMP) + defined(CONFIG_OPENMPT) > 1
@@ -84,7 +84,7 @@ struct audio audio;
 
 #else /* DEBUG */
 
-#include "../thread_debug.h"
+#include "../platform/thread_debug.h"
 
 static platform_mutex_debug mutex_debug;
 

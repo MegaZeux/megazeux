@@ -1,0 +1,27 @@
+##
+# X11 platform Makefile fragment
+##
+
+#
+# X11 clipboard handler is SDL 1.2 only.
+#
+ifneq (${X11DIR},)
+ifeq (${BUILD_SDL},1)
+
+platform_x11_obj  := ${platform_obj}/x11
+platform_x11_objs += \
+  ${platform_x11_obj}/clipboard_x11.o \
+
+-include ${platform_x11_objs:.o=.d}
+${platform_x11_objs}: \
+ $(filter_out $(wildcard ${platform_x11_obj}), ${platform_x11_obj})
+
+build_dirs    += ${platform_x11_obj}
+platform_objs += ${platform_x11_objs}
+core_cflags   += ${X11_CFLAGS}
+core_ldflags  += ${X11_LDFLAGS} ${SDL_LDFLAGS}
+
+has_clipboard = 1
+
+endif
+endif

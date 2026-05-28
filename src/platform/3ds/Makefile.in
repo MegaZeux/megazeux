@@ -1,0 +1,23 @@
+##
+# 3DS platform Makefile fragment
+##
+
+ifeq (${BUILD_3DS},1)
+ifeq (${BUILD_SDL},)
+
+platform_3ds_obj  := ${platform_obj}/3ds
+platform_3ds_objs += \
+  ${platform_3ds_obj}/platform_3ds.o \
+
+-include ${platform_3ds_objs:.o=.d}
+${platform_3ds_objs}: \
+ $(filter-out $(wildcard ${platform_3ds_obj}), ${platform_3ds_obj})
+
+build_dirs    += ${platform_3ds_obj}
+platform_objs += ${platform_3ds_objs}
+core_flags    += -DCONFIG_REPLACE_MAIN
+
+has_platform_base = 1
+
+endif
+endif

@@ -1,0 +1,25 @@
+##
+# Wii renderer Makefile fragment
+##
+
+ifeq (${BUILD_WII},1)
+ifeq (${BUILD_SDL},)
+
+render_gx_obj  := ${render_obj}/gx
+render_gx_objs += \
+  ${render_gx_obj}/renderer_xfb.o \
+
+ifeq (${BUILD_RENDER_GX},1)
+render_gx_objs += ${render_gx_obj}/renderer_gx.o
+endif
+
+-include ${render_gx_objs:.o=.d}
+${render_gx_objs}: $(filter-out $(wildcard ${render_gx_obj}), ${render_gx_obj})
+
+build_dirs   += ${render_gx_obj}
+render_objs  += ${render_gx_objs}
+
+render_layer_software = 1
+
+endif
+endif

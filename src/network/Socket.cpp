@@ -20,8 +20,9 @@
 
 #include "Socket.hpp"
 
-#include "../platform.h"
 #include "../util.h"
+#include "../platform/platform_dso.h"
+#include "../platform/platform_thread.h"
 
 #include <assert.h>
 #include <inttypes.h>

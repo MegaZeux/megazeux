@@ -25,13 +25,13 @@
 
 #include "core.h"
 #include "error.h"
-#include "event.h"
 #include "graphics.h"
 #include "helpsys.h"
-#include "platform.h"
 #include "util.h"
 #include "window.h"
 #include "world.h"
+#include "event/event.h"
+#include "platform/platform.h"
 
 // Error type names by type code:
 static const char *const error_type_names[] =

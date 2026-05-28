@@ -35,7 +35,6 @@
 #include "../configure.h"
 #include "../core.h"
 #include "../error.h"
-#include "../event.h"
 #include "../graphics.h"
 #include "../helpsys.h"
 #include "../intake.h"
@@ -48,8 +47,10 @@
 #include "../io/path.h"
 #include "../io/vio.h"
 
+#include "../event/event.h"
+#include "../platform/platform_clipboard.h"
+
 #include "char_ed.h"
-#include "clipboard.h"
 #include "configure.h"
 #include "edit.h"
 #include "param.h"

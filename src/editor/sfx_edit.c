@@ -28,11 +28,11 @@
 #include "../core.h"
 #include "../data.h"
 #include "../error.h"
-#include "../event.h"
 #include "../window.h"
 #include "../world.h"
 #include "../util.h"
 #include "../io/vio.h"
+#include "../event/event.h"
 
 #include "sfx_edit.h"
 #include "window.h"

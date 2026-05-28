@@ -1,0 +1,46 @@
+##
+# MegaZeux SDL renderers Makefile fragment
+##
+
+render_sdl_obj   = ${render_obj}/sdl
+render_sdl_objs +=
+
+ifneq (${BUILD_SDL},)
+render_sdl_objs += ${render_sdl_obj}/render_sdl.o
+endif
+
+# The software renderer can be enabled separate of SDL. In this case,
+# it functions as a dummy renderer. The other renderers here always
+# require SDL.
+ifeq (${BUILD_RENDER_SOFT},1)
+render_sdl_objs += ${render_sdl_obj}/renderer_soft.o
+render_layer_software = 1
+endif
+
+# SDL 2+ accelerated software renderer
+ifeq (${BUILD_RENDER_SOFTSCALE},1)
+render_sdl_objs += ${render_sdl_obj}/renderer_softscale.o
+render_layer_software = 1
+endif
+
+# SDL 2+ accelerated fixed function hardware renderer
+ifeq (${BUILD_RENDER_SDLACCEL},1)
+render_sdl_objs += ${render_sdl_obj}/renderer_sdlaccel.o
+endif
+
+# SDL 1.2 overlay-scaling software renderers
+ifeq (${BUILD_RENDER_YUV},1)
+render_sdl_objs += ${render_sdl_obj}/renderer_yuv.o
+render_layer_software = 1
+endif
+
+# GP2X half-resolution software renderer
+ifeq (${BUILD_RENDER_GP2X},1)
+render_sdl_objs += ${render_sdl_obj}/renderer_gp2x.o
+endif
+
+-include ${render_sdl_objs:.o=.d}
+${render_sdl_objs}: $(filter-out $(wildcard ${render_sdl_obj}), ${render_sdl_obj})
+
+build_dirs   += ${render_sdl_obj}
+render_objs  += ${render_sdl_objs}

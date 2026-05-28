@@ -26,7 +26,6 @@
 #include "../counter.h"
 #include "../data.h"
 #include "../error.h"
-#include "../event.h"
 #include "../extmem.h"
 #include "../game.h"
 #include "../game_player.h"
@@ -34,7 +33,6 @@
 #include "../idarray.h"
 #include "../idput.h"
 #include "../mzm.h"
-#include "../platform.h"
 #include "../robot.h"
 #include "../scrdisp.h"
 #include "../util.h"
@@ -45,6 +43,8 @@
 
 #include "../audio/audio.h"
 #include "../audio/sfx.h"
+#include "../event/event.h"
+#include "../platform/platform.h"
 
 #include "ansi.h"
 #include "block.h"

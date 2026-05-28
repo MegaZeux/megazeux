@@ -31,12 +31,13 @@
 #include "../block.h"
 #include "../core.h"
 #include "../data.h"
-#include "../event.h"
 #include "../extmem.h"
 #include "../mzm.h"
 #include "../robot.h"
 #include "../window.h"
 #include "../world_struct.h"
+
+#include "../event/event.h"
 
 static void clear_layer_block(
  char *dest_char, char *dest_color, int dest_width, int dest_offset,

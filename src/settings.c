@@ -23,7 +23,6 @@
 #include "configure.h"
 #include "core.h"
 #include "error.h"
-#include "event.h"
 #include "game.h"
 #include "graphics.h"
 #include "settings.h"
@@ -32,6 +31,7 @@
 #include "world_struct.h"
 
 #include "audio/audio.h"
+#include "event/event.h"
 
 #include <string.h>
 

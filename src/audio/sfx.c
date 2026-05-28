@@ -31,7 +31,6 @@
 #include "sfx.h"
 
 #include "../data.h"
-#include "../platform.h"
 #include "../world.h"
 #include "../world_format.h"
 #include "../world_struct.h"
@@ -140,7 +139,7 @@ __editor_maybe_static char sfx_strs[NUM_BUILTIN_SFX][LEGACY_SFX_SIZE] =
 
 #else /* DEBUG */
 
-#include "../thread_debug.h"
+#include "../platform/thread_debug.h"
 
 static platform_mutex_debug mutex_debug;
 

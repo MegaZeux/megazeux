@@ -1,0 +1,32 @@
+##
+# SDL platform Makefile fragment
+##
+
+ifneq (${BUILD_SDL},)
+
+platform_sdl_obj  := ${platform_obj}/sdl
+platform_sdl_objs += \
+  ${platform_obj}/sdl/platform_sdl.o \
+
+#
+# SDL2+ clipboard handler is lower priority than Win32, Cocoa handlers.
+#
+ifneq (${BUILD_SDL},1)
+ifneq (${PLATFORM},mingw)
+ifneq (${PLATFORM},darwin)
+platform_sdl_objs += ${platform_obj}/sdl/clipboard_sdl.o
+has_clipboard = 1
+endif
+endif
+endif
+
+-include ${platform_sdl_objs:.o=.d}
+${platform_sdl_objs}: \
+ $(filter-out $(wildcard ${platform_sdl_obj}), ${platform_sdl_obj})
+
+build_dirs    += ${platform_sdl_obj}
+platform_objs += ${platform_sdl_objs}
+
+has_platform_base = 1
+
+endif

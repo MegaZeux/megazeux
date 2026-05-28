@@ -22,8 +22,8 @@
 
 #include "caption.h"
 #include "graphics.h"
-#include "platform_attribute.h" /* ATTRIBUTE_PRINTF */
 #include "world_struct.h"
+#include "platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
 
 // TODO this might benefit from a dirty flag + graphics.c hook and/or
 // integration into mzx_world to remove the statics.

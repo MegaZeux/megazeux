@@ -1,0 +1,18 @@
+##
+# DJGPP event Makefile fragment
+##
+
+ifeq (${BUILD_DJGPP},1)
+
+event_djgpp_obj   = ${event_obj}/djgpp
+event_djgpp_objs += \
+  ${event_djgpp_obj}/event_djgpp.o \
+
+-include ${event_djgpp_objs:.o=.d}
+${event_djgpp_objs}: \
+ $(filter-out $(wildcard ${event_djgpp_obj}), ${event_djgpp_obj})
+
+build_dirs   += ${event_djgpp_obj}
+event_objs   += ${event_djgpp_objs}
+
+endif

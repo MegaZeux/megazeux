@@ -1,0 +1,17 @@
+##
+# DJGPP audio Makefile fragment
+##
+
+ifeq (${BUILD_DJGPP},1)
+
+audio_djgpp_obj  := ${audio_obj}/djgpp
+audio_djgpp_objs += \
+  ${audio_djgpp_obj}/audio_sb.o \
+
+-include ${audio_djgpp_objs:.o=.d}
+${audio_djgpp_objs}: $(filter-out $(wildcard ${audio_djgpp_obj}), ${audio_djgpp_obj})
+
+build_dirs   += ${audio_djgpp_obj}
+audio_cobjs  += ${audio_djgpp_objs}
+
+endif

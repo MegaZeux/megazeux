@@ -1,0 +1,27 @@
+##
+# MegaZeux IO subsystem Makefile fragment
+##
+
+io_src   = ${core_src}/io
+io_obj   = ${build_base}/${io_src}
+io_objs += \
+  ${io_obj}/fsafeopen.o           \
+  ${io_obj}/path.o                \
+  ${io_obj}/pngops.o              \
+  ${io_obj}/vfs.o                 \
+  ${io_obj}/vio.o                 \
+  ${io_obj}/zip.o                 \
+  ${io_obj}/zip_stream.o          \
+
+# Not included in the main executables, but used by utils.
+io_utils_objs += \
+  ${io_obj}/vio_no_vfs.o          \
+
+-include ${io_objs:.o=.d}
+${io_objs}: $(filter-out $(wildcard ${io_obj}), ${io_obj})
+
+-include ${io_utils_objs:.o=.d}
+${io_utils_objs}: $(filter-out $(wildcard ${io_obj}), ${io_obj})
+
+build_dirs   += ${io_obj}
+core_cobjs   += ${io_objs}

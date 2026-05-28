@@ -28,7 +28,7 @@ __M_BEGIN_DECLS
 #include <stdint.h>
 
 #include "../configure.h"
-#include "../platform.h"
+#include "../platform/platform.h"
 
 #ifdef CONFIG_DJGPP
 #define AUDIO_GARBAGE_COLLECTOR

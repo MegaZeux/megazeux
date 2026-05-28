@@ -41,7 +41,6 @@
 #include "counter.h"
 #include "data.h"
 #include "error.h"
-#include "event.h"
 #include "extmem.h"
 #include "game_player.h"
 #include "graphics.h"
@@ -59,10 +58,11 @@
 
 #include "audio/audio.h"
 #include "audio/sfx.h"
+#include "event/event.h"
 
 #ifdef CONFIG_LOADSAVE_METER
 
-#include "platform.h"
+#include "platform/platform.h"
 
 static uint32_t last_ticks;
 

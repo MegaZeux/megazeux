@@ -56,18 +56,11 @@ package: mzx
 	rm -f ${mzxrun}.strip
 
 clean:
-	${RM} -f EBOOT.PBP PARAM.SFO ICON0.PNG arch/psp/*.o arch/psp/*.d
+	${RM} -f EBOOT.PBP PARAM.SFO ICON0.PNG
 
 build: package ${build}
 	${CP} arch/psp/pad.config ${build}
 	${CP} EBOOT.PBP ${build}
 	${RM} ${build}/${mzxrun} ${build}/${mzxrun}.debug
-
-#
-# Vile hack, remove me ASAP
-#
-arch/psp/%.o: arch/psp/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -c $< -o $@
 
 include arch/zip.inc

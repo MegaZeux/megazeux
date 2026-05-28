@@ -1,0 +1,40 @@
+##
+# MegaZeux networking Makefile fragment
+##
+
+ifeq (${BUILD_NETWORK},1)
+
+network_src      = ${core_src}/network
+network_obj      = ${build_base}/${network_src}
+network_cobjs   += ${network_obj}/sha256.o
+network_cxxobjs += \
+  ${network_obj}/DNS.o \
+  ${network_obj}/Host.o \
+  ${network_obj}/HTTPHost.o \
+  ${network_obj}/Manifest.o \
+  ${network_obj}/Socket.o \
+  ${network_obj}/network.o \
+
+# TODO: should eventually be core instead of executable
+ifeq (${BUILD_UPDATER},1)
+mzx_objs        += ${core_obj}/updater.o
+endif
+
+# TODO: it should be possible to use standard Berkeley sockets with libogc 3
+ifeq (${BUILD_WII},1)
+network_cxxobjs += ${network_obj}/Socket_wii.o
+endif
+
+ifeq (${PLATFORM},amiga)
+core_ldflags += -lnet
+endif
+
+network_objs  = ${network_cobjs} ${network_cxxobjs}
+-include ${network_objs:.o=.d}
+${network_objs}: $(filter-out $(wildcard ${network_obj}), ${network_obj})
+
+build_dirs   += ${network_obj}
+core_cobjs   += ${network_cobjs}
+core_cxxobjs += ${network_cxxobjs}
+
+endif

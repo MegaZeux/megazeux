@@ -1,0 +1,19 @@
+##
+# Wii audio Makefile fragment
+##
+
+ifeq (${BUILD_WII},1)
+ifeq (${BUILD_SDL},)
+
+audio_wii_obj  := ${audio_obj}/wii
+audio_wii_objs += \
+  ${audio_wii_obj}/audio_wii.o
+
+-include ${audio_wii_objs:.o=.d}
+${audio_wii_objs}: $(filter-out $(wildcard ${audio_wii_obj}), ${audio_wii_obj})
+
+build_dirs   += ${audio_wii_obj}
+audio_cobjs  += ${audio_wii_objs}
+
+endif
+endif

@@ -47,49 +47,6 @@ editor_objs := \
   ${editor_obj}/window.o        \
   ${editor_obj}/world.o
 
-# Win32 clipboard handler (takes precedence over SDL 2)
-ifeq (${PLATFORM},mingw)
-clipboard_objs    ?= ${editor_obj}/clipboard_win32.o
-clipboard_cflags  ?=
-clipboard_ldflags ?=
-endif
-
-# Mac OS X clipboard handler via Cocoa
-ifeq (${PLATFORM},darwin)
-clipboard_objs    ?= ${editor_obj}/clipboard_cocoa.o
-clipboard_cflags  ?=
-clipboard_ldflags ?= -framework Cocoa
-
-${editor_obj}/%.o: ${editor_src}/%.m
-	$(if ${V},,@echo "  OBJC    " $<)
-	${CC} -MD ${core_cflags} ${editor_flags} ${editor_spec} -c $< -o $@
-endif
-
-# Use the SDL2+ clipboard handler
-ifneq (${BUILD_SDL},)
-ifneq (${BUILD_SDL},1)
-clipboard_objs    ?= ${editor_obj}/clipboard_sdl2.o
-clipboard_cflags  ?=
-clipboard_ldflags ?= ${SDL_LDFLAGS}
-endif
-endif
-
-# X11 clipboard handler (requires SDL 1.2)
-ifneq (${X11DIR},)
-ifneq (${BUILD_SDL},)
-clipboard_objs    ?= ${editor_obj}/clipboard_x11.o
-clipboard_cflags  ?= ${X11_CFLAGS}
-clipboard_ldflags ?= ${X11_LDFLAGS} ${SDL_LDFLAGS}
-endif
-endif
-
-# No clipboard handler
-clipboard_objs    ?= ${editor_obj}/clipboard_null.o
-
-editor_objs += ${clipboard_objs}
-editor_flags += ${clipboard_cflags}
-editor_ldflags += ${clipboard_ldflags}
-
 -include ${editor_objs:.o=.d}
 
 ${editor_objs}: $(filter-out $(wildcard ${editor_obj}), ${editor_obj})

@@ -1,0 +1,21 @@
+##
+# NDS renderer Makefile fragment
+##
+
+ifeq (${BUILD_NDS},1)
+
+render_nds_obj  := ${render_obj}/nds
+render_nds_objs += \
+  arch/nds/protected_palette.bin.o \
+  ${render_nds_obj}/renderer_nds.o \
+
+# FIXME: why is this port reinventing the idea of a lookup table twice
+${render_nds_obj}/renderer_nds.o: arch/nds/protected_palette.bin.o
+
+-include ${render_nds_objs:.o=.d}
+${render_nds_objs}: $(filter-out $(wildcard ${render_nds_obj}), ${render_nds_obj})
+
+build_dirs   += ${render_nds_obj}
+render_objs  += ${render_nds_objs}
+
+endif

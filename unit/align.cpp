@@ -26,8 +26,8 @@
 
 #include "Unit.hpp"
 #include "../src/counter_struct.h"
-#include "../src/platform_endian.h"
 #include "../src/io/zip.h"
+#include "../src/platform/platform_endian.h"
 
 UNITTEST(counter_struct_name)
 {

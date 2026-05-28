@@ -23,7 +23,6 @@
 #include "caption.h"
 #include "core.h"
 #include "counter.h"
-#include "event.h"
 #include "game.h"
 #include "game_ops.h"
 #include "game_player.h"
@@ -39,6 +38,7 @@
 
 #include "audio/audio.h"
 #include "audio/sfx.h"
+#include "event/event.h"
 
 #include <string.h>
 
