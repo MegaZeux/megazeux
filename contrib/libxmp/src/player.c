@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2025 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -45,6 +45,7 @@
 #include "mixer.h"
 #ifndef LIBXMP_CORE_PLAYER
 #include "extras.h"
+#include "med_extras.h"
 #endif
 
 /* Values for multi-retrig */
@@ -753,11 +754,10 @@ static void reset_channels(struct context_data *ctx)
 	}
 }
 
-static int check_delay(struct context_data *ctx, struct xmp_event *e, int chn)
+static int check_delay(struct context_data *ctx, const struct xmp_event *e, int chn)
 {
 	struct player_data *p = &ctx->p;
 	struct channel_data *xc = &p->xc_data[chn];
-	struct module_data *m = &ctx->m;
 
 	/* Tempo affects delay and must be computed first */
 	if ((e->fxt == FX_SPEED && e->fxp < 0x20) || e->fxt == FX_S3M_SPEED) {
@@ -803,15 +803,6 @@ static int check_delay(struct context_data *ctx, struct xmp_event *e, int chn)
 		xc->delayed_ins = e->ins;
 	}
 
-	if (HAS_QUIRK(QUIRK_RTDELAY)) {
-		if (e->vol == 0 && e->f2t == 0 && e->ins == 0 && e->note != XMP_KEY_OFF)
-			xc->delayed_event.vol = xc->volume + 1;
-		if (e->note == 0)
-			xc->delayed_event.note = xc->key + 1;
-		if (e->ins == 0)
-			xc->delayed_event.ins = xc->old_ins;
-	}
-
 	return 1;
 }
 
@@ -822,46 +813,34 @@ static inline void read_row(struct context_data *ctx, int pat, int row)
 	struct xmp_module *mod = &m->mod;
 	struct player_data *p = &ctx->p;
 	struct flow_control *f = &p->flow;
-	struct xmp_event ev;
+	struct xmp_event *event;
+	struct xmp_event tmp;
 
 	for (chn = 0; chn < mod->chn; chn++) {
+		struct channel_data *xc = &p->xc_data[chn];
 		const int num_rows = mod->xxt[TRACK_NUM(pat, chn)]->rows;
 		if (row < num_rows) {
-			memcpy(&ev, &EVENT(pat, chn, row), sizeof(ev));
+			event = &EVENT(pat, chn, row);
 		} else {
-			memset(&ev, 0, sizeof(ev));
+			memset(&tmp, 0, sizeof(tmp));
+			event = &tmp;
 		}
 
-		if (ev.note == XMP_KEY_OFF) {
-			int env_on = 0;
-			int ins = ev.ins - 1;
-
-			if (IS_VALID_INSTRUMENT(ins) &&
-			    (mod->xxi[ins].aei.flg & XMP_ENVELOPE_ON)) {
-				env_on = 1;
-			}
-
-			if (ev.fxt == FX_EXTENDED && MSN(ev.fxp) == EX_DELAY) {
-				if (ev.ins && (LSN(ev.fxp) || env_on)) {
-					if (LSN(ev.fxp)) {
-						ev.note = 0;
-					}
-					ev.fxp = ev.fxt = 0;
-				}
-			}
+		if (IS_PLAYER_MODE_FT2()) {
+			/* Reset Kxx, even if delayed (ft2_kxx.xm). */
+			xc->keyoff = 0;
+			/* Reset tremor, even if delayed (ft2_tremor_delay.xm). */
+			RESET(TREMOR);
 		}
 
-		if (check_delay(ctx, &ev, chn) == 0) {
+		if (check_delay(ctx, event, chn) == 0) {
 			/* rowdelay_set bit 1 is set only in the first tick of the row
 			 * event if the delay causes the tick count resets to 0. We test
 			 * it to read row events only in the start of the row. (see the
 			 * OpenMPT test case FineVolColSlide.it)
 			 */
 			if (!f->rowdelay_set || ((f->rowdelay_set & ROWDELAY_FIRST_FRAME) && f->rowdelay > 0)) {
-				libxmp_read_event(ctx, &ev, chn);
-#ifndef LIBXMP_CORE_PLAYER
-				libxmp_med_hold_hack(ctx, pat, chn, row);
-#endif
+				libxmp_read_event(ctx, event, chn);
 			}
 		} else {
 			if (IS_PLAYER_MODE_IT()) {
@@ -898,23 +877,21 @@ static int tremor_ft2(struct context_data *ctx, int chn, int finalvol)
 	struct player_data *p = &ctx->p;
 	struct channel_data *xc = &p->xc_data[chn];
 
-	if (xc->tremor.count & 0x80) {
-		if (TEST(TREMOR) && p->frame != 0) {
-			xc->tremor.count &= ~0x20;
-			if (xc->tremor.count == 0x80) {
-				/* end of down cycle, set up counter for up  */
-				xc->tremor.count = xc->tremor.up | 0xc0;
-			} else if (xc->tremor.count == 0xc0) {
-				/* end of up cycle, set up counter for down */
-				xc->tremor.count = xc->tremor.down | 0x80;
-			} else {
-				xc->tremor.count--;
-			}
+	if (TEST(TREMOR) && p->frame != 0) {
+		xc->tremor.count &= ~TREMOR_SUPPRESS;
+		if (xc->tremor.count == 0) {
+			/* end of down cycle, set up counter for up  */
+			xc->tremor.count = xc->tremor.up | TREMOR_ON;
+		} else if (xc->tremor.count == TREMOR_ON) {
+			/* end of up cycle, set up counter for down */
+			xc->tremor.count = xc->tremor.down;
+		} else {
+			xc->tremor.count--;
 		}
+	}
 
-		if ((xc->tremor.count & 0xe0) == 0x80) {
-			finalvol = 0;
-		}
+	if ((xc->tremor.count & (TREMOR_ON | TREMOR_SUPPRESS)) == 0) {
+		finalvol = 0;
 	}
 
 	return finalvol;
@@ -928,20 +905,56 @@ static int tremor_s3m(struct context_data *ctx, int chn, int finalvol)
 	if (TEST(TREMOR)) {
 		if (xc->tremor.count == 0) {
 			/* end of down cycle, set up counter for up  */
-			xc->tremor.count = xc->tremor.up | 0x80;
-		} else if (xc->tremor.count == 0x80) {
+			xc->tremor.count = xc->tremor.up | TREMOR_ON;
+		} else if (xc->tremor.count == TREMOR_ON) {
 			/* end of up cycle, set up counter for down */
 			xc->tremor.count = xc->tremor.down;
 		}
 
 		xc->tremor.count--;
 
-		if (~xc->tremor.count & 0x80) {
+		if (~xc->tremor.count & TREMOR_ON) {
 			finalvol = 0;
 		}
 	}
 
 	return finalvol;
+}
+
+/* Handle delayed keyoff effects. This should only be performed once on
+ * the tick where Kxx activates (ft2_note_off_fade.xm).
+ */
+static void delayed_keyoff(struct context_data *ctx, int chn)
+{
+	struct player_data *p = &ctx->p;
+	struct module_data *m = &ctx->m;
+	struct channel_data *xc = &p->xc_data[chn];
+	struct xmp_instrument *instrument;
+
+	instrument = libxmp_get_instrument(ctx, xc->ins);
+
+	switch (m->read_event_type) {
+	case READ_EVENT_FT2:
+		/* Ignore if frame>=speed (ft2_kxx.xm). */
+		if (p->frame >= p->speed) {
+			break;
+		}
+		/* See read_event_ft2 for more notes on keyoff. */
+		if (instrument->aei.flg & XMP_ENVELOPE_ON) {
+			SET_NOTE(NOTE_RELEASE);
+		} else {
+			xc->volume = 0;
+		}
+		SET_NOTE(NOTE_FADEOUT);
+		break;
+
+	default:
+		/* TODO: compatibility for old behavior (see process_volume)
+		 * until keyoff can be tested everywhere else.
+		 * Orpheus: keyoff clears the note, xx>speed works with delay.
+		 * RT2: keyoff clears the note, xx>speed acts like 0. */
+		SET_NOTE(NOTE_RELEASE);
+	}
 }
 
 /*
@@ -978,7 +991,8 @@ static void process_volume(struct context_data *ctx, int chn, int act)
 				fade = 1;
 			}
 		}
-	} else {
+	} else if (!IS_PLAYER_MODE_FT2()) {
+		/* TODO: FT2 doesn't do this. check other formats. */
 		if (~instrument->aei.flg & XMP_ENVELOPE_ON) {
 			if (TEST_NOTE(NOTE_ENV_RELEASE)) {
 				xc->fadeout = 0;
@@ -1639,6 +1653,10 @@ static void play_channel(struct context_data *ctx, int chn)
 			if (xc->retrig.type < 0x10) {
 				/* don't retrig on cut */
 				libxmp_virt_voicepos(ctx, chn, 0);
+#ifndef LIBXMP_CORE_PLAYER
+				/* Retrigger increases hold counter */
+				libxmp_med_hold_retrigger(ctx, xc);
+#endif
 			} else {
 				SET_NOTE(NOTE_END);
 			}
@@ -1659,7 +1677,7 @@ static void play_channel(struct context_data *ctx, int chn)
 	/* Do keyoff */
 	if (xc->keyoff) {
 		if (--xc->keyoff == 0)
-			SET_NOTE(NOTE_RELEASE);
+			delayed_keyoff(ctx, chn);
 	}
 
 	libxmp_virt_release(ctx, chn, TEST_NOTE(NOTE_SAMPLE_RELEASE));
@@ -1710,7 +1728,7 @@ static void inject_event(struct context_data *ctx)
  * Sequencing
  */
 
-static void next_order(struct context_data *ctx)
+static void next_order(struct context_data *ctx, int last_ord)
 {
 	struct player_data *p = &ctx->p;
 	struct flow_control *f = &p->flow;
@@ -1741,17 +1759,18 @@ static void next_order(struct context_data *ctx)
 			/* This might be a marker, so delay updating global
 			 * volume until an actual pattern is found */
 			reset_gvol = 1;
+			/* Module restart should always reset the play time. */
+			last_ord = -1;
 		}
 	} while (mod->xxo[p->ord] >= mod->pat);
 
 	if (reset_gvol)
 		p->gvol = m->xxo_info[p->ord].gvl;
 
-#ifndef LIBXMP_CORE_PLAYER
-	/* Archimedes line jump -- don't reset time tracking. */
-	if (f->jump_in_pat != p->ord)
-#endif
-	p->current_time = m->xxo_info[p->ord].time;
+	/* Bxx+Dxx within same position, Archimedes line jump,
+	 * etc. should not reset time tracking. */
+	if (last_ord != p->ord)
+		p->current_time = m->xxo_info[p->ord].time;
 
 	f->num_rows = mod->xxp[mod->xxo[p->ord]]->rows;
 	if (f->jumpline >= f->num_rows)
@@ -1774,8 +1793,6 @@ static void next_order(struct context_data *ctx)
 	}
 
 #ifndef LIBXMP_CORE_PLAYER
-	f->jump_in_pat = -1;
-
 	/* Reset persistent effects at new pattern */
 	if (HAS_QUIRK(QUIRK_PERPAT)) {
 		int chn;
@@ -1790,6 +1807,7 @@ static void next_row(struct context_data *ctx)
 {
 	struct player_data *p = &ctx->p;
 	struct flow_control *f = &p->flow;
+	int last_ord = p->ord;
 
 	p->frame = 0;
 	f->delay = 0;
@@ -1804,7 +1822,7 @@ static void next_row(struct context_data *ctx)
 			f->jump = -1;
 		}
 
-		next_order(ctx);
+		next_order(ctx, last_ord);
 	} else {
 		if (f->rowdelay == 0) {
 			p->row++;
@@ -1820,7 +1838,7 @@ static void next_row(struct context_data *ctx)
 
 		/* check end of pattern */
 		if (p->row >= f->num_rows) {
-			next_order(ctx);
+			next_order(ctx, last_ord);
 		}
 	}
 }
@@ -1851,7 +1869,7 @@ void libxmp_player_set_fadeout(struct context_data *ctx, int chn)
 /* Get frame time for calculation of the current playback time
  * based on the most recent scan. This value should be used for
  * playback time calculation ONLY. */
-static double libxmp_get_frame_time(struct context_data *ctx)
+double libxmp_get_frame_time(struct context_data *ctx)
 {
 	struct player_data *p = &ctx->p;
 	struct module_data *m = &ctx->m;
@@ -1891,9 +1909,15 @@ void libxmp_reset_flow(struct context_data *ctx)
 	f->delay = 0;
 	f->rowdelay = 0;
 	f->rowdelay_set = 0;
-#ifndef LIBXMP_CORE_PLAYER
-	f->jump_in_pat = -1;
-#endif
+	f->force_reposition = 0;
+
+	if (f->loop) {
+		int i;
+		for (i = 0; i < ctx->m.mod.chn; i++) {
+			f->loop[i].start = 0;
+			f->loop[i].count = 0;
+		}
+	}
 }
 
 int xmp_start_player(xmp_context opaque, int rate, int format)
@@ -1907,7 +1931,7 @@ int xmp_start_player(xmp_context opaque, int rate, int format)
 	int i;
 	int ret = 0;
 
-	if (rate < XMP_MIN_SRATE || rate > REAL_MAX_SRATE)
+	if (rate < XMP_MIN_SRATE || rate > XMP_MAX_SRATE)
 		return -XMP_ERROR_INVALID;
 
 	if (ctx->state < XMP_STATE_LOADED)
@@ -1919,6 +1943,7 @@ int xmp_start_player(xmp_context opaque, int rate, int format)
 	if (libxmp_mixer_on(ctx, rate, format, m->c4rate) < 0)
 		return -XMP_ERROR_INTERNAL;
 
+	p->time_factor_relative = 1.0;
 	p->master_vol = 100;
 	p->smix_vol = 100;
 	p->gvol = m->volbase;
@@ -1930,13 +1955,12 @@ int xmp_start_player(xmp_context opaque, int rate, int format)
 	p->sequence = 0;
 
 	/* Set default volume and mute status */
-	for (i = 0; i < mod->chn; i++) {
-		if (mod->xxc[i].flg & XMP_CHANNEL_MUTE)
+	for (i = 0; i < XMP_MAX_CHANNELS; i++) {
+		if (i < mod->chn && (mod->xxc[i].flg & XMP_CHANNEL_MUTE)) {
 			p->channel_mute[i] = 1;
-		p->channel_vol[i] = 100;
-	}
-	for (i = mod->chn; i < XMP_MAX_CHANNELS; i++) {
-		p->channel_mute[i] = 0;
+		} else {
+			p->channel_mute[i] = 0;
+		}
 		p->channel_vol[i] = 100;
 	}
 
@@ -2053,8 +2077,9 @@ int xmp_play_frame(xmp_context opaque)
 	}
 
 	/* check reposition */
-	if (p->ord != p->pos) {
+	if (p->ord != p->pos || f->force_reposition) {
 		int start = m->seq_data[p->sequence].entry_point;
+		f->force_reposition = 0;
 
 		if (p->pos == -2) {		/* set by xmp_module_stop */
 			return -XMP_END;	/* that's all folks */
@@ -2074,7 +2099,6 @@ int xmp_play_frame(xmp_context opaque)
 			f->end_point = 0;
 		}
 
-		f->jumpline = 0;
 		f->jump = -1;
 
 		p->ord = p->pos - 1;
@@ -2084,7 +2108,7 @@ int xmp_play_frame(xmp_context opaque)
 			p->ord = start - 1;
 		}
 
-		next_order(ctx);
+		next_order(ctx, -1);
 
 		update_from_ord_info(ctx);
 
@@ -2261,6 +2285,8 @@ void xmp_get_frame_info(xmp_context opaque, struct xmp_frame_info *info)
 	struct mixer_data *s = &ctx->s;
 	struct module_data *m = &ctx->m;
 	struct xmp_module *mod = &m->mod;
+	double current_time;
+	double total_time;
 	int chn, i;
 
 	if (ctx->state < XMP_STATE_LOADED)
@@ -2282,23 +2308,23 @@ void xmp_get_frame_info(xmp_context opaque, struct xmp_frame_info *info)
 		info->num_rows = 0;
 	}
 
+	/* API still uses integers for time... */
+	current_time = p->current_time;
+	total_time = p->scan[p->sequence].time;
+	CLAMP(current_time, 0.0, (double)INT_MAX);
+	CLAMP(total_time, 0.0, (double)INT_MAX);
+
 	info->row = p->row;
 	info->frame = p->frame;
 	info->speed = p->speed;
 	info->bpm = p->bpm;
-	info->total_time = p->scan[p->sequence].time;
+	info->total_time = (int)total_time;
 	info->frame_time = (int)(libxmp_get_frame_time(ctx) * 1000.0);
-	info->time = p->current_time;
+	info->time = (int)current_time;
 	info->buffer = s->buffer;
 
 	info->total_size = s->total_size;
-	info->buffer_size = s->ticksize;
-	if (~s->format & XMP_FORMAT_MONO) {
-		info->buffer_size *= 2;
-	}
-	if (~s->format & XMP_FORMAT_8BIT) {
-		info->buffer_size *= 2;
-	}
+	info->buffer_size = s->ticksize * s->output_chn * s->sample_size;
 
 	info->volume = p->gvol;
 	info->loop_count = p->loop_count;

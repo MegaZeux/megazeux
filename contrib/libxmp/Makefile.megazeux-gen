@@ -24,7 +24,6 @@ dest_loaders	:= ${dest_base}/${loaders}
 patches := \
 	mzx-integration-hacks \
 	mzx-remove-extra-formats \
-	real-max-srate \
 
 #
 # Files to install from the generated libxmp branch to the
@@ -72,8 +71,11 @@ install := \
 	${dest_src}/memio.c \
 	${dest_src}/memio.h \
 	${dest_src}/mix_all.c \
+	${dest_src}/mix_all.h \
 	${dest_src}/mixer.c \
 	${dest_src}/mixer.h \
+	${dest_src}/path.c \
+	${dest_src}/path.h \
 	${dest_src}/period.c \
 	${dest_src}/period.h \
 	${dest_src}/player.c \

@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2025 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,6 +29,7 @@
 #include "med.h"
 #include "loader.h"
 #include "../med_extras.h"
+#include "../path.h"
 
 #define MAGIC_MED4	MAGIC4('M','E','D',4)
 #undef MED4_DEBUG
@@ -204,7 +205,7 @@ static int med4_load_sampled_instrument(HIO_HANDLE *f, struct module_data *m,
 	sub = &xxi->sub[0];
 
 	sub->vol = temp_inst[i].volume;
-	sub->pan = 0x80;
+	sub->pan = XMP_INST_NO_DEFAULT_PAN;
 	sub->xpo = temp_inst[i].transpose;
 	sub->sid = *smp_idx;
 
@@ -319,6 +320,8 @@ static int med4_load_synth_instrument(HIO_HANDLE *f, struct module_data *m,
 	if (libxmp_med_new_instrument_extras(xxi) != 0)
 		return -1;
 
+	MED_MODULE_EXTRAS(*m)->tracker_version = MED_VER_210;
+
 	xxi->nsm = synth.wforms;
 	if (libxmp_alloc_subinstrument(mod, i, synth.wforms) < 0)
 		return -1;
@@ -347,7 +350,7 @@ static int med4_load_synth_instrument(HIO_HANDLE *f, struct module_data *m,
 
 		sub = &xxi->sub[0];
 
-		sub->pan = 0x80;
+		sub->pan = XMP_INST_NO_DEFAULT_PAN;
 		sub->vol = temp_inst[i].volume;
 		sub->xpo = temp_inst[i].transpose;
 		sub->sid = *smp_idx;
@@ -383,7 +386,7 @@ static int med4_load_synth_instrument(HIO_HANDLE *f, struct module_data *m,
 
 		sub = &xxi->sub[j];
 
-		sub->pan = 0x80;
+		sub->pan = XMP_INST_NO_DEFAULT_PAN;
 		sub->vol = 64;
 		sub->xpo = -24;
 		sub->sid = *smp_idx;
@@ -445,7 +448,7 @@ static int med4_load_instrument(HIO_HANDLE *f, struct module_data *m,
 static int med4_load_external_instrument(HIO_HANDLE *f, struct module_data *m,
 	int i, int *smp_idx, struct temp_inst *temp_inst)
 {
-	char path[XMP_MAXPATH];
+	struct libxmp_path sp;
 	char ins_name[32];
 	HIO_HANDLE *s = NULL;
 	int length;
@@ -454,10 +457,13 @@ static int med4_load_external_instrument(HIO_HANDLE *f, struct module_data *m,
 	if (libxmp_copy_name_for_fopen(ins_name, m->mod.xxi[i].name, 32) != 0)
 		return 0;
 
-	if (!libxmp_find_instrument_file(m, path, sizeof(path), ins_name))
+	libxmp_path_init(&sp);
+	if (libxmp_find_instrument_file(m, &sp, ins_name) != 0)
 		return 0;
 
-	if ((s = hio_open(path, "rb")) == NULL) {
+	s = hio_open(sp.path, "rb");
+	libxmp_path_free(&sp);
+	if (s == NULL) {
 		return 0;
 	}
 
@@ -958,6 +964,7 @@ parse_iff:
 			size -= 4;
 			vermaj = (ver & 0xff00) >> 8;
 			vermin = (ver & 0xff);
+			MED_MODULE_EXTRAS(*m)->tracker_version = ver & 0xfff;
 			D_(D_INFO "MED Version: %d.%0d", vermaj, vermin);
 			break;
 		case MAGIC4('A','N','N','O'):

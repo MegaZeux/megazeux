@@ -4,7 +4,7 @@ This is a fork of libxmp generated specifically for MegaZeux
 from this branch using the file `mzx-gen.sh`: https://github.com/AliceLR/libxmp/tree/mzx-gen-libxmp
 
 The script that generated this forked
-[libxmp 4.5.0](https://github.com/libxmp/libxmp/releases/tag/libxmp-4.5.0)
+[libxmp 4.7.0](https://github.com/libxmp/libxmp/releases/tag/libxmp-4.7.0)
 and applied the following branches as patches:
 
 * [mzx-integration-hacks](https://github.com/AliceLR/libxmp/tree/mzx-integration-hacks):
@@ -25,9 +25,3 @@ removal should no longer be necessary.
 See README and docs/COPYING.LIB for more libxmp information and the libxmp license.
 See the upstream repository for the original libxmp, which you should probably use
 instead of this hacked up copy for most purposes: https://github.com/libxmp/libxmp/
-
-## Pending MZX-specific hacks
-
-* asie contributed a patch for tracker detection removal in the S3M and IT loaders.
-  This is not currently used by MZX and could save about 2-3kb RAM. This might be
-  worth looking into someday. https://github.com/AliceLR/megazeux/pull/202
