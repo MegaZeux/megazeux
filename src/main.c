@@ -29,19 +29,16 @@
 #include <unistd.h>
 #endif
 
-#include "compat.h"
-#include "platform.h"
+#include "platform/platform.h"
 
 #include "configure.h"
 #include "core.h"
 #include "error.h"
-#include "event.h"
 #include "helpsys.h"
 #include "graphics.h"
 #include "window.h"
 #include "data.h"
 #include "game.h"
-#include "error.h"
 #include "idput.h"
 #include "util.h"
 #include "world.h"
@@ -52,6 +49,7 @@
 
 #include "audio/audio.h"
 #include "audio/sfx.h"
+#include "event/event.h"
 #include "network/network.h"
 
 #ifdef CONFIG_SDL
@@ -227,8 +225,6 @@ __libspec int main(int argc, char *argv[])
   if(mzx_res_init(argv[0], is_editor()))
     goto err_free_res;
 
-  editor_init();
-
   // Figure out where all configuration files should be loaded
   // form. For game.cnf, et al this should eventually be wrt
   // the game directory, not the config.txt's path.
@@ -286,6 +282,9 @@ __libspec int main(int argc, char *argv[])
   if(!init_video(conf, CAPTION))
     goto err_free_config;
   init_audio(conf);
+
+  /* Loads charsets -> should be performed after video init. */
+  editor_init();
 
 #ifdef CONFIG_PLEDGE
   init_pledge();

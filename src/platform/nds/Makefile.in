@@ -1,0 +1,30 @@
+##
+# NDS platform Makefile fragment
+##
+
+ifeq (${BUILD_NDS},1)
+
+platform_nds_obj  := ${platform_obj}/nds
+platform_nds_objs += \
+  ${platform_nds_obj}/platform_nds.o \
+
+ifeq (${BUILD_EXTRAM},1)
+
+platform_nds_objs += \
+  ${platform_obj}/dlmalloc.o \
+  ${platform_nds_obj}/extmem_nds.o \
+  ${platform_nds_obj}/ram.o \
+
+endif
+
+-include ${platform_nds_objs:.o=.d}
+${platform_nds_objs}: \
+ $(filter-out $(wildcard ${platform_nds_obj}), ${platform_nds_obj})
+
+build_dirs    += ${platform_nds_obj}
+platform_objs += ${platform_nds_objs}
+core_flags    += -DCONFIG_REPLACE_MAIN
+
+has_platform_base = 1
+
+endif

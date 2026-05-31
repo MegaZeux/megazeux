@@ -22,8 +22,8 @@
 #include "DNS.hpp"
 #include "Socket.hpp"
 
-#include "../platform.h"
 #include "../util.h"
+#include "../platform/platform.h"
 
 #include <assert.h>
 #include <ctype.h>

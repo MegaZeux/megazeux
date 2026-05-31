@@ -1,0 +1,21 @@
+##
+# Dreamcast platform Makefile fragment
+##
+
+ifeq (${PLATFORM},dreamcast)
+
+platform_dreamcast_obj  := ${platform_obj}/dreamcast
+platform_dreamcast_objs += \
+  ${platform_dreamcast_obj}/platform_dreamcast.o \
+
+-include ${platform_dreamcast_objs:.o=.d}
+${platform_dreamcast_objs}: \
+ $(filter-out $(wildcard ${platform_dreamcast_obj}), ${platform_dreamcast_obj})
+
+build_dirs    += ${platform_dreamcast_obj}
+platform_objs += ${platform_dreamcast_objs}
+core_flags    += -DCONFIG_REPLACE_MAIN
+
+has_platform_base = 1
+
+endif

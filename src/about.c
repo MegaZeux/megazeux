@@ -18,17 +18,17 @@
  */
 
 #include "about.h"
-#include "platform_attribute.h" /* ATTRIBUTE_PRINTF */
 #include "util.h"
 #include "window.h"
 #include "io/path.h"
 #include "io/vio.h"
+#include "platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
 
 #include <ctype.h>
 #include <zlib.h>
 
 #ifdef CONFIG_SDL
-#include "SDLmzx.h"
+#include "platform/sdl/SDLmzx.h"
 #endif
 #ifdef CONFIG_XMP
 #include <xmp.h>

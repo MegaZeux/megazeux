@@ -29,9 +29,9 @@
 // Shut Up GCC
 #endif
 #include "../graphics.h"
-#include "../platform.h"
 #include "../util.h"
 #include "../io/memfile.h"
+#include "../platform/platform_thread.h"
 
 #ifdef _WIN32
 #include <fcntl.h>

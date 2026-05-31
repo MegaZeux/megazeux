@@ -17,20 +17,6 @@ ARCH_CFLAGS   +=
 ARCH_CXXFLAGS +=
 ARCH_LDFLAGS  += ${EXTRA_LIBS}
 
-clean:
-	${RM} -f arch/djgpp/*.d arch/djgpp/*.o
-
-#
-# The return of the revenge of the vile hack! remove me ASAP
-#
-arch/djgpp/%.o: arch/djgpp/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -c $< -o $@
-
-arch/djgpp/%.o: arch/djgpp/%.S
-	$(if ${V},,@echo "  AS      " $<)
-	${AS} $< -o $@
-
 arch/djgpp/CWSDPMI.EXE:
 	@echo You must copy CWSDPMI.EXE to arch/djgpp for packaging.
 	@false

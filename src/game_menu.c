@@ -25,7 +25,6 @@
 #include "const.h"
 #include "core.h"
 #include "counter.h"
-#include "event.h"
 #include "game_menu.h"
 #include "game_player.h"
 #include "graphics.h"
@@ -34,6 +33,7 @@
 #include "window.h"
 #include "world.h"
 #include "world_struct.h"
+#include "event/event.h"
 
 #include <string.h>
 

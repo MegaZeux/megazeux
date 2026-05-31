@@ -1,0 +1,21 @@
+##
+# Dreamcast renderer Makefile fragment
+##
+
+ifeq (${BUILD_DREAMCAST},1)
+
+render_dreamcast_obj  := ${render_obj}/dreamcast
+render_dreamcast_objs += \
+  ${render_dreamcast_obj}/renderer_dreamcast.o \
+  ${render_dreamcast_obj}/renderer_dreamcast_fb.o \
+
+-include ${render_dreamcast_objs:.o=.d}
+${render_dreamcast_objs}: \
+ $(filter-out $(wildcard ${render_dreamcast_obj}), ${render_dreamcast_obj})
+
+build_dirs   += ${render_dreamcast_obj}
+render_objs  += ${render_dreamcast_objs}
+
+render_layer_software = 1
+
+endif

@@ -1,0 +1,18 @@
+##
+# Dreamcast event Makefile fragment
+##
+
+ifeq (${BUILD_DREAMCAST},1)
+
+event_dreamcast_obj   = ${event_obj}/dreamcast
+event_dreamcast_objs += \
+  ${event_dreamcast_obj}/event_dreamcast.o \
+
+-include ${event_dreamcast_objs:.o=.d}
+${event_dreamcast_objs}: \
+ $(filter-out $(wildcard ${event_dreamcast_obj}), ${event_dreamcast_obj})
+
+build_dirs   += ${event_dreamcast_obj}
+event_objs   += ${event_dreamcast_objs}
+
+endif

@@ -1,0 +1,21 @@
+##
+# DJGPP platform Makefile fragment
+##
+
+ifeq (${PLATFORM},djgpp)
+
+platform_djgpp_obj  := ${platform_obj}/djgpp
+platform_djgpp_objs += \
+  ${platform_djgpp_obj}/platform_djgpp.o \
+  ${platform_djgpp_obj}/interrupt.o \
+
+-include ${platform_djgpp_objs:.o=.d}
+${platform_djgpp_objs}: \
+ $(filter-out $(wildcard ${platform_djgpp_obj}), ${platform_djgpp_obj})
+
+build_dirs    += ${platform_djgpp_obj}
+platform_objs += ${platform_djgpp_objs}
+
+has_platform_base = 1
+
+endif

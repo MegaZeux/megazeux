@@ -29,7 +29,6 @@
 
 #include "../core.h"
 #include "../counter.h"
-#include "../event.h"
 #include "../extmem.h"
 #include "../graphics.h"
 #include "../intake.h"
@@ -43,6 +42,7 @@
 #include "../io/vio.h"
 
 #include "../audio/audio.h"
+#include "../event/event.h"
 
 #include <ctype.h>
 #include <stdint.h>

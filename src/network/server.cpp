@@ -37,9 +37,9 @@ ${network_obj}/server.o: ${network_src}/server.cpp
 
 #include "HTTPHost.hpp"
 
-#include "../SDLmzx.h"
 #include "../const.h"
 #include "../util.h"
+#include "../platform/sdl/SDLmzx.h"
 
 #include <assert.h>
 

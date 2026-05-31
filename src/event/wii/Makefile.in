@@ -1,0 +1,19 @@
+##
+# Wii event Makefile fragment
+##
+
+ifeq (${BUILD_WII},1)
+ifeq (${BUILD_SDL},)
+
+event_wii_obj   = ${event_obj}/wii
+event_wii_objs += \
+  ${event_wii_obj}/event_wii.o \
+
+-include ${event_wii_objs:.o=.d}
+${event_wii_objs}: $(filter-out $(wildcard ${event_wii_obj}), ${event_wii_obj})
+
+build_dirs   += ${event_wii_obj}
+event_objs   += ${event_wii_objs}
+
+endif
+endif

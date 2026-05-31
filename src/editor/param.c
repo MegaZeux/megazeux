@@ -27,12 +27,13 @@
 
 #include "../core.h"
 #include "../data.h"
-#include "../event.h"
 #include "../idput.h"
 #include "../robot.h"
 #include "../scrdisp.h"
 #include "../util.h"
 #include "../window.h"
+
+#include "../event/event.h"
 
 #include "edit_di.h"
 #include "param.h"

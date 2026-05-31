@@ -19,8 +19,8 @@
 
 #include "sha256.h"
 
-#include "../platform_endian.h"
 #include "../util.h"
+#include "../platform/platform_endian.h"
 
 #include <string.h>
 

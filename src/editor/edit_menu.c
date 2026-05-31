@@ -20,12 +20,13 @@
  */
 
 #include "../core.h"
-#include "../event.h"
 #include "../idput.h"
 #include "../graphics.h"
 #include "../util.h"
 #include "../window.h"
 #include "../world_struct.h"
+
+#include "../event/event.h"
 
 #include "buffer_struct.h"
 #include "edit.h"

@@ -1,0 +1,16 @@
+##
+# MegaZeux event Makefile fragment
+##
+
+event_src   = ${core_src}/event
+event_obj   = ${build_base}/${event_src}
+event_objs += \
+  ${event_obj}/event.o \
+
+include src/event/*/Makefile.in
+
+-include ${event_objs:.o=.d}
+${event_objs}: $(filter-out $(wildcard ${event_obj}), ${event_obj})
+
+build_dirs   += ${event_obj}
+core_cobjs   += ${event_objs}

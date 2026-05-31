@@ -15,7 +15,7 @@ libxmp_cflags := \
  -I${libxmp_base}/src \
  -I${libxmp_base}/src/loaders \
  ${libxmp_include} \
- -DSKIP_SDL -include src/platform_endian.h \
+ -DSKIP_SDL -include src/platform/platform_endian.h \
  -DLIBXMP_NO_PROWIZARD \
  -DLIBXMP_NO_DEPACKERS
 

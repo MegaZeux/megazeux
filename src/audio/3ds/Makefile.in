@@ -1,0 +1,19 @@
+##
+# 3DS audio Makefile fragment
+##
+
+ifeq (${BUILD_3DS},1)
+ifeq (${BUILD_SDL},)
+
+audio_3ds_obj  := ${audio_obj}/3ds
+audio_3ds_objs += \
+  ${audio_3ds_obj}/audio_3ds.o
+
+-include ${audio_3ds_objs:.o=.d}
+${audio_3ds_objs}: $(filter-out $(wildcard ${audio_3ds_obj}), ${audio_3ds_obj})
+
+build_dirs   += ${audio_3ds_obj}
+audio_cobjs  += ${audio_3ds_objs}
+
+endif
+endif

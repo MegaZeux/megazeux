@@ -55,12 +55,6 @@ ARCH_LDFLAGS  += ${EXTRA_LIBS} -specs=ds_arm9.specs
 #
 # Vile hack, remove me ASAP
 #
-arch/nds/%.o: arch/nds/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -Wno-unused-macros -c $< -o $@
-
-arch/nds/render.o: arch/nds/protected_palette.bin.o
-
 arch/nds/%.bin.o arch/nds/%_bin.h : arch/nds/%.bin
 	$(if ${V},,@echo "  AS      " $<)
 	@bin2s -a 32 -H arch/nds/`(echo $(<F) | tr . _)`.h $< > $<.S

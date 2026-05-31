@@ -1,0 +1,26 @@
+##
+# MegaZeux platform Makefile fragment
+##
+
+platform_src  = ${core_src}/platform
+platform_obj  = ${build_base}/${platform_src}
+platform_objs += \
+  ${platform_obj}/platform_time.o
+
+has_platform_base = 0
+has_clipboard = 0
+
+include src/platform/*/Makefile.in
+
+ifeq (${has_platform_base},0)
+platform_objs += ${platform_obj}/platform_dummy.o
+endif
+ifeq (${has_clipboard},0)
+platform_objs += ${platform_obj}/clipboard_dummy.o
+endif
+
+-include ${platform_objs:.o=.d}
+${platform_objs}: $(filter-out $(wildcard ${platform_obj}), ${platform_obj})
+
+build_dirs   += ${platform_obj}
+core_cobjs   += ${platform_objs}

@@ -114,45 +114,7 @@ enum write_string_flags
 struct graphics_data;
 struct video_layer;
 struct video_window;
-
-struct renderer
-{
-  boolean (*init_video)       (struct graphics_data *, struct config_info *);
-  void    (*free_video)       (struct graphics_data *);
-  boolean (*create_window)    (struct graphics_data *, struct video_window *);
-  boolean (*resize_window)    (struct graphics_data *, struct video_window *);
-  boolean (*resize_callback)  (struct graphics_data *, struct video_window *);
-  void    (*set_viewport)     (struct graphics_data *, struct video_window *);
-#if 0
-  void    (*get_screen_coords)(struct graphics_data *, struct video_window *,
-                                int screen_x, int screen_y, int *x, int *y,
-                                int *min_x, int *min_y, int *max_x, int *max_y);
-  void    (*set_screen_coords)(struct graphics_data *, struct video_window *,
-                                int x, int y, int *screen_x, int *screen_y);
-#endif
-  boolean (*set_window_caption)(struct graphics_data *, struct video_window *,
-                                const char *caption);
-  boolean (*set_window_icon)  (struct graphics_data *, struct video_window *,
-                                const char *icon_path);
-  boolean (*set_screen_mode)  (struct graphics_data *, unsigned mode);
-  void    (*update_colors)    (struct graphics_data *, struct rgb_color *palette,
-                                unsigned int count);
-  void    (*remap_char_range) (struct graphics_data *, uint16_t first, uint16_t count);
-  void    (*remap_char)       (struct graphics_data *, uint16_t chr);
-  void    (*remap_charbyte)   (struct graphics_data *, uint16_t chr, uint8_t byte);
-  boolean (*switch_shader)    (struct graphics_data *, const char *name);
-  void    (*render_graph)     (struct graphics_data *);
-  void    (*render_layer)     (struct graphics_data *, struct video_layer *);
-  void    (*render_cursor)    (struct graphics_data *, unsigned x, unsigned y,
-                                uint16_t color, unsigned lines, unsigned offset);
-  void    (*hardware_cursor)  (struct graphics_data *, unsigned x, unsigned y,
-                                uint16_t color, unsigned lines, unsigned offset,
-                                boolean enable);
-  void    (*render_mouse)     (struct graphics_data *, unsigned x, unsigned y,
-                                unsigned w, unsigned h);
-  void    (*sync_screen)      (struct graphics_data *, struct video_window *);
-  void    (*focus_pixel)      (struct graphics_data *, unsigned x, unsigned y);
-};
+struct renderer;
 
 struct video_layer
 {
@@ -256,7 +218,7 @@ struct graphics_data
 
   uint32_t flat_intensity_palette[FULL_PAL_SIZE];
   uint32_t protected_pal_position;
-  struct renderer renderer;
+  const struct renderer *renderer;
   void *render_data;
   int renderer_num;
 };

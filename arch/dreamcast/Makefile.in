@@ -42,15 +42,8 @@ VORBIS_CFLAGS := -I"${KOS_PORTS}"/libtremor/inst/include \
 VORBIS_LDFLAGS := -L"${KOS_PORTS}"/libtremor/inst/lib -ltremor
 
 ARCH_CFLAGS  +=
-ARCH_CXXFLAGS+=
+ARCH_CXXFLAGS+= -D__STDC_VERSION__=0
 ARCH_LDFLAGS += -lkosext2fs
-
-#
-# Vile hack, remove me ASAP
-#
-arch/dreamcast/%.o: arch/dreamcast/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -Wno-unused-macros -c $< -o $@
 
 #arch/dreamcast/romdisk.img:
 #	$(KOS_GENROMFS) -f arch/dreamcast/romdisk.img -d arch/dreamcast/romdisk -v
@@ -63,7 +56,7 @@ package: mzx
 	${KOS_BASE}/utils/scramble/scramble ${mzxrun}.bin 1ST_READ.BIN
 
 clean:
-	${RM} -f ${mzxrun}.bin 1ST_READ.BIN arch/dreamcast/*.d arch/dreamcast/*.o
+	${RM} -f ${mzxrun}.bin 1ST_READ.BIN
 
 build: package ${build}
 	${CP} 1ST_READ.BIN ${build}

@@ -1,0 +1,54 @@
+##
+# 3DS renderer Makefile fragment
+##
+
+ifeq (${BUILD_3DS},1)
+ifeq (${BUILD_SDL},)
+
+render_3ds_src  := ${render_src}/3ds
+render_3ds_obj  := ${build_base}/${render_3ds_src}
+render_3ds_objs += \
+  ${render_3ds_obj}/renderer_ctr.o \
+  ${render_3ds_obj}/shader_2d.shbin.o \
+  ${render_3ds_obj}/shader_playfield.shbin.o \
+
+# stop deleting these
+.SECONDARY: ${render_3ds_obj}/shader_2d.shbin
+.SECONDARY: ${render_3ds_obj}/shader_2d_playfield.shbin
+
+${render_3ds_obj}/renderer_ctr.o: ${render_3ds_src}/shader_2d_shbin.h \
+                                  ${render_3ds_src}/shader_playfield_shbin.h
+
+${render_3ds_obj}/%.shbin: ${render_3ds_src}/%.v.pica ${render_3ds_src}/%.g.pica
+	$(if ${V},,@echo "  PICASSO " $^)
+	@mkdir -p ${render_3ds_obj}
+	@picasso -o $@ $^
+
+${render_3ds_obj}/%.shbin.o: ${render_3ds_obj}/%.shbin
+	$(if ${V},,@echo "  AS      " $<)
+	@bin2s $< > $<.S
+	@# Shut up the assembler since bin2s doesn't emit a trailing newline:
+	@echo '' >> $<.S
+	$(AS) $<.S -o $@
+
+${render_3ds_src}/%_shbin.h: ${render_3ds_obj}/%.shbin
+	$(if ${V},,@echo "  ECHO    " $@)
+	@CURBIN=$$(echo $(notdir $<) | sed -e 's/^\([0-9]\)/_\1/' | tr . _); \
+	echo "extern const u8 $$(echo $$CURBIN)_end[];"  > $@; \
+	echo "extern const u8 $$(echo $$CURBIN)[];"     >> $@; \
+	echo "extern const u32 $$(echo $$CURBIN)_size;" >> $@;
+
+.PHONY: render_3ds_clean
+clean: render_3ds_clean
+
+render_3ds_clean:
+	${RM} ${render_3ds_src}/*_shbin.h
+
+-include ${render_3ds_objs:.o=.d}
+${render_3ds_objs}: $(filter-out $(wildcard ${render_3ds_obj}), ${render_3ds_obj})
+
+build_dirs   += ${render_3ds_obj}
+render_objs  += ${render_3ds_objs}
+
+endif
+endif

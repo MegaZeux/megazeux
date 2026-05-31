@@ -57,18 +57,7 @@ else
 endif
 
 clean:
-	${RM} -f boot.dol mzxrun.dol arch/wii/*.d arch/wii/*.o
-
-#
-# Vile hack, remove me ASAP
-#
-arch/wii/%.o: arch/wii/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -c $< -o $@
-
-arch/wii/%.o: arch/wii/%.cpp
-	$(if ${V},,@echo "  CXX     " $<)
-	${CXX} -MD ${core_cxxflags} ${core_flags} -c $< -o $@
+	${RM} -f boot.dol mzxrun.dol
 
 #
 # Need to nest Wii binaries in a subdir

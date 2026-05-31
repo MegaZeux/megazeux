@@ -18,7 +18,7 @@
  */
 
 #include "Unit.hpp"
-#include "../src/platform.h"
+#include "../src/platform/platform.h"
 
 #include <assert.h>
 #include <stdarg.h>

@@ -35,18 +35,19 @@
 
 #include "configure.h"
 #include "error.h"
-#include "event.h"
 #include "graphics.h"
-#include "platform.h"
-#include "pngops.h"
-#include "render.h"
-#include "render_layer.h"
-#include "renderers.h"
 #include "world.h"
+#include "io/pngops.h"
 #include "io/vio.h"
 
+#include "event/event.h"
+#include "platform/platform.h"
+#include "render/render.h"
+#include "render/render_layer.h"
+#include "render/renderers.h"
+
 #ifdef CONFIG_SDL
-#include "SDLmzx.h"
+#include "platform/sdl/SDLmzx.h"
 #endif // CONFIG_SDL
 
 #include "util.h"
@@ -54,77 +55,6 @@
 #define CURSOR_BLINK_RATE 115
 
 __editor_maybe_static struct graphics_data graphics;
-
-static const struct renderer_data renderers[] =
-{
-#if defined(CONFIG_RENDER_SOFT)
-  { "software", render_soft_register },
-#endif
-#if defined(CONFIG_RENDER_SOFTSCALE)
-  { "softscale", render_softscale_register },
-#endif
-#if defined(CONFIG_RENDER_SDLACCEL)
-  { "sdlaccel", render_sdlaccel_register },
-#endif
-#if defined(CONFIG_RENDER_GL_FIXED)
-  { "opengl1", render_gl1_register },
-  { "opengl2", render_gl2_register },
-#endif
-#if defined(CONFIG_RENDER_GL_PROGRAM)
-  { "glsl", render_glsl_register },
-  { "glslscale", render_glsl_software_register },
-  { "auto_glsl", render_auto_glsl_register },
-#endif
-#if defined(CONFIG_RENDER_YUV)
-  { "overlay1", render_yuv1_register },
-  { "overlay2", render_yuv2_register },
-#endif
-#if defined(CONFIG_RENDER_GP2X)
-  { "gp2x", render_gp2x_register },
-#endif
-#if defined(CONFIG_NDS)
-  { "nds", render_nds_register },
-#endif
-#if defined(CONFIG_3DS)
-#if defined(CONFIG_RENDER_CTR)
-  { "3ds", render_ctr_register },
-#endif
-#endif
-#if defined(CONFIG_WII)
-#if defined(CONFIG_RENDER_GX)
-  { "gx", render_gx_register },
-#endif
-#if !defined(CONFIG_SDL)
-  { "xfb", render_xfb_register },
-#endif
-#endif
-#if defined(CONFIG_DJGPP)
-  { "ega", render_ega_register },
-#if defined(CONFIG_DOS_SVGA)
-  { "svga", render_svga_register },
-#endif
-#endif
-#if defined(CONFIG_DREAMCAST)
-  { "dreamcast", render_dc_register },
-  { "dreamcast_fb", render_dc_fb_register },
-#endif
-  { NULL, NULL }
-};
-
-struct renderer_alias
-{
-  const char *alias;
-  const char *name;
-};
-
-static const struct renderer_alias renderer_aliases[] =
-{
-#if defined(CONFIG_RENDER_SOFTSCALE)
-  { "overlay1", "softscale" },
-  { "overlay2", "softscale" },
-#endif
-  { NULL, NULL },
-};
 
 static const struct rgb_color default_pal[16] =
 {
@@ -159,21 +89,21 @@ static inline boolean extended_charsets_check(boolean s, int p, int c)
 static void remap_charbyte(struct graphics_data *graphics, uint16_t chr,
  uint8_t byte)
 {
-  if(graphics->renderer.remap_charbyte)
-    graphics->renderer.remap_charbyte(graphics, chr, byte);
+  if(graphics->renderer->remap_charbyte)
+    graphics->renderer->remap_charbyte(graphics, chr, byte);
 }
 
 static void remap_char(struct graphics_data *graphics, uint16_t chr)
 {
-  if(graphics->renderer.remap_char)
-    graphics->renderer.remap_char(graphics, chr);
+  if(graphics->renderer->remap_char)
+    graphics->renderer->remap_char(graphics, chr);
 }
 
 static void remap_char_range(struct graphics_data *graphics, uint16_t first,
  uint16_t len)
 {
-  if(graphics->renderer.remap_char_range)
-    graphics->renderer.remap_char_range(graphics, first, len);
+  if(graphics->renderer->remap_char_range)
+    graphics->renderer->remap_char_range(graphics, first, len);
 }
 
 void ec_change_byte(uint16_t chr, uint8_t byte, uint8_t new_value)
@@ -353,7 +283,7 @@ __editor_maybe_static void ec_load_mzx(void)
 
 static void update_colors(struct rgb_color *palette, unsigned int count)
 {
-  graphics.renderer.update_colors(&graphics, palette, count);
+  graphics.renderer->update_colors(&graphics, palette, count);
 }
 
 static unsigned int make_palette(struct rgb_color *palette)
@@ -1170,8 +1100,8 @@ void update_screen(void)
      * Hardware SMZX may reset various text mode settings, so do it first.
      */
     graphics.smzx_dirty = false;
-    if(graphics.renderer.set_screen_mode)
-      graphics.renderer.set_screen_mode(&graphics, graphics.screen_mode);
+    if(graphics.renderer->set_screen_mode)
+      graphics.renderer->set_screen_mode(&graphics, graphics.screen_mode);
   }
 
   if(graphics.palette_dirty)
@@ -1181,7 +1111,7 @@ void update_screen(void)
   }
 
 #ifndef CONFIG_NO_LAYER_RENDERING
-  if(graphics.requires_extended && graphics.renderer.render_layer)
+  if(graphics.requires_extended && graphics.renderer->render_layer)
   {
     uint32_t layer;
     for(layer = 0; layer < graphics.layer_count; layer++)
@@ -1196,31 +1126,31 @@ void update_screen(void)
     {
       if(graphics.sorted_video_layers[layer]->data &&
        !graphics.sorted_video_layers[layer]->empty)
-        graphics.renderer.render_layer(&graphics,
+        graphics.renderer->render_layer(&graphics,
          graphics.sorted_video_layers[layer]);
     }
   }
   else
 #endif
-  if(graphics.renderer.render_graph)
+  if(graphics.renderer->render_graph)
   {
     // Fallback if the layer renderer is unavailable or unnecessary
-    graphics.renderer.render_graph(&graphics);
+    graphics.renderer->render_graph(&graphics);
   }
 #ifndef CONFIG_NO_LAYER_RENDERING
   else
 
-  if(graphics.renderer.render_layer)
+  if(graphics.renderer->render_layer)
   {
     // Fallback using the layer renderer
     graphics.text_video_layer.mode = graphics.screen_mode;
     graphics.text_video_layer.data = graphics.text_video;
 
-    graphics.renderer.render_layer(&graphics, &(graphics.text_video_layer));
+    graphics.renderer->render_layer(&graphics, &(graphics.text_video_layer));
   }
 #endif
 
-  if(graphics.renderer.render_cursor || graphics.renderer.hardware_cursor)
+  if(graphics.renderer->render_cursor || graphics.renderer->hardware_cursor)
   {
     unsigned int cursor_color = get_cursor_color();
     unsigned int offset = 0;
@@ -1246,18 +1176,18 @@ void update_screen(void)
     }
 
     // Try to render the standard software cursor first.
-    if(graphics.renderer.render_cursor && enabled && graphics.cursor_flipflop)
+    if(graphics.renderer->render_cursor && enabled && graphics.cursor_flipflop)
     {
-      graphics.renderer.render_cursor(&graphics,
+      graphics.renderer->render_cursor(&graphics,
        graphics.cursor_x, graphics.cursor_y, cursor_color, lines, offset);
     }
     else
 
     // Other platforms may use a hardware cursor instead that may need to be
     // updated any frame regardless of the cursor state and blinking.
-    if(graphics.renderer.hardware_cursor)
+    if(graphics.renderer->hardware_cursor)
     {
-      graphics.renderer.hardware_cursor(&graphics,
+      graphics.renderer->hardware_cursor(&graphics,
        graphics.cursor_x, graphics.cursor_y, cursor_color, lines, offset, enabled);
     }
   }
@@ -1271,11 +1201,11 @@ void update_screen(void)
     mouse_x = (mouse_x / graphics.mouse_width) * graphics.mouse_width;
     mouse_y = (mouse_y / graphics.mouse_height) * graphics.mouse_height;
 
-    graphics.renderer.render_mouse(&graphics, mouse_x, mouse_y,
+    graphics.renderer->render_mouse(&graphics, mouse_x, mouse_y,
      graphics.mouse_width, graphics.mouse_height);
   }
 
-  graphics.renderer.sync_screen(&graphics, &(graphics.window));
+  graphics.renderer->sync_screen(&graphics, &(graphics.window));
 }
 
 boolean get_fade_status(void)
@@ -1426,56 +1356,6 @@ void insta_fadein(void)
 
   graphics.palette_dirty = true;
   update_screen(); // NOTE: this was called conditionally in 2.81e
-}
-
-static boolean set_graphics_output(struct config_info *conf)
-{
-  char video_output[sizeof(conf->video_output)];
-  const struct renderer_data *renderer = renderers;
-  const struct renderer_alias *alias = renderer_aliases;
-  int i = 0;
-
-  // The first renderer was NULL, this shouldn't happen
-  if(!renderer->name)
-  {
-    warn("No renderers built, please provide a valid config.h!\n");
-    return false;
-  }
-
-  // Some "renderers" are aliases for other renderers that are kept around for
-  // compatibility reasons only. These are kept separate from the main list.
-  memcpy(video_output, conf->video_output, sizeof(video_output));
-  while(alias->alias)
-  {
-    if(!strcasecmp(video_output, alias->alias))
-    {
-      snprintf(video_output, sizeof(video_output), "%s", alias->name);
-      break;
-    }
-    alias++;
-  }
-
-  while(renderer->name)
-  {
-    if(!strcasecmp(video_output, renderer->name))
-      break;
-    renderer++;
-    i++;
-  }
-
-  // If no match found, use first renderer in the renderer list
-  if(!renderer->name)
-  {
-    renderer = renderers;
-    i = 0;
-  }
-
-  renderer->reg(&graphics.renderer);
-  graphics.renderer_num = i;
-  graphics.window.is_init = false;
-
-  debug("Video: using '%s' renderer.\n", renderer->name);
-  return true;
 }
 
 const char *video_get_default_caption(void)
@@ -1638,13 +1518,13 @@ void destruct_layers(void)
 
 static boolean try_init_video(struct config_info *conf)
 {
-  if(graphics.renderer.init_video(&graphics, conf))
+  if(graphics.renderer->init_video(&graphics, conf))
   {
     if(video_create_window())
       return true;
 
-    if(graphics.renderer.free_video)
-      graphics.renderer.free_video(&graphics);
+    if(graphics.renderer->free_video)
+      graphics.renderer->free_video(&graphics);
   }
   return false;
 }
@@ -1673,7 +1553,7 @@ boolean init_video(struct config_info *conf, const char *caption)
 
   init_layers();
 
-  if(!set_graphics_output(conf))
+  if(!set_current_renderer(&graphics, conf->video_output))
     return false;
 
   if(conf->resolution_width <= 0 || conf->resolution_height <= 0)
@@ -1697,7 +1577,7 @@ boolean init_video(struct config_info *conf, const char *caption)
     // Try falling back to the first registered renderer
     debug("Failed to initialize '%s', attempting fallback.\n", conf->video_output);
     strcpy(conf->video_output, "");
-    if(!set_graphics_output(conf))
+    if(!set_current_renderer(&graphics, conf->video_output))
       return false;
 
     if(!try_init_video(conf))
@@ -1733,8 +1613,8 @@ boolean init_video(struct config_info *conf, const char *caption)
 
 void quit_video(void)
 {
-  if(graphics.renderer.free_video)
-    graphics.renderer.free_video(&graphics);
+  if(graphics.renderer->free_video)
+    graphics.renderer->free_video(&graphics);
 
   destruct_layers();
   graphics.window.is_init = false;
@@ -1801,7 +1681,7 @@ unsigned video_create_window(void)
   }
   video_window_update_viewport(window);
 
-  if(graphics.renderer.create_window(&graphics, window))
+  if(graphics.renderer->create_window(&graphics, window))
   {
     window->is_init = true;
     video_set_window_caption(window, graphics.default_caption);
@@ -1809,7 +1689,7 @@ unsigned video_create_window(void)
 
     // Make sure a BPP was selected by the renderer (if applicable).
     if(window->bits_per_pixel == BPP_AUTO)
-      warn("renderer.create_window must auto-select BPP! Report this!\n");
+      warn("renderer->create_window must auto-select BPP! Report this!\n");
 
     return 1;
   }
@@ -1852,9 +1732,9 @@ unsigned video_window_by_platform_id(unsigned platform_id)
  */
 void video_window_update_viewport(struct video_window *window)
 {
-  if(graphics.renderer.set_viewport)
+  if(graphics.renderer->set_viewport)
   {
-    graphics.renderer.set_viewport(&graphics, window);
+    graphics.renderer->set_viewport(&graphics, window);
   }
   else
   {
@@ -1891,8 +1771,8 @@ void video_sync_window_size(unsigned window_id,
     }
     video_window_update_viewport(&(graphics.window));
 
-    if(graphics.renderer.resize_callback)
-      graphics.renderer.resize_callback(&graphics, &graphics.window);
+    if(graphics.renderer->resize_callback)
+      graphics.renderer->resize_callback(&graphics, &graphics.window);
 
     graphics.palette_dirty = true;
     update_screen();
@@ -1901,7 +1781,7 @@ void video_sync_window_size(unsigned window_id,
 
 static void resize_window(unsigned window_id, boolean fullscreen)
 {
-  if(graphics.renderer.resize_window)
+  if(graphics.renderer->resize_window)
   {
     if(fullscreen)
     {
@@ -1917,7 +1797,7 @@ static void resize_window(unsigned window_id, boolean fullscreen)
     graphics.fullscreen = fullscreen;
     set_window_ratio(&graphics.window, graphics.ratio);
 
-    graphics.renderer.resize_window(&graphics, &graphics.window);
+    graphics.renderer->resize_window(&graphics, &graphics.window);
 
     // Renderer resize_window may have modified the requested dimensions.
     video_sync_window_size(window_id,
@@ -1932,7 +1812,7 @@ static void resize_window(unsigned window_id, boolean fullscreen)
 void video_resize_window(unsigned window_id,
  unsigned new_width_px, unsigned new_height_px)
 {
-  if(graphics.renderer.resize_window && valid_window_id(window_id))
+  if(graphics.renderer->resize_window && valid_window_id(window_id))
   {
     graphics.window_width = new_width_px;
     graphics.window_height = new_height_px;
@@ -1944,7 +1824,7 @@ void video_resize_window(unsigned window_id,
 void video_resize_fullscreen(unsigned window_id,
  unsigned new_width_px, unsigned new_height_px)
 {
-  if(graphics.renderer.resize_window && valid_window_id(window_id))
+  if(graphics.renderer->resize_window && valid_window_id(window_id))
   {
     graphics.resolution_width = new_width_px;
     graphics.resolution_height = new_height_px;
@@ -1978,9 +1858,9 @@ boolean video_set_window_caption(struct video_window *window, const char *captio
   if(!window)
     window = &(graphics.window);
 
-  if(graphics.renderer.set_window_caption)
+  if(graphics.renderer->set_window_caption)
   {
-    if(!graphics.renderer.set_window_caption(&graphics, window, caption))
+    if(!graphics.renderer->set_window_caption(&graphics, window, caption))
     {
       debug("--VIDEO-- video_set_window_caption failed: %s\n",
        caption ? caption : "NULL");
@@ -1996,9 +1876,9 @@ boolean video_set_window_icon(struct video_window *window, const char *icon_path
   if(!window)
     window = &(graphics.window);
 
-  if(graphics.renderer.set_window_icon)
+  if(graphics.renderer->set_window_icon)
   {
-    if(!graphics.renderer.set_window_icon(&graphics, window, icon_path))
+    if(!graphics.renderer->set_window_icon(&graphics, window, icon_path))
     {
       debug("--VIDEO-- video_set_window_icon failed: %s\n",
        icon_path ? icon_path : "NULL");
@@ -2022,17 +1902,17 @@ boolean change_video_output(struct config_info *conf, const char *output)
   snprintf(conf->video_output, len, "%s", output);
   conf->video_output[len - 1] = 0;
 
-  if(graphics.renderer.free_video)
-    graphics.renderer.free_video(&graphics);
+  if(graphics.renderer->free_video)
+    graphics.renderer->free_video(&graphics);
 
-  set_graphics_output(conf);
+  set_current_renderer(&graphics, conf->video_output);
 
   if(!try_init_video(conf))
   {
     retval = false;
 
     memcpy(conf->video_output, old_video_output, len);
-    if(!set_graphics_output(conf))
+    if(!set_current_renderer(&graphics, conf->video_output))
     {
       warn("Failed to roll back renderer!\n");
       fallback = true;
@@ -2049,14 +1929,14 @@ boolean change_video_output(struct config_info *conf, const char *output)
   if(fallback)
   {
     // Attempt the first renderer in the list (unless that just failed).
-    if(!strcmp(conf->video_output, renderers->name))
+    if(!strcmp(conf->video_output, renderers_available[0]->name))
     {
       warn("Aborting!\n");
       exit(1);
     }
 
-    snprintf(conf->video_output, len, "%s", renderers->name);
-    if(!set_graphics_output(conf))
+    snprintf(conf->video_output, len, "%s", renderers_available[0]->name);
+    if(!set_current_renderer(&graphics, conf->video_output))
     {
       warn("Failed to load fallback renderer, aborting!\n");
       exit(1);
@@ -2075,15 +1955,14 @@ boolean change_video_output(struct config_info *conf, const char *output)
 
 int get_available_video_output_list(const char **buffer, int buffer_len)
 {
-  const struct renderer_data *renderer = renderers;
   int i;
 
-  for(i = 0; i < buffer_len; i++, renderer++)
+  for(i = 0; i < buffer_len; i++)
   {
-    if(!renderer->name)
+    if(!renderers_available[i])
       break;
 
-    buffer[i] = renderer->name;
+    buffer[i] = renderers_available[i]->name;
   }
   return i;
 }
@@ -3099,9 +2978,9 @@ void get_screen_coords(int screen_x, int screen_y, int *x, int *y,
  int *min_x, int *min_y, int *max_x, int *max_y)
 {
 #if 0
-  if(graphics.renderer.get_screen_coords)
+  if(graphics.renderer->get_screen_coords)
   {
-    graphics.renderer.get_screen_coords(&graphics, &(graphics.window),
+    graphics.renderer->get_screen_coords(&graphics, &(graphics.window),
      screen_x, screen_y, x, y, min_x, min_y, max_x, max_y);
   }
   else
@@ -3115,9 +2994,9 @@ void get_screen_coords(int screen_x, int screen_y, int *x, int *y,
 void set_screen_coords(int x, int y, int *screen_x, int *screen_y)
 {
 #if 0
-  if(graphics.renderer.set_screen_coords)
+  if(graphics.renderer->set_screen_coords)
   {
-    graphics.renderer.set_screen_coords(&graphics, &(graphics.window),
+    graphics.renderer->set_screen_coords(&graphics, &(graphics.window),
      x, y, screen_x, screen_y);
   }
   else
@@ -3139,14 +3018,14 @@ void focus_screen(int x, int y)
 
 void focus_pixel(int x, int y)
 {
-  if(graphics.renderer.focus_pixel)
-    graphics.renderer.focus_pixel(&graphics, x, y);
+  if(graphics.renderer->focus_pixel)
+    graphics.renderer->focus_pixel(&graphics, x, y);
 }
 
 boolean switch_shader(const char *name)
 {
-  if(graphics.renderer.switch_shader)
-    return graphics.renderer.switch_shader(&graphics, name);
+  if(graphics.renderer->switch_shader)
+    return graphics.renderer->switch_shader(&graphics, name);
 
   return false;
 }
@@ -3156,7 +3035,7 @@ boolean layer_renderer_check(boolean show_error)
 #ifdef CONFIG_NO_LAYER_RENDERING
   if(1)
 #else
-  if(!graphics.renderer.render_layer)
+  if(!graphics.renderer->render_layer)
 #endif
   {
     if(show_error)

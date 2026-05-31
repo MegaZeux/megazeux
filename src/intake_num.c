@@ -22,12 +22,12 @@
 #include <string.h>
 
 #include "core.h"
-#include "event.h"
 #include "graphics.h"
 #include "intake_num.h"
 #include "util.h"
 #include "window.h"
 
+#include "event/event.h"
 
 struct intake_num_context
 {

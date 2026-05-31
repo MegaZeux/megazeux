@@ -26,13 +26,14 @@
 #include "../const.h"
 #include "../core.h"
 #include "../counter.h"
-#include "../event.h"
 #include "../idput.h"
 #include "../robot.h"
 #include "../util.h"
 #include "../window.h"
 #include "../world.h"
 #include "../world_struct.h"
+
+#include "../event/event.h"
 
 #include "board.h"
 #include "configure.h"

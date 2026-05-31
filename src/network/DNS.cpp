@@ -27,8 +27,8 @@
 #include "Socket.hpp"
 
 #include "../configure.h"
-#include "../platform.h"
 #include "../util.h"
+#include "../platform/platform.h"
 
 #define LOCK(d)         platform_mutex_lock(&(d->mutex))
 #define UNLOCK(d)       platform_mutex_unlock(&(d->mutex))

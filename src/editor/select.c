@@ -26,13 +26,14 @@
 #include "../core.h"
 #include "../data.h"
 #include "../error.h"
-#include "../event.h"
 #include "../graphics.h"
 #include "../idarray.h"
 #include "../idput.h"
 #include "../util.h"
 #include "../window.h"
 #include "../world_struct.h"
+
+#include "../event/event.h"
 
 #include <stdio.h>
 

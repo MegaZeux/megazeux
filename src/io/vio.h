@@ -25,7 +25,7 @@
 __M_BEGIN_DECLS
 
 #include "vfile.h"
-#include "../platform_attribute.h" /* ATTRIBUTE_PRINTF */
+#include "../platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
 
 #include <stdarg.h>
 #include <stdint.h>

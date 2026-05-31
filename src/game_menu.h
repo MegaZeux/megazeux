@@ -25,7 +25,7 @@
 __M_BEGIN_DECLS
 
 #include "core.h"
-#include "keysym.h"
+#include "event/keysym.h"
 
 boolean allow_exit_menu(struct world *mzx_world, boolean is_titlescreen);
 boolean allow_enter_menu(struct world *mzx_world, boolean is_titlescreen);

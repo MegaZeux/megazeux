@@ -59,12 +59,6 @@ ARM7_BINARY := arch/nds-blocksds/megazeux.arm7.elf
 #
 # Vile hack, remove me ASAP
 #
-arch/nds/%.o: arch/nds/%.c
-	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -Wno-unused-macros -c $< -o $@
-
-arch/nds/render.o: arch/nds/protected_palette.bin.o
-
 arch/nds/%.bin.o arch/nds/%_bin.h : arch/nds/%.bin
 	$(if ${V},,@echo "  CC      " $<)
 	@$(BLOCKSDS)/tools/bin2c/bin2c $< $(@D)

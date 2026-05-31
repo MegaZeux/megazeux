@@ -23,7 +23,6 @@
 
 #include "../core.h"
 #include "../data.h"
-#include "../event.h"
 #include "../graphics.h"
 #include "../helpsys.h"
 #include "../util.h"
@@ -31,6 +30,8 @@
 #include "../world.h"
 #include "../io/path.h"
 #include "../io/vio.h"
+
+#include "../event/event.h"
 
 #include "configure.h"
 #include "graphics.h"

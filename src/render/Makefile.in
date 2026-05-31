@@ -1,0 +1,40 @@
+##
+# MegaZeux renderers Makefile fragment
+##
+
+render_src   = ${core_src}/render
+render_obj   = ${build_base}/${render_src}
+render_objs += \
+  ${render_obj}/render.o \
+  ${render_obj}/renderers.o \
+
+render_layer_software = 0
+
+include src/render/*/Makefile.in
+
+# Screenshots require the software layer renderer.
+ifeq (${BUILD_ENABLE_SCREENSHOTS},1)
+render_layer_software = 1
+endif
+
+# The editor requires the software layer renderer
+# (board screenshot export).
+ifeq (${BUILD_EDITOR},1)
+render_layer_software = 1
+endif
+
+# Software layer renderer
+# This one tends to take forever for many builds. Prefix it to
+# the list so hopefully it starts sooner during parallel builds.
+ifeq (${render_layer_software},1)
+core_cobjs  := ${render_obj}/render_layer.o ${core_cobjs}
+
+-include ${render_obj}/render_layer.d
+${render_obj}/render_layer.o: $(filter-out $(wildcard ${render_obj}), ${render_obj})
+endif
+
+-include ${render_objs:.o=.d}
+${render_objs}: $(filter-out $(wildcard ${render_obj}), ${render_obj})
+
+build_dirs   += ${render_obj}
+core_cobjs   += ${render_objs}

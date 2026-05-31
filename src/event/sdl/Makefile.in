@@ -1,0 +1,17 @@
+##
+# SDL event Makefile fragment
+##
+
+ifneq (${BUILD_SDL},)
+
+event_sdl_obj   = ${event_obj}/sdl
+event_sdl_objs += \
+  ${event_sdl_obj}/event_sdl.o \
+
+-include ${event_sdl_objs:.o=.d}
+${event_sdl_objs}: $(filter-out $(wildcard ${event_sdl_obj}), ${event_sdl_obj})
+
+build_dirs   += ${event_sdl_obj}
+event_objs   += ${event_sdl_objs}
+
+endif

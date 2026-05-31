@@ -1,0 +1,22 @@
+##
+# SDL audio Makefile fragment
+##
+
+ifneq (${BUILD_SDL},)
+
+audio_sdl_obj  := ${audio_obj}/sdl
+audio_sdl_objs +=
+
+ifeq (${BUILD_SDL},3)
+audio_sdl_objs += ${audio_sdl_obj}/audio_sdl3.o
+else
+audio_sdl_objs += ${audio_sdl_obj}/audio_sdl.o
+endif
+
+-include ${audio_sdl_objs:.o=.d}
+${audio_sdl_objs}: $(filter-out $(wildcard ${audio_sdl_obj}), ${audio_sdl_obj})
+
+build_dirs   += ${audio_sdl_obj}
+audio_cobjs  += ${audio_sdl_objs}
+
+endif

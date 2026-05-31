@@ -98,7 +98,7 @@ else # !BUILD_MODULAR
 # Certain tests that don't rely on many core MZX features can be patched in
 # by directly linking their objects.
 #
-unit_objs += \
+unit_extra_objs += \
   ${io_obj}/path.o        \
   ${io_obj}/vfs.o         \
   ${io_obj}/vio.o         \
@@ -165,9 +165,9 @@ ${unit_obj}/%.o: ${unit_src}/%.cpp
 	$(if ${V},,@echo "  CXX     " $<)
 	${CXX} -MD ${unit_cflags} -c $< -o $@
 
-${unit_target}: ${unit_objs}
+${unit_target}: ${unit_objs} ${unit_extra_objs}
 	$(if ${V},,@echo "  LINK    " $@)
-	${CXX} ${unit_cflags} -o $@ ${unit_objs} ${unit_ldflags}
+	${CXX} ${unit_cflags} -o $@ ${unit_objs} ${unit_extra_objs} ${unit_ldflags}
 
 -include ${unit_objs:.o=.d}
 

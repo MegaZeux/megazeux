@@ -27,7 +27,7 @@ __M_BEGIN_DECLS
 
 #include <assert.h>
 #include <inttypes.h>
-#include "platform_endian.h"
+#include "platform/platform_endian.h"
 
 /**
  * Minimum string length before aligned comparison should be invoked.

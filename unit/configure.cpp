@@ -25,13 +25,14 @@
 
 #include "../src/configure.h"
 #include "../src/const.h"
-#include "../src/event.h"
-#include "../src/keysym.h"
 #include "../src/util.h"
 #include "../src/io/vio.h"
 
+#include "../src/event/event.h"
+#include "../src/event/keysym.h"
+
 #ifdef CONFIG_SDL
-#include "../src/SDLmzx.h"
+#include "../src/platform/sdl/SDLmzx.h"
 #undef IGNORE /* Windows defines this for some reason... */
 #endif
 

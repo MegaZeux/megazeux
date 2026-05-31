@@ -1,0 +1,40 @@
+##
+# MegaZeux OpenGL renderers Makefile fragment
+##
+
+render_opengl_obj   = ${render_obj}/opengl
+render_opengl_objs +=
+
+# Non-SDL EGL-based platform.
+ifeq (${BUILD_EGL},1)
+render_opengl_objs += ${render_opengl_obj}/render_egl.o
+core_ldflags += -lEGL
+endif
+
+# GL shared
+ifneq ($(or ${BUILD_RENDER_GL_FIXED},${BUILD_RENDER_GL_PROGRAM}),)
+render_opengl_objs += \
+  ${render_opengl_obj}/render_gl.o
+endif
+
+# Fixed function renderers (OGL>=1, OGLES=1)
+ifeq (${BUILD_RENDER_GL_FIXED},1)
+render_opengl_objs += \
+  ${render_opengl_obj}/renderer_gl1.o \
+  ${render_opengl_obj}/renderer_gl2.o \
+
+render_layer_software = 1
+endif
+
+# GLSL-based renderers (OGL>=2, OGLES>=2)
+ifeq (${BUILD_RENDER_GL_PROGRAM},1)
+render_opengl_objs += ${render_opengl_obj}/renderer_glsl.o
+render_layer_software = 1
+endif
+
+-include ${render_opengl_objs:.o=.d}
+${render_opengl_objs}: \
+ $(filter-out $(wildcard ${render_opengl_obj}), ${render_opengl_obj})
+
+build_dirs   += ${render_opengl_obj}
+render_objs  += ${render_opengl_objs}

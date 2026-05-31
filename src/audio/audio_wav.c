@@ -30,10 +30,13 @@
 #include "ext.h"
 #include "sampled_stream.h"
 
-#include "../SDLmzx.h" // SDL WAV loader fallback
 #include "../util.h"
 #include "../io/path.h"
 #include "../io/vio.h"
+
+#ifdef CONFIG_SDL
+#include "../platform/sdl/SDLmzx.h" // SDL WAV loader fallback
+#endif
 
 // If the WAV/SAM is larger than this, print a warning to the console.
 // (Right now only do this for debug builds because a lot more games than

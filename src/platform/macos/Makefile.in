@@ -1,0 +1,21 @@
+##
+# Mac OS X platform Makefile fragment
+##
+
+ifeq (${PLATFORM},darwin)
+
+platform_macos_obj  := ${platform_obj}/macos
+platform_macos_objs += \
+  ${platform_macos_obj}/clipboard_cocoa.o \
+
+-include ${platform_macos_objs:.o=.d}
+${platform_macos_objs}: \
+ $(filter-out $(wildcard ${platform_macos_obj}), ${platform_macos_obj})
+
+build_dirs    += ${platform_macos_obj}
+platform_objs += ${platform_macos_objs}
+core_ldflags  += -framework Cocoa
+
+has_clipboard = 1
+
+endif

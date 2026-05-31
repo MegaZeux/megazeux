@@ -61,7 +61,7 @@ __M_BEGIN_DECLS
 #include <limits.h>
 
 #include "memcasecmp.h"
-#include "platform_endian.h"
+#include "platform/platform_endian.h"
 
 #ifndef klib_unused
 #if (defined __clang__ && __clang_major__ >= 3) || (defined __GNUC__ && __GNUC__ >= 3)

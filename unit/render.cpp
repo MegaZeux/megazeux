@@ -23,11 +23,11 @@
 #include "../src/io/path.h"
 
 extern "C" {
-#include "../src/render.c"
+#include "../src/render/render.c"
 }
 
 #define BUILD_REFERENCE_RENDERER
-#include "../src/render_layer.cpp"
+#include "../src/render/render_layer.cpp"
 
 typedef void (*render_layer_fp)(void * RESTRICT pixels,
  size_t width_px, size_t height_px, size_t pitch, int bpp,

@@ -19,17 +19,17 @@
 
 #include "error.h"
 #include "extmem.h"
-#include "platform_endian.h"
 #include "robot.h"
 #include "util.h"
 #include "world_struct.h"
+#include "platform/platform_endian.h"
 
 #include <limits.h>
 #include <stdint.h>
 #include <zlib.h>
 
 #ifdef CONFIG_NDS
-#include "../arch/nds/extmem.h"
+#include "platform/nds/extmem_nds.h"
 #define USE_PLATFORM_EXTRAM_ALLOC
 #define EXTRAM_BUFFER_SIZE
 #define EXTRAM_BUFFER_DECL

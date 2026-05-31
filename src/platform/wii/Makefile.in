@@ -1,0 +1,23 @@
+##
+# Wii platform Makefile fragment
+##
+
+ifeq (${PLATFORM},wii)
+ifeq (${BUILD_SDL},)
+
+platform_wii_obj  := ${platform_obj}/wii
+platform_wii_objs += \
+  ${platform_wii_obj}/platform_wii.o \
+
+-include ${platform_wii_objs:.o=.d}
+${platform_wii_objs}: \
+ $(filter-out $(wildcard ${platform_wii_obj}), ${platform_wii_obj})
+
+build_dirs    += ${platform_wii_obj}
+platform_objs += ${platform_wii_objs}
+core_flags    += -DCONFIG_REPLACE_MAIN
+
+has_platform_base = 1
+
+endif
+endif

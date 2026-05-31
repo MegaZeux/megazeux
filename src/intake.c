@@ -24,11 +24,12 @@
 
 #include "configure.h"
 #include "core.h"
-#include "event.h"
 #include "intake.h"
 #include "graphics.h"
 #include "window.h"
 #include "world_struct.h"
+
+#include "event/event.h"
 
 // Global status of insert
 static boolean insert_on = true;

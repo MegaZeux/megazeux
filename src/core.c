@@ -27,15 +27,16 @@
 #include "configure.h"
 #include "core.h"
 #include "error.h"
-#include "event.h"
 #include "game_menu.h"
 #include "graphics.h"
 #include "helpsys.h"
-#include "platform.h"
 #include "settings.h"
 #include "util.h"
 #include "world.h"
 #include "world_struct.h"
+
+#include "event/event.h"
+#include "platform/platform.h"
 
 #define MAX_NUM_CALLBACKS 8
 

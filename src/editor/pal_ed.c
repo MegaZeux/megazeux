@@ -27,12 +27,13 @@
 
 #include "../core.h"
 #include "../data.h"
-#include "../event.h"
 #include "../graphics.h"
 #include "../intake_num.h"
 #include "../util.h"
 #include "../window.h"
 #include "../io/vio.h"
+
+#include "../event/event.h"
 
 #include "configure.h"
 #include "graphics.h"

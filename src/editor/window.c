@@ -26,12 +26,13 @@
 
 #include "../board.h"
 #include "../core.h"
-#include "../event.h"
 #include "../extmem.h"
 #include "../graphics.h"
-#include "../platform.h"
 #include "../intake.h"
 #include "../window.h"
+
+#include "../event/event.h"
+#include "../platform/platform.h"
 
 #define list_button " \x1F "
 

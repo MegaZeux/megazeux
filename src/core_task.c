@@ -22,11 +22,11 @@
 
 #include "core_task.h"
 
-#include "event.h"
 #include "graphics.h"
-#include "platform.h"
 #include "util.h"
 #include "window.h"
+#include "event/event.h"
+#include "platform/platform.h"
 
 #ifndef PLATFORM_NO_THREADING
 #define TASK_THREADED

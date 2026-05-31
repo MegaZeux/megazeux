@@ -1,0 +1,18 @@
+##
+# NDS event Makefile fragment
+##
+
+ifeq (${BUILD_NDS},1)
+
+event_nds_obj   = ${event_obj}/nds
+event_nds_objs += \
+  ${event_nds_obj}/event_nds.o \
+  ${event_nds_obj}/evq.o \
+
+-include ${event_nds_objs:.o=.d}
+${event_nds_objs}: $(filter-out $(wildcard ${event_nds_obj}), ${event_nds_obj})
+
+build_dirs   += ${event_nds_obj}
+event_objs   += ${event_nds_objs}
+
+endif

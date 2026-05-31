@@ -30,7 +30,7 @@
 #ifdef VIRTUAL_FILESYSTEM
 
 #ifdef VIRTUAL_FILESYSTEM_PARALLEL
-#include "../platform.h"
+#include "../platform/platform.h"
 #endif
 
 #include "../util.h"

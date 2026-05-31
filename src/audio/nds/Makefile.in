@@ -1,0 +1,17 @@
+##
+# NDS audio Makefile fragment
+##
+
+ifeq (${BUILD_NDS},1)
+
+audio_nds_obj  := ${audio_obj}/nds
+audio_nds_objs += \
+  ${audio_nds_obj}/audio_nds.o
+
+-include ${audio_nds_objs:.o=.d}
+${audio_nds_objs}: $(filter-out $(wildcard ${audio_nds_obj}), ${audio_nds_obj})
+
+build_dirs   += ${audio_nds_obj}
+audio_cobjs  += ${audio_nds_objs}
+
+endif
