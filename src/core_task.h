@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __CORE_TASK_H
-#define __CORE_TASK_H
+#ifndef MEGAZEUX_CORE_TASK_H
+#define MEGAZEUX_CORE_TASK_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 
@@ -33,6 +33,6 @@ CORE_LIBSPEC void core_task_context(context *parent, const char *title,
  boolean (*task_callback)(context *ctx, void *priv),
  void (*task_complete)(void *priv, boolean ret), void *priv);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __CORE_TASK_H */
+#endif /* MEGAZEUX_CORE_TASK_H */

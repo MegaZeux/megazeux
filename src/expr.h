@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EXPR_H
-#define __EXPR_H
+#ifndef MEGAZEUX_EXPR_H
+#define MEGAZEUX_EXPR_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <limits.h>
 #include <stddef.h>
@@ -142,6 +142,6 @@ static inline char *tr_int_to_hex_string(char dest[9], int value, size_t *len)
   return pos;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EXPR_H
+#endif /* MEGAZEUX_EXPR_H */

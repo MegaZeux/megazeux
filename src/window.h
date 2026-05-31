@@ -20,12 +20,12 @@
 
 /* WINDOW.H- Declarations for WINDOW.CPP */
 
-#ifndef __WINDOW_H
-#define __WINDOW_H
+#ifndef MEGAZEUX_WINDOW_H
+#define MEGAZEUX_WINDOW_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
@@ -374,6 +374,6 @@ CORE_LIBSPEC int file_manager(struct world *mzx_world,
  struct element **dialog_ext, int num_ext, int ext_height);
 #endif // CONFIG_EDITOR
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __WINDOW_H
+#endif /* MEGAZEUX_WINDOW_H */

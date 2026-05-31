@@ -20,12 +20,12 @@
 
 // Useful, generic utility functions
 
-#ifndef __UTIL_H
-#define __UTIL_H
+#ifndef MEGAZEUX_UTIL_H
+#define MEGAZEUX_UTIL_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 #include <stdio.h>
@@ -237,6 +237,6 @@ CORE_LIBSPEC void __stack_chk_fail(void);
 
 #endif /* ANDROID */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __UTIL_H
+#endif /* MEGAZEUX_UTIL_H */

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RENDER_LAYER_COMMON_HPP
-#define __RENDER_LAYER_COMMON_HPP
+#ifndef MEGAZEUX_RENDER_LAYER_COMMON_HPP
+#define MEGAZEUX_RENDER_LAYER_COMMON_HPP
 
 #include "../graphics.h"
 #include "../platform/platform_endian.h"
@@ -133,4 +133,4 @@ static inline unsigned both_colors(const char_element *src)
   return reinterpret_cast<const uint16_t *>(src)[1];
 }
 
-#endif /* __RENDER_LAYER_COMMON_HPP */
+#endif /* MEGAZEUX_RENDER_LAYER_COMMON_HPP */

@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __KEYSYM_H
-#define __KEYSYM_H
+#ifndef MEGAZEUX_KEYSYM_H
+#define MEGAZEUX_KEYSYM_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 enum keycode
 {
@@ -207,6 +207,6 @@ enum joystick_hat
   NUM_JOYSTICK_HAT_DIRS
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __KEYSYM_H
+#endif /* MEGAZEUX_KEYSYM_H */

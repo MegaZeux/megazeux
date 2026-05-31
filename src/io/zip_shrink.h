@@ -21,12 +21,12 @@
  * Shrink (zip compression method 1) decompressor.
  */
 
-#ifndef __ZIP_SHRINK_H
-#define __ZIP_SHRINK_H
+#ifndef MEGAZEUX_ZIP_SHRINK_H
+#define MEGAZEUX_ZIP_SHRINK_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <inttypes.h>
@@ -418,6 +418,6 @@ static inline enum zip_error unshrink_file(struct zip_stream_data *zs)
   return ZIP_STREAM_FINISHED;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __ZIP_SHRINK_H */
+#endif /* MEGAZEUX_ZIP_SHRINK_H */

@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __THREAD_3DS_H
-#define __THREAD_3DS_H
+#ifndef MEGAZEUX_THREAD_3DS_H
+#define MEGAZEUX_THREAD_3DS_H
 
 #include "../../compat.h"
 
 #define STACK_SIZE_CTR 8096
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <3ds.h>
 
@@ -160,6 +160,6 @@ static inline boolean platform_is_same_thread(platform_thread_id a,
   return a == b;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __THREAD_3DS_H
+#endif /* MEGAZEUX_THREAD_3DS_H */

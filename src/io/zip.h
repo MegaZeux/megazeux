@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ZIP_H
-#define __ZIP_H
+#ifndef MEGAZEUX_ZIP_H
+#define MEGAZEUX_ZIP_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
@@ -318,6 +318,6 @@ UTILS_LIBSPEC struct zip_archive *zip_open_mem_write(void *src, size_t len,
 UTILS_LIBSPEC struct zip_archive *zip_open_mem_write_ext(void **external_buffer,
  size_t *external_buffer_size, size_t start_pos);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif //__ZIP_H
+#endif /* MEGAZEUX_ZIP_H */

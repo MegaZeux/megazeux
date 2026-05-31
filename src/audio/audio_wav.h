@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __AUDIO_WAV_H
-#define __AUDIO_WAV_H
+#ifndef MEGAZEUX_AUDIO_WAV_H
+#define MEGAZEUX_AUDIO_WAV_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 // For use by audio_spot_sample.
 struct audio_stream *construct_wav_stream_direct(struct wav_info *w_info,
@@ -30,6 +30,6 @@ struct audio_stream *construct_wav_stream_direct(struct wav_info *w_info,
 
 void init_wav(struct config_info *conf);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __AUDIO_WAV_H */
+#endif /* MEGAZEUX_AUDIO_WAV_H */

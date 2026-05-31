@@ -17,17 +17,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ABOUT_H
-#define __ABOUT_H
+#ifndef MEGAZEUX_ABOUT_H
+#define MEGAZEUX_ABOUT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 
 void about_megazeux(context *parent);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __ABOUT_H
+#endif /* MEGAZEUX_ABOUT_H */

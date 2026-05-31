@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_DJGPP_H
-#define __PLATFORM_DJGPP_H
+#ifndef MEGAZEUX_PLATFORM_DJGPP_H
+#define MEGAZEUX_PLATFORM_DJGPP_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
@@ -128,6 +128,6 @@ static inline void djgpp_restore_x87(const uint8_t fpustate[108])
           "frstor %0" : : "m"(fpustate));
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __PLATFORM_DJGPP_H
+#endif /* MEGAZEUX_PLATFORM_DJGPP_H */

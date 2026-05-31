@@ -18,12 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __AUDIO_STRUCT_H
-#define __AUDIO_STRUCT_H
+/* Audio subsystem internal defines and types. */
+
+#ifndef MEGAZEUX_AUDIO_STRUCT_H
+#define MEGAZEUX_AUDIO_STRUCT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
@@ -142,6 +144,6 @@ struct audio
 
 extern struct audio audio;
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __AUDIO_STRUCT_H */
+#endif /* MEGAZEUX_AUDIO_STRUCT_H */

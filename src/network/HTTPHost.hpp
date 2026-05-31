@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __HTTPHOST_HPP
-#define __HTTPHOST_HPP
+#ifndef MEGAZEUX_HTTPHOST_HPP
+#define MEGAZEUX_HTTPHOST_HPP
 
 #include "../compat.h"
 #include "../io/vfile.h"
@@ -194,4 +194,4 @@ public:
 
 };
 
-#endif /* __HTTPHOST_HPP */
+#endif /* MEGAZEUX_HTTPHOST_HPP */

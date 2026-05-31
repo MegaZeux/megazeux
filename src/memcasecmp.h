@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __MEMCASECMP_H
-#define __MEMCASECMP_H
+#ifndef MEGAZEUX_MEMCASECMP_H
+#define MEGAZEUX_MEMCASECMP_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <inttypes.h>
@@ -315,6 +315,6 @@ static inline int memcasecmp32(const void *A, const void *B, size_t cmp_length)
   return 0;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __MEMCASECMP_H */
+#endif /* MEGAZEUX_MEMCASECMP_H */

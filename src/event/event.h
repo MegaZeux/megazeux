@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EVENT_H
-#define __EVENT_H
+#ifndef MEGAZEUX_EVENT_H
+#define MEGAZEUX_EVENT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "keysym.h"
 
@@ -276,6 +276,6 @@ void joystick_clear(struct buffered_status *status, int joystick);
 boolean joystick_is_active(int joystick, boolean *is_active);
 boolean joystick_get_status(int joystick, char *name, int16_t *value);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EVENT_H
+#endif /* MEGAZEUX_EVENT_H */

@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_BUFFER_H
-#define __EDITOR_BUFFER_H
+#ifndef MEGAZEUX_EDITOR_BUFFER_H
+#define MEGAZEUX_EDITOR_BUFFER_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 #include "../world_struct.h"
@@ -59,6 +59,6 @@ void thing_menu(context *parent, enum thing_menu_id menu_number,
  struct buffer_info *buffer, boolean use_default_color, int x, int y,
  struct undo_history *history);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __EDITOR_BUFFER_H */
+#endif /* MEGAZEUX_EDITOR_BUFFER_H */

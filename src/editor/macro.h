@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_MACRO_H
-#define __EDITOR_MACRO_H
+#ifndef MEGAZEUX_EDITOR_MACRO_H
+#define MEGAZEUX_EDITOR_MACRO_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 struct ext_macro;
 struct macro_type;
@@ -41,6 +41,6 @@ char *skip_whitespace(char *src);
 char *skip_to_next(char *src, char t, char a, char b);
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_MACRO_H
+#endif /* MEGAZEUX_EDITOR_MACRO_H */

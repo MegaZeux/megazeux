@@ -19,12 +19,12 @@
 
 /* Declarations for IDPUT.ASM */
 
-#ifndef __IDPUT_H
-#define __IDPUT_H
+#ifndef MEGAZEUX_IDPUT_H
+#define MEGAZEUX_IDPUT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 #include "data.h"
@@ -72,6 +72,6 @@ CORE_LIBSPEC extern unsigned char id_dmg[ID_DMG_SIZE];
 CORE_LIBSPEC extern unsigned char bullet_color[ID_BULLET_COLOR_SIZE];
 CORE_LIBSPEC extern unsigned char missile_color;
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __IDPUT_H
+#endif /* MEGAZEUX_IDPUT_H */

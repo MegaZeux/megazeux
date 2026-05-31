@@ -47,12 +47,12 @@
  * See contrib/khash.h for the original example and changelog from this file.
  */
 
-#ifndef __HASHTABLE_H
-#define __HASHTABLE_H
+#ifndef MEGAZEUX_HASHTABLE_H
+#define MEGAZEUX_HASHTABLE_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stddef.h>
 #include <stdint.h>
@@ -721,6 +721,6 @@ static inline uint32_t fnv_1a_hash_string_len(const void *_str, uint32_t len)
     (size) = 0;                                                   \
 } while(0)
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __HASHTABLE_H */
+#endif /* MEGAZEUX_HASHTABLE_H */

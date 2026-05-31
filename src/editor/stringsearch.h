@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_STRINGSEARCH_H
-#define __EDITOR_STRINGSEARCH_H
+#ifndef MEGAZEUX_EDITOR_STRINGSEARCH_H
+#define MEGAZEUX_EDITOR_STRINGSEARCH_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stddef.h>
 
@@ -41,6 +41,6 @@ const void *string_search(const void *A, const size_t a_len,
  const void *B, const size_t b_len, const struct string_search_data *data,
  boolean ignore_case);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __EDITOR_STRINGSEARCH_H */
+#endif /* MEGAZEUX_EDITOR_STRINGSEARCH_H */

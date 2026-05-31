@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __MANIFEST_HPP
-#define __MANIFEST_HPP
+#ifndef MEGAZEUX_MANIFEST_HPP
+#define MEGAZEXU_MANIFEST_HPP
 
 #include "../compat.h"
 #include "../io/vfile.h"
@@ -159,4 +159,4 @@ public:
    Manifest &delete_list);
 };
 
-#endif /* __MANIFEST_HPP */
+#endif /* MEGAZEUX_MANIFEST_HPP */

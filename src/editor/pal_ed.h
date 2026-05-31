@@ -17,14 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Declaration for PAL_ED.CPP */
-
-#ifndef __EDITOR_PAL_ED_H
-#define __EDITOR_PAL_ED_H
+#ifndef MEGAZEUX_EDITOR_PAL_ED_H
+#define MEGAZEUX_EDITOR_PAL_ED_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 
@@ -32,6 +30,6 @@ void palette_editor(context *parent);
 void import_palette(context *ctx);
 void export_palette(context *ctx);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_PAL_ED_H
+#endif /* MEGAZEUX_EDITOR_PAL_ED_H */

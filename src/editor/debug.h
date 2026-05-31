@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __DEBUG_H
-#define __DEBUG_H
+#ifndef MEGAZEUX_DEBUG_H
+#define MEGAZEUX_DEBUG_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 
@@ -33,6 +33,6 @@ void __debug_counters(context *ctx);
 void __draw_debug_box(struct world *mzx_world, int x, int y, int d_x, int d_y,
  int show_keys);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __DEBUG_H
+#endif /* MEGAZEUX_DEBUG_H */

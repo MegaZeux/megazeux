@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SCRDISP_H
-#define __SCRDISP_H
+#ifndef MEGAZEUX_SCRDISP_H
+#define MEGAZEUX_SCRDISP_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
@@ -38,6 +38,6 @@ void scroll_edging_ext(struct world *mzx_world, int type, boolean mask);
 void help_display(struct world *mzx_world, char *help, int offs,
  char *file, char *label);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __SCRDISP_H
+#endif /* MEGAZEUX_SCRDISP_H */

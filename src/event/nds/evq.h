@@ -20,12 +20,12 @@
 
 /* Simple event queue for NDS input events */
 
-#ifndef __ARCH_NDS_EVQ_H
-#define __ARCH_NDS_EVQ_H
+#ifndef MEGAZEUX_EVENT_NDS_EVQ_H
+#define MEGAZEUX_EVENT_NDS_EVQ_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 enum NDSEventType
 {
@@ -71,6 +71,6 @@ void nds_event_fill_touch_down(NDSEvent *dest);
 void nds_event_fill_touch_move(NDSEvent *dest, int x, int y);
 void nds_event_fill_touch_up(NDSEvent *dest);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __ARCH_NDS_EVQ_H */
+#endif /* MEGAZEUX_EVENT_NDS_EVQ_H */

@@ -17,14 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Prototypes for SFX.CPP */
-
-#ifndef __AUDIO_SFX_H
-#define __AUDIO_SFX_H
+#ifndef MEGAZEUX_SFX_H
+#define MEGAZEUX_SFX_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 // Number of unique sound effects and length of sound effects
 // SFX sizes include the \0 terminator.
@@ -143,6 +141,6 @@ CORE_LIBSPEC size_t sfx_save_to_memory(const struct sfx_list *sfx_list,
 CORE_LIBSPEC boolean sfx_load_from_memory(struct sfx_list *sfx_list,
  int file_version, const char *src, size_t src_len);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __AUDIO_SFX_H
+#endif /* MEGAZEUX_SFX_H */

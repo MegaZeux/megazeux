@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_GRAPHICS_H
-#define __EDITOR_GRAPHICS_H
+#ifndef MEGAZEUX_EDITOR_GRAPHICS_H
+#define MEGAZEUX_EDITOR_GRAPHICS_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../graphics.h"
 
@@ -48,6 +48,6 @@ void ec_load_char_ascii(uint16_t char_number);
 void ec_load_char_mzx(uint16_t char_number);
 unsigned int compare_char(uint16_t chr_a, uint16_t chr_b);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_GRAPHICS_H
+#endif /* MEGAZEUX_EDITOR_GRAPHICS_H */

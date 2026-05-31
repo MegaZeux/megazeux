@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_BITSTREAM_H
-#define __IO_BITSTREAM_H
+#ifndef MEGAZEUX_IO_BITSTREAM_H
+#define MEGAZEUX_IO_BITSTREAM_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -116,6 +116,6 @@ static inline int bs_read(struct bitstream *b, BS_BUFTYPE mask, BS_BUFTYPE bits)
 
 #define BS_READ(b,bits) bs_read(b, (0xFFFF >> (16 - bits)), bits)
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_BITSTREAM_H */
+#endif /* MEGAZEUX_IO_BITSTREAM_H */

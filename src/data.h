@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __DATA_H
-#define __DATA_H
+#ifndef MEGAZEUX_DATA_H
+#define MEGAZEUX_DATA_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "const.h"
 #include <stdio.h>
@@ -594,6 +594,6 @@ enum robot_command_name
   ROBOTIC_CMD_ENABLE_MESG_EDGE                          = 255
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __DATA_H
+#endif /* MEGAZEUX_DATA_H */

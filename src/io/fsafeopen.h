@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_FSAFEOPEN_H
-#define __IO_FSAFEOPEN_H
+#ifndef MEGAZEUX_IO_FSAFEOPEN_H
+#define MEGAZEUX_IO_FSAFEOPEN_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "vfile.h"
 
@@ -45,6 +45,6 @@ enum
 int fsafetranslate(const char *path, char *newpath, size_t buffer_len);
 vfile *fsafeopen(const char *path, const char *mode);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __IO_FSAFEOPEN_H
+#endif /* MEGAZEUX_IO_FSAFEOPEN_H */

@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __CAPTION_H
-#define __CAPTION_H
+#ifndef MEGAZEUX_CAPTION_H
+#define MEGAZEUX_CAPTION_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
@@ -88,6 +88,6 @@ CORE_LIBSPEC void caption_set_updates_available(boolean available);
 void caption_set_fps(double fps);
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __CAPTION_H
+#endif /* MEGAZEUX_CAPTION_H */

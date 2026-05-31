@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_THREAD_H
-#define __PLATFORM_THREAD_H
+#ifndef MEGAZEUX_PLATFORM_THREAD_H
+#define MEGAZEUX_PLATFORM_THREAD_H
 
 /**
  * Audio, networking, and other misc. optional features require threading
@@ -49,4 +49,4 @@
 #include "thread_dummy.h"
 #endif
 
-#endif /* __PLATFORM_THREAD_H */
+#endif /* MEGAZEUX_PLATFORM_THREAD_H */

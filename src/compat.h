@@ -19,15 +19,15 @@
 
 // Provide some compatibility macros for combined C/C++ binary
 
-#ifndef __COMPAT_H
-#define __COMPAT_H
+#ifndef MEGAZEUX_COMPAT_H
+#define MEGAZEUX_COMPAT_H
 
 #include "config.h"
 
 #ifdef __cplusplus
 
-#define __M_BEGIN_DECLS extern "C" {
-#define __M_END_DECLS   }
+#define MEGAZEUX_BEGIN_DECLS extern "C" {
+#define MEGAZEUX_END_DECLS   }
 
 /**
  * Compatibility define for restrict in C++, where it is a (commonly supported)
@@ -62,8 +62,8 @@
 
 #else
 
-#define __M_BEGIN_DECLS
-#define __M_END_DECLS
+#define MEGAZEUX_BEGIN_DECLS
+#define MEGAZEUX_END_DECLS
 
 #if !defined(CONFIG_WII) && !defined(CONFIG_NDS) && !defined(CONFIG_3DS) && \
  !defined(CONFIG_DREAMCAST)
@@ -212,7 +212,7 @@ typedef unsigned char boolean;
 #define UPDATER_LIBSPEC
 #endif
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #ifdef __GNUC__
 
@@ -314,6 +314,6 @@ static inline void *crealloc(void *ptr, size_t size)
 
 #endif /* CONFIG_CHECK_ALLOC */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __COMPAT_H
+#endif /* MEGAZEUX_COMPAT_H */

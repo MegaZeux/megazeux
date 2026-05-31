@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_WORLD_H
-#define __EDITOR_WORLD_H
+#ifndef MEGAZEUX_EDITOR_WORLD_H
+#define MEGAZEUX_EDITOR_WORLD_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 
@@ -34,6 +34,6 @@ void move_current_board(struct world *mzx_world, int new_position);
 
 char get_default_id_char(int id);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_WORLD_H
+#endif /* MEGAZEUX_EDITOR_WORLD_H */

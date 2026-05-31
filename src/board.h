@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __BOARD_H
-#define __BOARD_H
+#ifndef MEGAZEUX_BOARD_H
+#define MEGAZEUX_BOARD_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
@@ -57,6 +57,6 @@ CORE_LIBSPEC void board_set_palette_path(struct board *cur_board,
  const char *path, size_t path_len);
 #endif // CONFIG_EDITOR
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __BOARD_H
+#endif /* MEGAZEUX_BOARD_H */

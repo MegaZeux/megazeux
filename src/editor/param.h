@@ -17,14 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Declarations for PARAM.CPP */
-
-#ifndef __EDITOR_PARAM_H
-#define __EDITOR_PARAM_H
+#ifndef MEGAZEUX_EDITOR_PARAM_H
+#define MEGAZEUX_EDITOR_PARAM_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 
@@ -34,6 +32,6 @@ int edit_sensor(struct world *mzx_world, struct sensor *cur_sensor);
 void edit_robot(context *ctx, struct robot *cur_robot, int *ret_value);
 void edit_global_robot(context *ctx);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_PARAM_H
+#endif /* MEGAZEUX_EDITOR_PARAM_H */

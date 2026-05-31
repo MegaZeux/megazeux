@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_WINDOW_H
-#define __EDITOR_WINDOW_H
+#ifndef MEGAZEUX_EDITOR_WINDOW_H
+#define MEGAZEUX_EDITOR_WINDOW_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../window.h"
 #include "../world_struct.h"
@@ -55,6 +55,6 @@ int choose_board(struct world *mzx_world, int current, const char *title,
 int choose_file(struct world *mzx_world, const char *const *wildcards,
  char *ret, const char *title, enum allow_dirs allow_dirs);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_WINDOW_H
+#endif /* MEGAZEUX_EDITOR_WINDOW_H */

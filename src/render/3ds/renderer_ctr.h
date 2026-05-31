@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __3DS_RENDER_H__
-#define __3DS_RENDER_H__
+#ifndef MEGAZEUX_RENDERER_CTR_H
+#define MEGAZEUX_RENDERER_CTR_H
 
 #include <stdlib.h>
 #include <3ds.h>
@@ -28,7 +28,7 @@
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 struct ctr_render_data;
 
@@ -41,6 +41,6 @@ void ctr_draw_2d_texture(struct ctr_render_data *render_data, C3D_Tex *texture,
 void ctr_request_set_wide(bool wide);
 int ctr_get_subscreen_height(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __3DS_RENDER_H__ */
+#endif /* MEGAZEUX_RENDERER_CTR_H */

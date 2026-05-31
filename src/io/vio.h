@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_VIO_H
-#define __IO_VIO_H
+#ifndef MEGAZEUX_IO_VIO_H
+#define MEGAZEUX_IO_VIO_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "vfile.h"
 #include "../platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
@@ -142,6 +142,6 @@ UTILS_LIBSPEC vvolumelist *vvolumelist_open(void);
 UTILS_LIBSPEC int vvolumelist_close(vvolumelist *volumes);
 UTILS_LIBSPEC const char *vvolumelist_read(vvolumelist *volumes);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_VIO_H */
+#endif /* MEGAZEUX_IO_VIO_H */

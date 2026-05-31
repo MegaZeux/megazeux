@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SOCKET_HPP
-#define __SOCKET_HPP
+#ifndef MEGAZEUX_SOCKET_HPP
+#define MEGAZEUX_SOCKET_HPP
 
 #include "../compat.h"
 #include "../util.h"
@@ -31,7 +31,7 @@
 #include <unistd.h>
 #endif
 
-#ifdef __WIN32__
+#ifdef _WIN32
 
 // Winsock symbols are dynamically loaded, so disable the inline versions.
 #define UNIX_INLINE(x)
@@ -67,7 +67,7 @@ struct pollfd
   u32 revents;
 };
 
-#else // !__WIN32__ && !CONFIG_WII
+#else // !_WIN32 && !CONFIG_WII
 
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -84,7 +84,7 @@ struct pollfd
 // Commenting out for now until it's needed (if at all).
 //#include <net/if.h>
 
-#endif // __WIN32__
+#endif // _WIN32
 
 #if defined(CONFIG_GETADDRINFO) && (!defined(EAI_AGAIN) && !defined(EAI_FAMILY))
 #error "Missing getaddrinfo() support; configure with --disable-getaddrinfo."
@@ -341,7 +341,7 @@ public:
     return ::recvfrom(sockfd, (char *)buf, len, flags, from, fromlen);
   });
 
-#ifdef __WIN32__
+#ifdef _WIN32
   static int __WSAFDIsSet(int sockfd, fd_set *set);
 #undef  FD_ISSET
 #define FD_ISSET(fd,set) Socket::__WSAFDIsSet((int)fd, (fd_set *)(set))
@@ -388,7 +388,7 @@ public:
   };
 
 private:
-#ifndef __WIN32__
+#ifndef _WIN32
   static boolean is_last_errno_fatal()
   {
     switch(Socket::get_errno())
@@ -405,4 +405,4 @@ private:
 #endif
 };
 
-#endif /* __SOCKET_HPP */
+#endif /* MEGAZEUX_SOCKET_HPP */

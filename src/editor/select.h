@@ -19,12 +19,12 @@
 
 /* Declarations */
 
-#ifndef __EDITOR_SELECT_H
-#define __EDITOR_SELECT_H
+#ifndef MEGAZEUX_EDITOR_SELECT_H
+#define MEGAZEUX_EDITOR_SELECT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 
@@ -33,6 +33,6 @@ int choose_char_set(struct world *mzx_world);
 int export_type(struct world *mzx_world);
 int import_type(struct world *mzx_world);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif  // __EDITOR_BLOCK_H
+#endif  /* MEGAZEUX_EDITOR_SELECT_H */

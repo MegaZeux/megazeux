@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __BLOCK_H
-#define __BLOCK_H
+#ifndef MEGAZEUX_BLOCK_H
+#define MEGAZEUX_BLOCK_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "data.h"
 #include "world_struct.h"
@@ -61,6 +61,6 @@ CORE_LIBSPEC void move_board_block(struct world *mzx_world,
 
 #endif //CONFIG_EDITOR
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __BLOCK_H
+#endif /* MEGAZEUX_BLOCK_H */

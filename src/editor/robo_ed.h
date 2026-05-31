@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_ROBO_ED_H
-#define __EDITOR_ROBO_ED_H
+#ifndef MEGAZEUX_EDITOR_ROBO_ED_H
+#define MEGAZEUX_EDITOR_ROBO_ED_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 #include "../intake.h"
@@ -133,6 +133,6 @@ void robo_ed_goto_line(struct robot_editor_context *rstate, int line, int column
 void robo_ed_delete_current_line(struct robot_editor_context *rstate, int move);
 void robo_ed_add_line(struct robot_editor_context *rstate, char *value, int relation);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_ROBO_ED_H
+#endif /* MEGAZEUX_EDITOR_ROBO_ED_H */

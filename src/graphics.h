@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __GRAPHICS_H
-#define __GRAPHICS_H
+#ifndef MEGAZEUX_GRAPHICS_H
+#define MEGAZEUX_GRAPHICS_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
@@ -400,6 +400,6 @@ CORE_LIBSPEC boolean dump_layer_to_image(const char *filename,
 void dump_screen(void);
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __GRAPHICS_H
+#endif /* MEGAZEUX_GRAPHICS_H */

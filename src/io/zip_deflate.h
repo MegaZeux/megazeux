@@ -21,12 +21,12 @@
  * Deflate (zip compression method 8) compressor and decompressor via zlib.
  */
 
-#ifndef __ZIP_DEFLATE_H
-#define __ZIP_DEFLATE_H
+#ifndef MEGAZEUX_ZIP_DEFLATE_H
+#define MEGAZEUX_ZIP_DEFLATE_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <stdlib.h>
@@ -290,6 +290,6 @@ static inline enum zip_error deflate_bound(struct zip_stream_data *zs,
   return ZIP_SUCCESS;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __ZIP_DEFLATE_H */
+#endif /* MEGAZEUX_ZIP_DEFLATE_H */

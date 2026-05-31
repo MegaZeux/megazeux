@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SHA256_H
-#define __SHA256_H
+#ifndef MEGAZEUX_SHA256_H
+#define MEGAZEUX_SHA256_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
@@ -39,6 +39,6 @@ void SHA256_init(struct SHA256_ctx *ctx);
 void SHA256_update(struct SHA256_ctx *ctx, const void *vdata, size_t data_len);
 void SHA256_final(struct SHA256_ctx *ctx);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __SHA256_H
+#endif /* MEGAZEUX_SHA256_H */

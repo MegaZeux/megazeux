@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __AUDIO_SAMPLED_STREAM_H
-#define __AUDIO_SAMPLED_STREAM_H
+#ifndef MEGAZEUX_AUDIO_SAMPLED_STREAM_H
+#define MEGAZEUX_AUDIO_SAMPLED_STREAM_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "audio_struct.h"
 
@@ -86,6 +86,6 @@ void initialize_sampled_stream(struct sampled_stream *s_src,
  struct sampled_stream_spec *s_spec, uint32_t input_frequency,
  uint32_t relative_frequency, uint32_t channels, boolean use_volume);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __AUDIO_SAMPLED_STREAM_H */
+#endif /* MEGAZEUX_AUDIO_SAMPLED_STREAM_H */

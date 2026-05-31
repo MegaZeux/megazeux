@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __THREAD_PTHREAD_H
-#define __THREAD_PTHREAD_H
+#ifndef MEGAZEUX_THREAD_PTHREAD_H
+#define MEGAZEUX_THREAD_PTHREAD_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <sched.h>
 #include <semaphore.h>
@@ -177,6 +177,6 @@ static inline void platform_yield(void)
   sched_yield();
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __THREAD_PTHREAD_H
+#endif /* MEGAZEUX_THREAD_PTHREAD_H */

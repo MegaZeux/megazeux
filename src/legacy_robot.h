@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __LEGACY_ROBOT_H
-#define __LEGACY_ROBOT_H
+#ifndef MEGAZEUX_LEGACY_ROBOT_H
+#define MEGAZEUX_LEGACY_ROBOT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "const.h"
 #include "world_struct.h"
@@ -48,6 +48,6 @@ struct scroll *legacy_load_scroll_allocate(vfile *vf, int file_version);
 
 struct sensor *legacy_load_sensor_allocate(vfile *vf, int file_version);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __LEGACY_ROBOT_H
+#endif /* MEGAZEUX_LEGACY_ROBOT_H */

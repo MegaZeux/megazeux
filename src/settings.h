@@ -17,17 +17,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __GAME_SETTINGS_H
-#define __GAME_SETTINGS_H
+#ifndef MEGAZEUX_SETTINGS_H
+#define MEGAZEUX_SETTINGS_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
 void game_settings(struct world *mzx_world);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __GAME_SETTINGS_H
+#endif /* MEGAZEUX_SETTINGS_H */

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RASM_H
-#define __RASM_H
+#ifndef MEGAZEUX_RASM_H
+#define MEGAZEUX_RASM_H
 
 #include "compat.h"
 #include "legacy_rasm.h"
@@ -268,7 +268,7 @@ struct token
 };
 
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 char *legacy_disassemble_program(char *program_bytecode, int bytecode_length,
  int *_disasm_length, boolean print_ignores, int base);
@@ -296,8 +296,8 @@ CORE_LIBSPEC int get_thing(char *name, int name_length);
 
 #endif // CONFIG_EDITOR
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
 #endif // CONFIG_DEBYTECODE
 
-#endif // __RASM_H
+#endif /* MEGAZEUX_RASM_H */

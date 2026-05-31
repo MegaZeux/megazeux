@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ZIP_DEFLATE64_H
-#define __ZIP_DEFLATE64_H
+#ifndef MEGAZEUX_ZIP_DEFLATE64_H
+#define MEGAZEUX_ZIP_DEFLATE64_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <stdlib.h>
@@ -139,6 +139,6 @@ static inline enum zip_error inflate64_file(struct zip_stream_data *zs)
   return ZIP_DECOMPRESS_FAILED;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif
+#endif /* MEGAZEUX_ZIP_DEFLATE64_H */

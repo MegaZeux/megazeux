@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_MEMFILE_H
-#define __IO_MEMFILE_H
+#ifndef MEGAZEUX_IO_MEMFILE_H
+#define MEGAZEUX_IO_MEMFILE_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <stdint.h>
@@ -386,6 +386,6 @@ static inline ptrdiff_t mftell(struct memfile *mf)
   return mf->current - mf->start;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __IO_MEMFILE_H
+#endif /* MEGAZEUX_IO_MEMFILE_H */

@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SPRITE_H
-#define __SPRITE_H
+#ifndef MEGAZEUX_SPRITE_H
+#define MEGAZEUX_SPRITE_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "sprite_struct.h"
 #include "world_struct.h"
@@ -69,6 +69,6 @@ boolean sprite_at_xy(struct world *mzx_world, struct sprite *cur_sprite, int x, 
 int sprite_colliding_xy(struct world *mzx_world, struct sprite *check_sprite,
  int x, int y);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __SPRITE_H
+#endif /* MEGAZEUX_SPRITE_H */

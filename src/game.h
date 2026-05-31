@@ -21,12 +21,12 @@
 
 /* Declarations for GAME.CPP */
 
-#ifndef __GAME_H
-#define __GAME_H
+#ifndef MEGAZEUX_GAME_H
+#define MEGAZEUX_GAME_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 #include "world_struct.h"
@@ -43,6 +43,6 @@ void draw_intro_mesg(struct world *mzx_world);
 CORE_LIBSPEC void play_game(context *parent, boolean *_fade_in);
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __GAME_H
+#endif /* MEGAZEUX_GAME_H */

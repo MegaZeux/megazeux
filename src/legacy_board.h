@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __LEGACY_BOARD_H
-#define __LEGACY_BOARD_H
+#ifndef MEGAZEUX_LEGACY_BOARD_H
+#define MEGAZEUX_LEGACY_BOARD_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "const.h"
 #include "world_struct.h"
@@ -35,6 +35,6 @@ CORE_LIBSPEC int legacy_load_board_direct(struct world *mzx_world,
 CORE_LIBSPEC struct board *legacy_load_board_allocate(struct world *mzx_world,
  vfile *vf, int data_offset, int data_size, int savegame, int file_version);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __LEGACY_BOARD_H
+#endif /* MEGAZEUX_LEGACY_BOARD_H */

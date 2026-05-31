@@ -21,12 +21,12 @@
 // General macros and functions for YUV manipulation. Supports YUY2, UYVY, and
 // YVYU. SDL doesn't provide functions for packing/unpacking these.
 
-#ifndef __YUV_H
-#define __YUV_H
+#ifndef MEGAZEUX_YUV_H
+#define MEGAZEUX_YUV_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../platform/platform_endian.h"
 #include <stdint.h>
@@ -208,6 +208,6 @@ static inline uint32_t rgb_to_apple_ycbcr_422(uint8_t r, uint8_t g, uint8_t b)
   return uyvy_pack(y, cb, y, cr);
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __YUV_H */
+#endif /* MEGAZEUX_YUV_H */

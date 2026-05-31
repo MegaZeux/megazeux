@@ -20,17 +20,17 @@
 
 // Declaration
 
-#ifndef __EDITOR_CHAR_ED_H
-#define __EDITOR_CHAR_ED_H
+#ifndef MEGAZEUX_EDITOR_CHAR_ED_H
+#define MEGAZEUX_EDITOR_CHAR_ED_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 
 int char_editor(struct world *mzx_world);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_CHAR_ED_H
+#endif /* MEGAZEUX_EDITOR_CHAR_ED_H */

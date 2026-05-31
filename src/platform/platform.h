@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_H
-#define __PLATFORM_H
+#ifndef MEGAZEUX_PLATFORM_H
+#define MEGAZEUX_PLATFORM_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "platform_clipboard.h"
 #include "platform_dso.h"
@@ -34,6 +34,6 @@ __M_BEGIN_DECLS
 CORE_LIBSPEC boolean platform_init(void);
 CORE_LIBSPEC void platform_quit(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __PLATFORM_H
+#endif /* MEGAZEUX_PLATFORM_H */

@@ -17,14 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_VIO_VOLUME_H
-#define __IO_VIO_VOLUME_H
+#ifndef MEGAZEUX_IO_VIO_VOLUME_H
+#define MEGAZEUX_IO_VIO_VOLUME_H
 
 #include "../compat.h"
 #include "../util.h"
 #include "path.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 /* Volume list reading implementations for vio_posix.h
  * These are more involved than the rest of vio_posix.h
@@ -201,6 +201,6 @@ static inline int platform_vvolumelist_read(struct vvolumelist_handle *vh,
 
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_VIO_VOLUME_H */
+#endif /* MEGAZEUX_IO_VIO_VOLUME_H */

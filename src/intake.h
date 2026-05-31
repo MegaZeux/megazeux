@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __INTAKE_H
-#define __INTAKE_H
+#ifndef MEGAZEUX_INTAKE_H
+#define MEGAZEUX_INTAKE_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 
@@ -69,7 +69,7 @@ CORE_LIBSPEC void intake_event_callback(subcontext *intk, void *priv,
 CORE_LIBSPEC boolean intake_apply_event_fixed(subcontext *sub,
  enum intake_event_type type, int new_pos, int value, const char *data);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __INTAKE_H
+#endif /* MEGAZEUX_INTAKE_H */
 

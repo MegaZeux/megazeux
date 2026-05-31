@@ -17,14 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Declaration for FILL.CPP */
-
-#ifndef __EDITOR_FILL_H
-#define __EDITOR_FILL_H
+#ifndef MEGAZEUX_EDITOR_FILL_H
+#define MEGAZEUX_EDITOR_FILL_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "buffer.h"
 #include "edit.h"
@@ -35,6 +33,6 @@ __M_BEGIN_DECLS
 void fill_area(struct world *mzx_world, struct buffer_info *buffer,
  int x, int y, enum editor_mode mode, struct undo_history *history);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_FILL_H
+#endif /* MEGAZEUX_EDITOR_FILL_H */

@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_UNDO_H
-#define __EDITOR_UNDO_H
+#ifndef MEGAZEUX_EDITOR_UNDO_H
+#define MEGAZEUX_EDITOR_UNDO_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 #include "buffer_struct.h"
@@ -71,6 +71,6 @@ void add_robot_editor_undo_line(struct undo_history *h, enum text_undo_line_type
  int line, int pos, char *value, size_t length);
 enum text_undo_line_type robot_editor_undo_frame_type(struct undo_history *h);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_UNDO_H
+#endif /* MEGAZEUX_EDITOR_UNDO_H */

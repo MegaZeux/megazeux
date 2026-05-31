@@ -68,7 +68,7 @@
 #ifndef UNIT_HPP
 #define UNIT_HPP
 
-#ifdef __M_BEGIN_DECLS
+#ifdef MEGAZEUX_BEGIN_DECLS
 #error "Include Unit.hpp first!"
 #endif
 

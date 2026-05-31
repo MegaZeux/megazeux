@@ -17,14 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Declarations for EDIT.CPP */
-
-#ifndef __EDITOR_EDIT_H
-#define __EDITOR_EDIT_H
+#ifndef MEGAZEUX_EDITOR_EDIT_H
+#define MEGAZEUX_EDITOR_EDIT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 
@@ -67,6 +65,6 @@ EDITOR_LIBSPEC boolean is_editor(void);
 #define EC_DEFAULT_COLOR      28
 #define EC_NA_FILL            1
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_EDIT_H
+#endif /* MEGAZEUX_EDITOR_EDIT_H */

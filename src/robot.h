@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ROBOT_H
-#define __ROBOT_H
+#ifndef MEGAZEUX_ROBOT_H
+#define MEGAZEUX_ROBOT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 #include "data.h"
@@ -214,6 +214,6 @@ CORE_LIBSPEC int get_program_command_num(struct robot *cur_robot,
 CORE_LIBSPEC extern const int def_params[128];
 #endif // CONFIG_EDITOR
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __ROBOT_H
+#endif /* MEGAZEUX_ROBOT_H */

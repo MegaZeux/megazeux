@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __NDS_EVENT_H__
-#define __NDS_EVENT_H__
+#ifndef MEGAZEUX_EVENT_NDS_H
+#define MEGAZEUX_EVENT_NDS_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 enum focus_mode
 {
@@ -35,6 +35,6 @@ enum focus_mode
 
 enum focus_mode get_allow_focus_changes(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __NDS_EVENT_H__ */
+#endif /* MEGAZEUX_EVENT_NDS_H */

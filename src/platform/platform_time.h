@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_TIME_H
-#define __PLATFORM_TIME_H
+#ifndef MEGAZEUX_PLATFORM_TIME_H
+#define MEGAZEUX_PLATFORM_TIME_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 #include <time.h>
@@ -36,6 +36,6 @@ CORE_LIBSPEC uint64_t get_ticks(void);
 CORE_LIBSPEC boolean platform_system_time(struct tm *tm,
  int64_t *epoch, int32_t *nano);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __PLATFORM_TIME_H */
+#endif /* MEGAZEUX_PLATFORM_TIME_H */

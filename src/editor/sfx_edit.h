@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_SFX_EDIT_H
-#define __EDITOR_SFX_EDIT_H
+#ifndef MEGAZEUX_EDITOR_SFX_EDIT_H
+#define MEGAZEUX_EDITOR_SFX_EDIT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 
@@ -31,6 +31,6 @@ void sfx_edit(struct world *mzx_world);
 void import_sfx(context *parent, boolean *modified);
 void export_sfx(context *parent);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_SFX_EDIT_H
+#endif /* MEGAZEUX_EDITOR_SFX_EDIT_H */

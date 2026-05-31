@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ROBOT_STRUCT_H
-#define __ROBOT_STRUCT_H
+#ifndef MEGAZEUX_ROBOT_STRUCT_H
+#define MEGAZEUX_ROBOT_STRUCT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "data.h"
 #include "legacy_rasm.h"
@@ -127,6 +127,6 @@ struct robot
 #endif
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __ROBOT_STRUCT_H
+#endif /* MEGAZEUX_ROBOT_STRUCT_H */

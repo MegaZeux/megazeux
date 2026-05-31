@@ -19,15 +19,15 @@
 
 /* Declarations */
 
-#ifndef __AUDIO_OPENMPT_H
-#define __AUDIO_OPENMPT_H
+#ifndef MEGAZEUX_AUDIO_OPENMPT_H
+#define MEGAZEUX_AUDIO_OPENMPT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 void init_openmpt(struct config_info *conf);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif  // __AUDIO_OPENMPT_H
+#endif  /* MEGAZEUX_AUDIO_OPENMPT_H */

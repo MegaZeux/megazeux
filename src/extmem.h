@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EXTMEM_H
-#define __EXTMEM_H
+#ifndef MEGAZEUX_EXTMEM_H
+#define MEGAZEUX_EXTMEM_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "board_struct.h"
 #include "world_struct.h"
@@ -104,6 +104,6 @@ static inline void real_set_current_board_ext(struct world *mzx_world,
   }
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __BOARD_H
+#endif /* MEGAZEUX_EXTMEM_H */

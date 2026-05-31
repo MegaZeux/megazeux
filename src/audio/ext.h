@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __AUDIO_EXT_H
-#define __AUDIO_EXT_H
+#ifndef MEGAZEUX_AUDIO_EXT_H
+#define MEGAZEUX_AUDIO_EXT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "audio.h"
 #include "../io/vfile.h"
@@ -39,6 +39,6 @@ void audio_ext_free_registry(void);
 struct audio_stream *audio_ext_construct_stream(const char *filename,
  uint32_t frequency, unsigned int volume, boolean repeat);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __AUDIO_EXT_H */
+#endif /* MEGAZEUX_AUDIO_EXT_H */

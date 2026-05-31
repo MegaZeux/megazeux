@@ -22,12 +22,12 @@
  * to be used internally by vio.c, but can also be used by itself.
  */
 
-#ifndef __IO_VFS_H
-#define __IO_VFS_H
+#ifndef MEGAZEUX_IO_VFS_H
+#define MEGAZEUX_IO_VFS_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -207,6 +207,6 @@ static inline int vfs_error_to_errno(enum vfs_error err) { return 0; }
 
 #endif /* !VIRTUAL_FILESYSTEM */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_VFS_H */
+#endif /* MEGAZEUX_IO_VFS_H */

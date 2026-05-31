@@ -22,12 +22,12 @@
  * world_struct.h and other high-traffic headers.
  */
 
-#ifndef __IO_VFILE_H
-#define __IO_VFILE_H
+#ifndef MEGAZEUX_IO_VFILE_H
+#define MEGAZEUX_IO_VFILE_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 typedef struct vfile vfile;
 typedef struct vdir vdir;
@@ -39,6 +39,6 @@ struct stat;
 /* Dummy device for stat on a virtual file. */
 #define VFS_MZX_DEVICE (dev_t)(('M'<<24u) | ('Z'<<16u) | ('X'<<8u) | ('V'))
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_VFILE_H */
+#endif /* MEGAZEUX_IO_VFILE_H */

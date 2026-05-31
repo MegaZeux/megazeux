@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_ROBO_DEBUG_H
-#define __EDITOR_ROBO_DEBUG_H
+#ifndef MEGAZEUX_EDITOR_ROBO_DEBUG_H
+#define MEGAZEUX_EDITOR_ROBO_DEBUG_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 
@@ -38,6 +38,6 @@ EDITOR_LIBSPEC void free_breakpoints(void);
 
 void update_watchpoint_last_values(struct world *mzx_world);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_ROBO_DEBUG_H
+#endif /* MEGAZEUX_EDITOR_ROBO_DEBUG_H */

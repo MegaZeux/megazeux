@@ -19,15 +19,15 @@
 
 /* Declarations */
 
-#ifndef __AUDIO_MODPLUG_H
-#define __AUDIO_MODPLUG_H
+#ifndef MEGAZEUX_AUDIO_MODPLUG_H
+#define MEGAZEUX_AUDIO_MODPLUG_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 void init_modplug(struct config_info *conf);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif  // __AUDIO_MODPLUG_H
+#endif  /* MEGAZEUX_AUDIO_MODPLUG_H */

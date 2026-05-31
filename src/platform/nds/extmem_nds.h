@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef MEGAZEUX_EXTMEM_NDS_H
+#define MEGAZEUX_EXTMEM_NDS_H
+
 #include "../../compat.h"
 
-#ifndef NDS_EXTMEM_H
-#define NDS_EXTMEM_H
-
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 boolean nds_ram_init(void);
 
@@ -32,6 +32,6 @@ void platform_extram_free(void *buffer);
 void platform_extram_lock(void);
 void platform_extram_unlock(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* NDS_EXTMEM_H */
+#endif /* MEGAZEUX_EXTMEM_NDS_H */

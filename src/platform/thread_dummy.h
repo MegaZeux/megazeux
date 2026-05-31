@@ -23,12 +23,12 @@
  * not available, see platform.h.
  */
 
-#ifndef __THREAD_DUMMY_H
-#define __THREAD_DUMMY_H
+#ifndef MEGAZEUX_THREAD_DUMMY_H
+#define MEGAZEUX_THREAD_DUMMY_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #define PLATFORM_NO_THREADING
 
@@ -157,6 +157,6 @@ static inline boolean platform_is_same_thread(platform_thread_id a,
   return true;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __THREAD_DUMMY_H */
+#endif /* MEGAZEUX_THREAD_DUMMY_H */

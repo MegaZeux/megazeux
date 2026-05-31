@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_VIO_POSIX_H
-#define __IO_VIO_POSIX_H
+#ifndef MEGAZEUX_IO_VIO_POSIX_H
+#define MEGAZEUX_IO_VIO_POSIX_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 /**
  * Standard path function and dirent wrappers.
@@ -235,6 +235,6 @@ static inline int64_t platform_filelength(FILE *fp)
 
 #endif /* fstat */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_VIO_POSIX_H */
+#endif /* MEGAZEUX_IO_VIO_POSIX_H */

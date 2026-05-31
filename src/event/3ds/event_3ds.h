@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __3DS_EVENT_H__
-#define __3DS_EVENT_H__
+#ifndef MEGAZEUX_EVENT_3DS_H
+#define MEGAZEUX_EVENT_3DS_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 enum bottom_screen_mode
 {
@@ -44,6 +44,6 @@ enum bottom_screen_mode get_bottom_screen_mode(void);
 enum focus_mode get_allow_focus_changes(void);
 int ctr_get_subscreen_height(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __3DS_EVENT_H__ */
+#endif /* MEGAZEUX_EVENT_3DS_H */

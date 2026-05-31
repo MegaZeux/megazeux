@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __NETWORK_H
-#define __NETWORK_H
+#ifndef MEGAZEUX_NETWORK_H
+#define MEGAZEUX_NETWORK_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../configure.h"
 
@@ -42,6 +42,6 @@ static inline void network_layer_exit(struct config_info *conf) {}
 
 #endif /* CONFIG_NETWORK */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __NETWORK_H
+#endif /* MEGAZEUX_NETWORK_H */

@@ -19,10 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __3DS_PLATFORM_H__
-#define __3DS_PLATFORM_H__
+#ifndef MEGAZEUX_PLATFORM_NDS_H
+#define MEGAZEUX_PLATFORM_NDS_H
 
 #include "../../compat.h"
+
+MEGAZEUX_BEGIN_DECLS
 
 #include <nds.h>
 
@@ -46,4 +48,6 @@ void profile_end(void);
 void nds_audio_vblank(void);
 #endif
 
-#endif /* __3DS_PLATFORM_H__ */
+MEGAZEUX_END_DECLS
+
+#endif /* MEGAZEUX_PLATFORM_NDS_H */
