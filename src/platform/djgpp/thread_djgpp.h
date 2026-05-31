@@ -20,15 +20,15 @@
 
 // This isn't really a mutex. Audio is handled via interrupt.
 
-#ifndef __MUTEX_DJGPP_H
-#define __MUTEX_DJGPP_H
+#ifndef MEGAZEUX_THREAD_DJGPP_H
+#define MEGAZEUX_THREAD_DJGPP_H
 
 #define delay delay_dos
 #include <dos.h>
 #undef delay
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #define PLATFORM_NO_THREADING
 #define THREAD_RES void *
@@ -74,6 +74,6 @@ static inline boolean platform_is_same_thread(platform_thread_id a,
   return true;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __MUTEX_DJGPP_H
+#endif /* MEGAZEUX_THREAD_DJGPP_H */

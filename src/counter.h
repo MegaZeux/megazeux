@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __COUNTER_H
-#define __COUNTER_H
+#ifndef MEGAZEUX_COUNTER_H
+#define MEGAZEUX_COUNTER_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "counter_struct.h"
 #include "world_struct.h"
@@ -63,6 +63,6 @@ void clear_counter_list(struct counter_list *counter_list);
 // Even old games tended to use at least this many.
 #define MIN_COUNTER_ALLOCATE 32
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __COUNTER_H
+#endif /* MEGAZEUX_COUNTER_H */

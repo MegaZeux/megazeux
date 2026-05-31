@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_CLIPBOARD_H
-#define __PLATFORM_CLIPBOARD_H
+#ifndef MEGAZEUX_PLATFORM_CLIPBOARD_H
+#define MEGAZEUX_PLATFORM_CLIPBOARD_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 CORE_LIBSPEC void copy_buffer_to_clipboard(char **buffer, int lines,
  int total_length);
@@ -30,6 +30,6 @@ CORE_LIBSPEC void copy_buffer_to_clipboard(char **buffer, int lines,
 CORE_LIBSPEC char *get_clipboard_buffer(void);
 CORE_LIBSPEC void free_clipboard_buffer(char *buffer);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_CLIPBOARD_H
+#endif /* MEGAZEUX_PLATFORM_CLIPBOARD_H */

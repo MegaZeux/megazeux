@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RENDER_SDL_H
-#define __RENDER_SDL_H
+#ifndef MEGAZEUX_RENDER_SDL_H
+#define MEGAZEUX_RENDER_SDL_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../render.h"
 #include "../../graphics.h"
@@ -154,6 +154,6 @@ static inline dso_fn_ptr GL_GetProcAddress(const char *proc)
 
 #endif // CONFIG_RENDER_GL_FIXED || CONFIG_RENDER_GL_PROGRAM
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __RENDER_SDL_H
+#endif /* MEGAZEUX_RENDER_SDL_H */

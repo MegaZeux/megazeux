@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Definitions for audio.c
+/* Audio subsystem externally visible functions. */
 
-#ifndef __AUDIO_H
-#define __AUDIO_H
+#ifndef MEGAZEUX_AUDIO_H
+#define MEGAZEUX_AUDIO_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #ifdef CONFIG_AUDIO
 
@@ -134,6 +134,6 @@ static inline int audio_legacy_translate(const char *path,
 
 #endif // CONFIG_AUDIO
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __AUDIO_H
+#endif /* MEGAZEUX_AUDIO_H */

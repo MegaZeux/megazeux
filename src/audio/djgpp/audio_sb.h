@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __AUDIO_SB_H
-#define __AUDIO_SB_H
+#ifndef MEGAZEUX_AUDIO_SB_H
+#define MEGAZEUX_AUDIO_SB_H
 
 #define SB_VERSION_ATLEAST(cfg, ver) \
  (((cfg.version_major << 8) | (cfg.version_minor)) >= (ver))
@@ -58,4 +58,4 @@
 #define SB16_FORMAT_SIGNED        0x10
 #define SB16_FORMAT_STEREO        0x20
 
-#endif /* __AUDIO_SB_H */
+#endif /* MEGAZEUX_AUDIO_SB_H */

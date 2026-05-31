@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RENDER_GL_H
-#define __RENDER_GL_H
+#ifndef MEGAZEUX_RENDER_GL_H
+#define MEGAZEUX_RENDER_GL_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../../configure.h"
 #include "../../graphics.h"
@@ -126,6 +126,6 @@ static inline uint32_t gl_pack_u32(uint32_t x)
 #define gl_pack_u32(x) (x)
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __RENDER_GL_H
+#endif /* MEGAZEUX_RENDER_GL_H */

@@ -19,12 +19,12 @@
 
 /* Declarations for IDARRAY.ASM */
 
-#ifndef __IDARRAY_H
-#define __IDARRAY_H
+#ifndef MEGAZEUX_IDARRAY_H
+#define MEGAZEUX_IDARRAY_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "data.h"
 #include "world_struct.h"
@@ -39,6 +39,6 @@ void offs_place_id(struct world *mzx_world, unsigned int offset,
 void offs_remove_id(struct world *mzx_world, unsigned int offset);
 void id_remove_under(struct world *mzx_world, int array_x, int array_y);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __IDARRAY_H
+#endif /* MEGAZEUX_IDARRAY_H */

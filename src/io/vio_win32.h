@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_VIO_WIN32_H
-#define __IO_VIO_WIN32_H
+#ifndef MEGAZEUX_IO_VIO_WIN32_H
+#define MEGAZEUX_IO_VIO_WIN32_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 /**
  * Win32 UTF-8 stdio, unistd, and dirent path function wrappers.
@@ -414,6 +414,6 @@ static inline int64_t platform_filelength(FILE *fp)
   return fd >= 0 ? _filelengthi64(fd) : -1;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_VIO_WIN32_H */
+#endif /* MEGAZEUX_IO_VIO_WIN32_H */

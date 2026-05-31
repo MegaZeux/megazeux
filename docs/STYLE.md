@@ -547,25 +547,25 @@ General format is:
 ```
 [GPL Copyright notice/license - see LICENSE]
 
-#ifndef __[YOUR FILE HERE]_H
-#define __[YOUR FILE HERE]_H
+#ifndef MEGAZEUX_[YOUR FILE HERE]_H
+#define MEGAZEUX_[YOUR FILE HERE]_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 [all other contents]
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __[YOUR FILE HERE]_H */
+#endif /* MEGAZEUX_[YOUR FILE HERE]_H */
 ```
 
 Notes:
 1) The GPL notice must be in every source file. See LICENSE for more information.
 2) Each header needs a unique include guard to ensure that it isn't included multiple times.
-3) `src/compat.h` defines some required compatibility macros, including `__M_BEGIN_DECLS`
-and `__M_END_DECLS`. These macros are used to provide portability when the MZX headers
+3) `src/compat.h` defines some required compatibility macros, including `MEGAZEUX_BEGIN_DECLS`
+and `MEGAZEUX_END_DECLS`. These macros are used to provide portability when the MZX headers
 are included in C++ files.
 4) Functions/structs/variables in these MUST be required elsewhere; otherwise, use static and
 put it in the C/CPP file!

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __DNS_HPP
-#define __DNS_HPP
+#ifndef MEGAZEUX_DNS_HPP
+#define MEGAZEUX_DNS_HPP
 
 #include "../compat.h"
 
@@ -57,4 +57,4 @@ public:
    const struct addrinfo *hints, struct addrinfo **res, uint32_t timeout);
 };
 
-#endif /* __DNS_HPP */
+#endif /* MEGAZEUX_DNS_HPP */

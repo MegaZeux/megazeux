@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __UTILS_Y4M_H
-#define __UTILS_Y4M_H
+#ifndef MEGAZEUX_UTILS_Y4M_H
+#define MEGAZEUX_UTILS_Y4M_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 #include <stdio.h>
@@ -131,6 +131,6 @@ void y4m_convert_frame_rgba(const struct y4m_data *y4m,
 void y4m_free_frame(struct y4m_frame_data *yf);
 void y4m_free(struct y4m_data *y4m);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __UTILS_Y4M_H */
+#endif /* MEGAZEUX_UTILS_Y4M_H */

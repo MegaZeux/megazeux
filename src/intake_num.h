@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __INTAKE_NUM_H
-#define __INTAKE_NUM_H
+#ifndef MEGAZEUX_INTAKE_NUM_H
+#define MEGAZEUX_INTAKE_NUM_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 
@@ -47,6 +47,6 @@ CORE_LIBSPEC
 context *intake_num(context *parent, int value, int min_val, int max_val,
  int x, int y, int min_width, int color, void (*callback)(context *, int));
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __INTAKE_NUM_H
+#endif /* MEGAZEUX_INTAKE_NUM_H */

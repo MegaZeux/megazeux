@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_BLOCK_H
-#define __EDITOR_BLOCK_H
+#ifndef MEGAZEUX_EDITOR_BLOCK_H
+#define MEGAZEUX_EDITOR_BLOCK_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 #include "edit.h"
@@ -75,6 +75,6 @@ boolean select_block_command(struct world *mzx_world, struct block_info *block,
  enum editor_mode mode);
 enum thing layer_to_board_object_type(struct world *mzx_world);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif  // __EDITOR_BLOCK_H
+#endif  /* MEGAZEUX_EDITOR_BLOCK_H */

@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __LEGACY_WORLD_SAVE_H
-#define __LEGACY_WORLD_SAVE_H
+#ifndef MEGAZEUX_LEGACY_WORLD_SAVE_H
+#define MEGAZEUX_LEGACY_WORLD_SAVE_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "const.h"
 #include "world_struct.h"
@@ -48,6 +48,6 @@ int legacy_save_board(struct world *mzx_world,
 
 int legacy_save_world(struct world *mzx_world, const char *file, int savegame);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __LEGACY_WORLD_SAVE_H
+#endif /* MEGAZEUX_LEGACY_WORLD_SAVE_H */

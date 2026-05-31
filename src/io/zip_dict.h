@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ZIP_DICT_H
-#define __ZIP_DICT_H
+#ifndef MEGAZEUX_ZIP_DICT_H
+#define MEGAZEUX_ZIP_DICT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../util.h"
 
@@ -64,6 +64,6 @@ static inline void sliding_dictionary_copy(uint8_t *start, uint8_t **_pos,
   *_pos = pos;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __ZIP_DICT_H */
+#endif /* MEGAZEUX_ZIP_DICT_H */

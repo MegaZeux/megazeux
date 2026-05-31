@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RENDER_NDS_H
-#define __RENDER_NDS_H
+#ifndef MEGAZEUX_RENDERER_NDS_H
+#define MEGAZEUX_RENDERER_NDS_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 // The subscreen can display different information.
 enum Subscreen_Mode
@@ -47,6 +47,6 @@ void nds_video_do_transition(void);
 boolean nds_subscreen_preview(void);
 boolean nds_subscreen_keyboard(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __RENDER_NDS_H
+#endif /* MEGAZEUX_RENDERER_NDS_H */

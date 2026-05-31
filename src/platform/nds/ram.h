@@ -8,8 +8,8 @@ Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
 and GPLv2 (http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt) licenses. 
 
 ***********************************/
-#ifndef __RAM
-#define __RAM
+#ifndef MEGAZEUX_PLATFORM_NDS_RAM_H
+#define MEGAZEUX_PLATFORM_NDS_RAM_H
 
 #include <nds/ndstypes.h>
 
@@ -46,4 +46,4 @@ void  ram_turbo (bool enable);
 }
 #endif
 #endif
-#endif
+#endif /* MEGAZEUX_PLATFORM_NDS_RAM_H */

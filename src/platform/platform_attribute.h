@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_ATTRIBUTE_H
-#define __PLATFORM_ATTRIBUTE_H
+#ifndef MEGAZEUX_PLATFORM_ATTRIBUTE_H
+#define MEGAZEUX_PLATFORM_ATTRIBUTE_H
 
 /**
  * Header for misc. compiler-specific attributes.
@@ -68,4 +68,4 @@
 
 #undef HAS_ATTRIBUTE
 
-#endif // __PLATFORM_ATTRIBUTE_H
+#endif /* MEGAZEUX_PLATFORM_ATTRIBUTE_H */

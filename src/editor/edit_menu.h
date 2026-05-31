@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_EDIT_MENU_H
-#define __EDITOR_EDIT_MENU_H
+#ifndef MEGAZEUX_EDITOR_EDIT_MENU_H
+#define MEGAZEUX_EDITOR_EDIT_MENU_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 #include "buffer_struct.h"
@@ -36,6 +36,6 @@ void update_edit_menu(subcontext *ctx, enum editor_mode mode,
 void edit_menu_show_board_mod(subcontext *ctx);
 void edit_menu_show_robot_memory(subcontext *ctx);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_EDIT_MENU_H
+#endif /* MEGAZEUX_EDITOR_EDIT_MENU_H */

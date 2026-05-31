@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __GAME_MENU_H
-#define __GAME_MENU_H
+#ifndef MEGAZEUX_GAME_MENU_H
+#define MEGAZEUX_GAME_MENU_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 #include "event/keysym.h"
@@ -41,6 +41,6 @@ void game_menu(context *parent, boolean start_selected, enum keycode *retval,
  boolean *retval_alt);
 void main_menu(context *parent, boolean start_selected, enum keycode *retval);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __GAME_MENU_H
+#endif /* MEGAZEUX_GAME_MENU_H */

@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ZIP_STREAM_H
-#define __ZIP_STREAM_H
+#ifndef MEGAZEUX_ZIP_STREAM_H
+#define MEGAZEUX_ZIP_STREAM_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <inttypes.h>
 #include "zip.h"
@@ -81,6 +81,6 @@ struct zip_method_handler
 UTILS_LIBSPEC
 extern const struct zip_method_handler * const zip_method_handlers[ZIP_M_MAX_SUPPORTED + 1];
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __ZIP_STREAM_H */
+#endif /* MEGAZEUX_ZIP_STREAM_H */

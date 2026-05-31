@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __COUNTER_STRUCT_H
-#define __COUNTER_STRUCT_H
+#ifndef MEGAZEUX_COUNTER_STRUCT_H
+#define MEGAZEUX_COUNTER_STRUCT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <inttypes.h>
 
@@ -139,6 +139,6 @@ enum special_counter_return
   FOPEN_SAVE_BC
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __COUNTER_STRUCT_H
+#endif /* MEGAZEUX_COUNTER_STRUCT_H */

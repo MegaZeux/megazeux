@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __CORE_H
-#define __CORE_H
+#ifndef MEGAZEUX_CORE_H
+#define MEGAZEUX_CORE_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
@@ -303,6 +303,6 @@ CORE_LIBSPEC extern void (*debug_robot_reset)(struct world *mzx_world);
 CORE_LIBSPEC extern boolean (*check_for_updates)(context *ctx,
  boolean is_automatic);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __CORE_H */
+#endif /* MEGAZEUX_CORE_H */

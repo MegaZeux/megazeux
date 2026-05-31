@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_BUFFER_STRUCT_H
-#define __EDITOR_BUFFER_STRUCT_H
+#ifndef MEGAZEUX_EDITOR_BUFFER_STRUCT_H
+#define MEGAZEUX_EDITOR_BUFFER_STRUCT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../data.h"
 #include "../robot_struct.h"
@@ -37,6 +37,6 @@ struct buffer_info
   int param;
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __EDITOR_BUFFER_STRUCT_H */
+#endif /* MEGAZEUX_EDITOR_BUFFER_STRUCT_H */

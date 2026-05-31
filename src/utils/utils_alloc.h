@@ -23,12 +23,12 @@
  * core objects from MZX.
  */
 
-#ifndef __UTILS_ALLOC_H
-#define __UTILS_ALLOC_H
+#ifndef MEGAZEUX_UTILS_ALLOC_H
+#define MEGAZEUX_UTILS_ALLOC_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 /* Workaround for linking zip.o */
 FILE *mzxout_h = NULL;
@@ -71,6 +71,6 @@ CORE_LIBSPEC void *check_realloc(void *ptr, size_t size, const char *file, int l
 
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __UTILS_ALLOC_H */
+#endif /* MEGAZEUX_UTILS_ALLOC_H */

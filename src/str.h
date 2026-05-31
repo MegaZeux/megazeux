@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __STR_H
-#define __STR_H
+#ifndef MEGAZEUX_STR_H
+#define MEGAZEUX_STR_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdio.h>
 #include <string.h>
@@ -92,6 +92,6 @@ struct string *load_new_string(struct string_list *string_list, int index,
 
 void clear_string_list(struct string_list *string_list);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __STR_H
+#endif /* MEGAZEUX_STR_H */

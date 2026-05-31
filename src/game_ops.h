@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __GAME_OPS_H
-#define __GAME_OPS_H
+#ifndef MEGAZEUX_GAME_OPS_H
+#define MEGAZEUX_GAME_OPS_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "data.h"
 #include "world_struct.h"
@@ -83,6 +83,6 @@ static inline int xy_shift_dir(struct board *src_board, int x, int y,
   return 0;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __GAME_OPS_H
+#endif /* MEGAZEUX_GAME_OPS_H */

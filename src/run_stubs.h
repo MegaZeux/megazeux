@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RUN_STUBS_H
-#define __RUN_STUBS_H
+#ifndef MEGAZEUX_RUN_STUBS_H
+#define MEGAZEUX_RUN_STUBS_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #ifdef CONFIG_EDITOR
 boolean is_editor(void);
@@ -53,6 +53,6 @@ static inline boolean is_updater(void)
 { return false; }
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __RUN_STUBS_H
+#endif /* MEGAZEUX_RUN_STUBS_H */

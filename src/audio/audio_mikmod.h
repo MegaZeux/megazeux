@@ -19,15 +19,15 @@
 
 /* Declarations */
 
-#ifndef __AUDIO_MIKMOD_H
-#define __AUDIO_MIKMOD_H
+#ifndef MEGAZEUX_AUDIO_MIKMOD_H
+#define MEGAZEUX_AUDIO_MIKMOD_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 void init_mikmod(struct config_info *conf);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif  // __AUDIO_MIKMOD_H
+#endif  /* MEGAZEUX_AUDIO_MIKMOD_H */

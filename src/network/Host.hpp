@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __HOST_HPP
-#define __HOST_HPP
+#ifndef MEGAZEUX_HOST_HPP
+#define MEGAZEUX_HOST_HPP
 
 #include "../compat.h"
 #include "../configure.h"
@@ -376,4 +376,4 @@ namespace std
   }
 }
 
-#endif /* __HOST_HPP */
+#endif /* MEGAZEUX_HOST_HPP */

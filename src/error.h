@@ -19,8 +19,8 @@
 
 /* Declaration for ERROR.CPP */
 
-#ifndef __ERROR_H
-#define __ERROR_H
+#ifndef MEGAZEUX_ERROR_H
+#define MEGAZEUX_ERROR_H
 
 #include "compat.h"
 
@@ -31,7 +31,7 @@
 #define ERROR_OPT_NO_HELP  16
 #define ERROR_OPT_SUPPRESS 32
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 enum error_type
 {
@@ -117,6 +117,6 @@ CORE_LIBSPEC void set_error_suppression(enum error_code id, boolean enable);
 int get_and_reset_error_count(void);
 void reset_error_suppression(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __ERROR_H
+#endif /* MEGAZEUX_ERROR_H */

@@ -24,12 +24,12 @@
  * Only use this when SDL isn't available, e.g. for the utils.
  */
 
-#ifndef __THREAD_WIN32_H
-#define __THREAD_WIN32_H
+#ifndef MEGAZEUX_THREAD_WIN32_H
+#define MEGAZEUX_THREAD_WIN32_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -165,6 +165,6 @@ static inline boolean platform_is_same_thread(platform_thread_id a,
   return a == b;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __THREAD_WIN32_H */
+#endif /* MEGAZEUX_THREAD_WIN32_H */

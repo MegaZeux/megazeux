@@ -21,12 +21,12 @@
  * Reduce (zip compression methods 2-5) decompressor.
  */
 
-#ifndef __ZIP_REDUCE_H
-#define __ZIP_REDUCE_H
+#ifndef MEGAZEUX_ZIP_REDUCE_H
+#define MEGAZEUX_ZIP_REDUCE_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <inttypes.h>
@@ -271,6 +271,6 @@ err_free:
   return ZIP_DECOMPRESS_FAILED;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __ZIP_REDUCE_H */
+#endif /* MEGAZEUX_ZIP_REDUCE_H */

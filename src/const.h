@@ -20,12 +20,12 @@
  */
 
 /* Constants */
-#ifndef __CONST_H
-#define __CONST_H
+#ifndef MEGAZEUX_CONST_H
+#define MEGAZEUX_CONST_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 enum
 {
@@ -124,6 +124,6 @@ enum
 
 #define ROBOT_MAX_TR 512
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __CONST_H
+#endif /* MEGAZEUX_CONST_H */

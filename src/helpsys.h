@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __HELPSYS_H
-#define __HELPSYS_H
+#ifndef MEGAZEUX_HELPSYS_H
+#define MEGAZEUX_HELPSYS_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #ifdef CONFIG_HELPSYS
 
@@ -35,6 +35,6 @@ CORE_LIBSPEC void help_system(context *ctx, struct world *mzx_world);
 
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __HELPSYS_H
+#endif /* MEGAZEUX_HELPSYS_H */

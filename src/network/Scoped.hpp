@@ -21,8 +21,8 @@
  * RAII wrappers for misc. data types used in MZX.
  */
 
-#ifndef __SCOPED_HPP
-#define __SCOPED_HPP
+#ifndef MEGAZEUX_SCOPED_HPP
+#define MEGAZEUX_SCOPED_HPP
 
 #include "../compat.h"
 #include "../util.h"
@@ -271,4 +271,4 @@ public:
   }
 };
 
-#endif /* __SCOPED_HPP */
+#endif /* MEGAZEUX_SCOPED_HPP */

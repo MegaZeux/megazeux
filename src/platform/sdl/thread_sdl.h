@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __THREAD_SDL_H
-#define __THREAD_SDL_H
+#ifndef MEGAZEUX_THREAD_SDL_H
+#define MEGAZEUX_THREAD_SDL_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "SDLmzx.h"
 
@@ -185,6 +185,6 @@ static inline boolean platform_is_same_thread(platform_thread_id a,
   return a == b;
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __THREAD_SDL_H
+#endif /* MEGAZEUX_THREAD_SDL_H */

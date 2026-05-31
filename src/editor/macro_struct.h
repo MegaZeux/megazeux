@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_MACRO_STRUCT_H
-#define __EDITOR_MACRO_STRUCT_H
+#ifndef MEGAZEUX_EDITOR_MACRO_STRUCT_H
+#define MEGAZEUX_EDITOR_MACRO_STRUCT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 enum variable_type
 {
@@ -81,6 +81,6 @@ struct ext_macro
   char *text;
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_MACRO_STRUCT_H
+#endif /* MEGAZEUX_EDITOR_MACRO_STRUCT_H */

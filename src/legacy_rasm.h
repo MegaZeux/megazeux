@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __LEGACY_RASM_H
-#define __LEGACY_RASM_H
+#ifndef MEGAZEUX_LEGACY_RASM_H
+#define MEGAZEUX_LEGACY_RASM_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdio.h>
 
@@ -104,6 +104,6 @@ CORE_LIBSPEC int unescape_char(char *dest, char c);
 
 #endif // !CONFIG_DEBYTECODE
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __LEGACY_RASM_H
+#endif /* MEGAZEUX_LEGACY_RASM_H */

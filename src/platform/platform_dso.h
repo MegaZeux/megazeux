@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_DSO_H
-#define __PLATFORM_DSO_H
+#ifndef MEGAZEUX_PLATFORM_DSO_H
+#define MEGAZEUX_PLATFORM_DSO_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 /* Use as (dso_fn_ptr *) to store a loaded void(*)(void) to a function pointer. */
 typedef void (*dso_fn_ptr)(void);
@@ -56,6 +56,6 @@ CORE_LIBSPEC void platform_unload_library(struct dso_library *library);
 CORE_LIBSPEC boolean platform_load_function(struct dso_library *library,
  const struct dso_syms_map *syms_map);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __PLATFORM_DSO_H */
+#endif /* MEGAZEUX_PLATFORM_DSO_H */

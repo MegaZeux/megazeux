@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_BOARD_H
-#define __EDITOR_BOARD_H
+#ifndef MEGAZEUX_EDITOR_BOARD_H
+#define MEGAZEUX_EDITOR_BOARD_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 
@@ -34,6 +34,6 @@ struct board *create_buffer_board(int width, int height);
 void save_board_file(struct world *mzx_world, struct board *cur_board, const char *name);
 void change_board_size(struct board *src_board, int new_width, int new_height);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_BOARD_H
+#endif /* MEGAZEUX_EDITOR_BOARD_H */

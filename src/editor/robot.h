@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_ROBOT_H
-#define __EDITOR_ROBOT_H
+#ifndef MEGAZEUX_EDITOR_ROBOT_H
+#define MEGAZEUX_EDITOR_ROBOT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../world_struct.h"
 
@@ -72,6 +72,6 @@ static inline void replace_robot_source(struct world *mzx_world,
 void prepare_robot_source(struct robot *cur_robot);
 #endif
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_ROBOT_H
+#endif /* MEGAZEUX_EDITOR_ROBOT_H */

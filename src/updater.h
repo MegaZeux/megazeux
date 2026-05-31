@@ -17,16 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __UPDATER_H
-#define __UPDATER_H
+#ifndef MEGAZEUX_UPDATER_H
+#define MEGAZEUX_UPDATER_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 boolean updater_init(void);
 boolean is_updater(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __UPDATER_H
+#endif /* MEGAZEUX_UPDATER_H */

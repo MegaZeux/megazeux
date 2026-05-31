@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __MUTEX_WII_H
-#define __MUTEX_WII_H
+#ifndef MEGAZEUX_THREAD_WII_H
+#define MEGAZEUX_THREAD_WII_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <limits.h>
 #include <time.h>
@@ -196,6 +196,6 @@ static inline void platform_yield(void)
   LWP_YieldThread();
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __MUTEX_WII_H
+#endif /* MEGAZEUX_THREAD_WII_H */

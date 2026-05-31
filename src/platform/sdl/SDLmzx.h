@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SDLMZX_H
-#define __SDLMZX_H
+#ifndef MEGAZEUX_SDLMZX_H
+#define MEGAZEUX_SDLMZX_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #if defined(CONFIG_SDL)
 #if CONFIG_SDL == 3
@@ -537,6 +537,6 @@ static inline int sdl_linked_version(void)
 
 #endif /* CONFIG_SDL */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __SDLMZX_H */
+#endif /* MEGAZEUX_SDLMZX_H */

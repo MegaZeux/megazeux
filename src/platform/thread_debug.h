@@ -22,12 +22,12 @@
  * Functions for debugging mutexes.
  */
 
-#ifndef __THREAD_DEBUG_H
-#define __THREAD_DEBUG_H
+#ifndef MEGAZEUX_THREAD_DEBUG_H
+#define MEGAZEUX_THREAD_DEBUG_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "platform.h"
 #include "../util.h"
@@ -105,6 +105,6 @@ static inline void platform_mutex_unlock_debug(platform_mutex *mutex,
   platform_mutex_unlock(mutex);
 }
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __THREAD_DEBUG_H */
+#endif /* MEGAZEUX_THREAD_DEBUG_H */

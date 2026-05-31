@@ -21,12 +21,12 @@
  * Implode (zip compression method 6) decompressor.
  */
 
-#ifndef __ZIP_IMPLODE_H
-#define __ZIP_IMPLODE_H
+#ifndef MEGAZEUX_ZIP_IMPLODE_H
+#define MEGAZEUX_ZIP_IMPLODE_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <inttypes.h>
@@ -448,4 +448,6 @@ static inline enum zip_error expl_file(struct zip_stream_data *zs)
   return ZIP_STREAM_FINISHED;
 }
 
-#endif /* __ZIP_IMPLODE_H */
+MEGAZEUX_END_DECLS
+
+#endif /* MEGAZEUX_ZIP_IMPLODE_H */

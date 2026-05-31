@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RENDER_LAYER_H
-#define __RENDER_LAYER_H
+#ifndef MEGAZEUX_RENDER_LAYER_H
+#define MEGAZEUX_RENDER_LAYER_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../graphics.h"
 
@@ -30,6 +30,6 @@ void render_layer(void * RESTRICT pixels,
  size_t width_px, size_t height_px, size_t pitch, int bpp,
  const struct graphics_data *graphics, const struct video_layer *layer);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __RENDER_LAYER_H
+#endif /* MEGAZEUX_RENDER_LAYER_H */

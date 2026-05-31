@@ -17,19 +17,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PNGOPS_H
-#define __PNGOPS_H
+#ifndef MEGAZEUX_PNGOPS_H
+#define MEGAZEUX_PNGOPS_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #if defined(CONFIG_EDITOR) || defined(CONFIG_ENABLE_SCREENSHOTS)
 #define NEED_PNG_WRITE_SCREEN
 #endif
 
 #ifdef CONFIG_PNG
-#if (defined(CONFIG_SDL) && defined(CONFIG_ICON) && !defined(__WIN32__)) || \
+#if (defined(CONFIG_SDL) && defined(CONFIG_ICON) && !defined(_WIN32)) || \
     defined(CONFIG_UTILS) || defined(CONFIG_3DS)
 #define NEED_PNG_READ_FILE
 #endif
@@ -68,6 +68,6 @@ void *png_read_file(const char *name, png_uint_32 *_w, png_uint_32 *_h,
 
 #endif // NEED_PNG_READ_FILE
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __PNGOPS_H
+#endif /* MEGAZEUX_PNGOPS_H */

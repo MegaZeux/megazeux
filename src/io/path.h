@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __IO_PATH_H
-#define __IO_PATH_H
+#ifndef MEGAZEUX_IO_PATH_H
+#define MEGAZEUX_IO_PATH_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stddef.h>
 
@@ -166,6 +166,6 @@ UTILS_LIBSPEC ssize_t path_navigate_no_check(char *path, size_t path_len,
 UTILS_LIBSPEC enum path_create_error path_create_parent_recursively(
  const char *filename);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __IO_PATH_H */
+#endif /* MEGAZEUX_IO_PATH_H */

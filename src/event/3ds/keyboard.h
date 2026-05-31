@@ -19,12 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __3DS_KEYBOARD_H__
-#define __3DS_KEYBOARD_H__
+#ifndef MEGAZEUX_KEYBOARD_3DS_H
+#define MEGAZEUX_KEYBOARD_3DS_H
 
 #include "../../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../event.h"
 
@@ -42,6 +42,6 @@ void ctr_keyboard_draw(struct ctr_render_data *render_data);
 boolean ctr_keyboard_update(struct buffered_status *status);
 boolean ctr_keyboard_force_zoom_out(void);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __3DS_KEYBOARD_H__ */
+#endif /* MEGAZEUX_KEYBOARD_3DS_H */

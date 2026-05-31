@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __WORLD_STRUCT_H
-#define __WORLD_STRUCT_H
+#ifndef MEGAZEUX_WORLD_STRUCT_H
+#define MEGAZEUX_WORLD_STRUCT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdio.h>
 #include <stdint.h>
@@ -256,6 +256,6 @@ struct world
   int32_t current_time_nano;
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __WORLD_STRUCT_H
+#endif /* MEGAZEUX_WORLD_STRUCT_H */

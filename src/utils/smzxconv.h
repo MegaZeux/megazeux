@@ -15,8 +15,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __SMZXCONV_H
-#define __SMZXCONV_H
+#ifndef MEGAZEUX_SMZXCONV_H
+#define MEGAZEUX_SMZXCONV_H
 
 struct rgba_color;
 
@@ -41,4 +41,4 @@ int smzx_convert (smzx_converter *c, const struct rgba_color *img, mzx_tile *til
  mzx_glyph *chr, mzx_color *pal);
 void smzx_convert_free (smzx_converter *c);
 
-#endif /* __SMZXCONV_H */
+#endif /* MEGAZEUX_SMZXCONV_H */

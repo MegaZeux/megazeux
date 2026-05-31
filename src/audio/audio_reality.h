@@ -17,15 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __AUDIO_REALITY_H
-#define __AUDIO_REALITY_H
+#ifndef MEGAZEUX_AUDIO_REALITY_H
+#define MEGAZEUX_AUDIO_REALITY_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 void init_reality(struct config_info *conf);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif
+#endif /* MEGAZEUX_AUDIO_REALITY_H */

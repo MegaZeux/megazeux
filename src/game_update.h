@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __GAME_UPDATE_H
-#define __GAME_UPDATE_H
+#ifndef MEGAZEUX_GAME_UPDATE_H
+#define MEGAZEUX_GAME_UPDATE_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 
@@ -36,6 +36,6 @@ boolean draw_world(context *ctx, boolean is_title);
 boolean update_resolve_target(struct world *mzx_world,
  boolean *fade_in_next_cycle);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __GAME_UPDATE_H
+#endif /* MEGAZEUX_GAME_UPDATE_H */

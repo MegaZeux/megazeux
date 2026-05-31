@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __3DS_PLATFORM_H__
-#define __3DS_PLATFORM_H__
+#ifndef MEGAZEUX_PLATFORM_3DS_H
+#define MEGAZEUX_PLATFORM_3DS_H
 
 #include "../../compat.h"
 
@@ -28,7 +28,7 @@
 #include <3ds.h>
 #include <citro3d.h>
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 boolean ctr_is_2d(void);
 boolean ctr_supports_wide(void);
@@ -52,6 +52,6 @@ static inline void *clinearAlloc(size_t size)
 
 #endif /* CONFIG_CHECK_ALLOC */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __3DS_PLATFORM_H__ */
+#endif /* MEGAZEUX_PLATFORM_3DS_H */

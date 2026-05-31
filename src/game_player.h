@@ -20,12 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __GAME_PLAYER_H
-#define __GAME_PLAYER_H
+#ifndef MEGAZEUX_GAME_PLAYER_H
+#define MEGAZEUX_GAME_PLAYER_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
@@ -46,6 +46,6 @@ void grab_item(struct world *mzx_world, int item_x, int item_y, int src_dir);
 void move_player(struct world *mzx_world, int dir);
 void entrance(struct world *mzx_world, int x, int y);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __GAME_PLAYER_H
+#endif /* MEGAZEUX_GAME_PLAYER_H */

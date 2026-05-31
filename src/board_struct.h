@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __BOARD_STRUCT_H
-#define __BOARD_STRUCT_H
+#ifndef MEGAZEUX_BOARD_STRUCT_H
+#define MEGAZEUX_BOARD_STRUCT_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "robot_struct.h"
 
@@ -113,6 +113,6 @@ struct board
 #endif
 };
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __BOARD_STRUCT_H
+#endif /* MEGAZEUX_BOARD_STRUCT_H */

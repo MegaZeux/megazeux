@@ -19,15 +19,15 @@
 
 /* Declarations */
 
-#ifndef __AUDIO_XMP_H
-#define __AUDIO_XMP_H
+#ifndef MEGAZEUX_AUDIO_XMP_H
+#define MEGAZEUX_AUDIO_XMP_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 void init_xmp(struct config_info *conf);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif  // __AUDIO_XMP_H
+#endif  /* MEGAZEUX_AUDIO_XMP_H */

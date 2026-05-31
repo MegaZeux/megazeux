@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __PLATFORM_MAIN_H
-#define __PLATFORM_MAIN_H
+#ifndef MEGAZEUX_PLATFORM_MAIN_H
+#define MEGAZEUX_PLATFORM_MAIN_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #ifdef CONFIG_REPLACE_MAIN
 
@@ -31,6 +31,6 @@ int real_main(int argc, char *argv[]);
 
 #endif /* CONFIG_REPLACE_MAIN */
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __PLATFORM_MAIN_H */
+#endif /* MEGAZEUX_PLATFORM_MAIN_H */

@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __CONFIGURE_H
-#define __CONFIGURE_H
+#ifndef MEGAZEUX_CONFIGURE_H
+#define MEGAZEUX_CONFIGURE_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
@@ -239,6 +239,6 @@ CORE_LIBSPEC boolean _config_string(char *dest, size_t dest_len, const char *val
 
 #endif // CONFIG_EDITOR
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __CONFIGURE_H
+#endif /* MEGAZEUX_CONFIGURE_H */

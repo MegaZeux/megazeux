@@ -18,13 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_CONFIGURE_H
-#define __EDITOR_CONFIGURE_H
+#ifndef MEGAZEUX_EDITOR_CONFIGURE_H
+#define MEGAZEUX_EDITOR_CONFIGURE_H
 
 #include "../compat.h"
 #include "../const.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "macro.h"
 
@@ -144,6 +144,6 @@ size_t get_local_editor_config_name(char *dest, size_t dest_len,
 void save_local_editor_config(struct editor_config_info *conf,
  const char *mzx_file_path);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __EDITOR_CONFIGURE_H
+#endif /* MEGAZEUX_EDITOR_CONFIGURE_H */

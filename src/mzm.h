@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __MZM_H
-#define __MZM_H
+#ifndef MEGAZEUX_MZM_H
+#define MEGAZEUX_MZM_H
 
 #include "compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
@@ -69,6 +69,6 @@ CORE_LIBSPEC int load_mzm_memory(struct world *mzx_world, char *name, int start_
  const void *buffer, size_t length);
 CORE_LIBSPEC boolean load_mzm_header(char *name, struct mzm_header *mzm_header);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __MZM_H
+#endif /* MEGAZEUX_MZM_H */

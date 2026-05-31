@@ -17,12 +17,12 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef __EDITOR_ANSI_H
-#define __EDITOR_ANSI_H
+#ifndef MEGAZEUX_EDITOR_ANSI_H
+#define MEGAZEUX_EDITOR_ANSI_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "edit.h"
 
@@ -36,6 +36,6 @@ boolean export_ansi(struct world *mzx_world, const char *filename,
  enum editor_mode mode, int start_x, int start_y, int width, int height,
  boolean text_only, boolean doorway_mode, const char *title, const char *author);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __EDITOR_ANSI_H */
+#endif /* MEGAZEUX_EDITOR_ANSI_H */

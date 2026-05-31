@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __UTILS_IMAGE_COMMON_H
-#define __UTILS_IMAGE_COMMON_H
+#ifndef MEGAZEUX_UTILS_IMAGE_COMMON_H
+#define MEGAZEUX_UTILS_IMAGE_COMMON_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,4 +54,4 @@ static void imagenodbg(...) {}
 }
 #endif
 
-#endif /* __UTILS_IMAGE_COMMON_H */
+#endif /* MEGAZEUX_UTILS_IMAGE_COMMON_H */

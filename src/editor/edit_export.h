@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __EDITOR_EDIT_EXPORT_H
-#define __EDITOR_EDIT_EXPORT_H
+#ifndef MEGAZEUX_EDITOR_EDIT_EXPORT_H
+#define MEGAZEUX_EDITOR_EDIT_EXPORT_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../core.h"
 
@@ -31,6 +31,6 @@ void export_board_image(context *parent, struct board *src_board,
 void export_vlayer_image(context *parent, struct world *mzx_world,
  const char *file);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif /* __EDITOR_EDIT_EXPORT_H */
+#endif /* MEGAZEUX_EDITOR_EDIT_EXPORT_H */

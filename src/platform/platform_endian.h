@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __ENDIAN_H
-#define __ENDIAN_H
+#ifndef MEGAZEUX_PLATFORM_ENDIAN_H
+#define MEGAZEUX_PLATFORM_ENDIAN_H
 
 /* Specific architecture defines. */
 #if defined(__x86_64__) || defined(_M_AMD64) || defined(_M_X64)
@@ -175,4 +175,4 @@
 #define PLATFORM_UNALIGN_32 0x02
 #endif
 
-#endif // __ENDIAN_H
+#endif /* MEGAZEUX_PLATFORM_ENDIAN_H */

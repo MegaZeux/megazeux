@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef __RENDERERS_H
-#define __RENDERERS_H
+#ifndef MEGAZEUX_RENDERERS_H
+#define MEGAZEUX_RENDERERS_H
 
 #include "../compat.h"
 
-__M_BEGIN_DECLS
+MEGAZEUX_BEGIN_DECLS
 
 #include "../graphics.h"
 
@@ -95,6 +95,6 @@ extern const struct renderer renderer_dreamcast_fb;
 
 boolean set_current_renderer(struct graphics_data *graphics, const char *name);
 
-__M_END_DECLS
+MEGAZEUX_END_DECLS
 
-#endif // __RENDERERS_H
+#endif /* MEGAZEUX_RENDERERS_H */
