@@ -30,12 +30,11 @@ extern "C" {
 
 #define BUILD_REFERENCE_RENDERER
 #include "../src/render/render_layer.cpp"
-#include "../src/render_layer.cpp"
-#include "../src/render_layer_altivec.cpp"
-#include "../src/render_layer_avx.cpp"
-#include "../src/render_layer_neon.cpp"
-#include "../src/render_layer_rvv.cpp"
-#include "../src/render_layer_sse2.cpp"
+#include "../src/render/render_layer_altivec.cpp"
+#include "../src/render/render_layer_avx.cpp"
+#include "../src/render/render_layer_neon.cpp"
+#include "../src/render/render_layer_rvv.cpp"
+#include "../src/render/render_layer_sse2.cpp"
 
 typedef void (*render_layer_fp)(void * RESTRICT pixels,
  size_t width_px, size_t height_px, size_t pitch, int bpp,

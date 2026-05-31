@@ -17,11 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "graphics.h"
 #include "render_layer_common.hpp"
 
 #ifdef DEBUG
-#include "util.h"
+#include "../util.h"
 #endif
 
 #if defined(HAS_RENDER_LAYER32X8_AVX) && defined(__AVX__)

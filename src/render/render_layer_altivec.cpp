@@ -17,12 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "graphics.h"
-#include "platform_endian.h"
 #include "render_layer_common.hpp"
+#include "../platform/platform_endian.h"
 
 #ifdef DEBUG
-#include "util.h"
+#include "../util.h"
 #endif
 
 #if defined(HAS_RENDER_LAYER32X4_ALTIVEC) && defined(__ALTIVEC__)

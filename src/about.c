@@ -23,7 +23,7 @@
 #include "io/path.h"
 #include "io/vio.h"
 #include "platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
-#include "platform/platform_endiah.h"
+#include "platform/platform_endian.h"
 
 #include <ctype.h>
 #include <zlib.h>

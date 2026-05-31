@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "compat.h"
+#include "../compat.h"
 #include "platform_endian.h"
 
 #if defined(__x86_64__) || defined(_M_AMD64) || defined(_M_X64)

@@ -17,7 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "graphics.h"
 #include "render_layer_common.hpp"
 
 /* TODO: compare performance of these two implementations,
@@ -27,7 +26,7 @@
 //#define USE_MASKMOVDQU
 
 #ifdef DEBUG
-#include "util.h"
+#include "../util.h"
 #endif
 
 #if defined(__x86_64__) || defined(__SSE2__) || \
