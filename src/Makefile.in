@@ -97,6 +97,7 @@ core_cobjs := \
   ${core_obj}/run_robot.o         \
   ${core_obj}/scrdisp.o           \
   ${core_obj}/settings.o          \
+  ${core_obj}/sfx.o               \
   ${core_obj}/sprite.o            \
   ${core_obj}/str.o               \
   ${core_obj}/util.o              \

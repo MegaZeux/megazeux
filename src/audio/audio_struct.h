@@ -32,6 +32,8 @@ MEGAZEUX_BEGIN_DECLS
 #include "../configure.h"
 #include "../platform/platform.h"
 
+#define AUDIO_SFX_QUEUE_SIZE 4096
+
 #ifdef CONFIG_DJGPP
 #define AUDIO_GARBAGE_COLLECTOR
 #endif
@@ -108,6 +110,32 @@ struct audio_stream_spec
   void      (* destruct)(struct audio_stream *a_src);
 };
 
+/**
+ * NOTE: these were signed 16-bit ints in DOS versions and signed 32-bit ints
+ * up through 2.92e. It is highly unlikely anything ever relied on a duration
+ * over 65535 (~131 seconds at 500 Hz).
+ *
+ * The frequency is guaranteed to never actually need anything higher than the
+ * table below, so there's no reason for it to be 32-bit.
+ */
+struct audio_sfx_note
+{
+  uint16_t duration;
+  uint16_t freq;
+};
+
+struct audio_sfx_data
+{
+  struct audio_sfx_note queue[AUDIO_SFX_QUEUE_SIZE];
+  int head_index;
+  int tail_index;
+
+  /* In DOS versions, clearing the SFX queue would also stop the current
+   * note. The best that can be done here is to alert the PC speaker stream
+   * to cancel the current playing sound the next time pcs_mix_data runs. */
+  boolean cancel_current_note;
+};
+
 struct audio
 {
   int32_t *mix_buffer;
@@ -140,6 +168,8 @@ struct audio
   unsigned int music_volume;
   unsigned int sound_volume;
   unsigned int pcs_volume;
+
+  struct audio_sfx_data sfx; /* Protected by audio_sfx_mutex. */
 };
 
 extern struct audio audio;

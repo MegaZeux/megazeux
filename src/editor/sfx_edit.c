@@ -23,11 +23,10 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../audio/sfx.h"
-
 #include "../core.h"
 #include "../data.h"
 #include "../error.h"
+#include "../sfx.h"
 #include "../window.h"
 #include "../world.h"
 #include "../util.h"

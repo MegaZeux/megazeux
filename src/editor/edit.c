@@ -35,6 +35,7 @@
 #include "../mzm.h"
 #include "../robot.h"
 #include "../scrdisp.h"
+#include "../sfx.h"
 #include "../util.h"
 #include "../window.h"
 #include "../world.h"
@@ -42,7 +43,6 @@
 #include "../io/vio.h"
 
 #include "../audio/audio.h"
-#include "../audio/sfx.h"
 #include "../event/event.h"
 #include "../platform/platform.h"
 

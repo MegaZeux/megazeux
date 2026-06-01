@@ -18,7 +18,7 @@
  */
 
 #include "Unit.hpp"
-#include "../src/audio/sfx.h"
+#include "../src/sfx.h"
 #include "../src/world.h"
 
 #ifdef CONFIG_DEBYTECODE

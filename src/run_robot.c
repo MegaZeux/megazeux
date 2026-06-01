@@ -43,6 +43,7 @@
 #include "mzm.h"
 #include "robot.h"
 #include "scrdisp.h"
+#include "sfx.h"
 #include "sprite.h"
 #include "str.h"
 #include "util.h"
@@ -51,7 +52,6 @@
 #include "io/fsafeopen.h"
 
 #include "audio/audio.h"
-#include "audio/sfx.h"
 #include "event/event.h"
 
 #define parsedir(a, b, c, d) \

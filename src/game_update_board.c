@@ -31,10 +31,9 @@
 #include "idarray.h"
 #include "idput.h"
 #include "robot.h"
+#include "sfx.h"
 #include "world.h"
 #include "util.h"
-
-#include "audio/sfx.h"
 
 // For missile turning (directions)
 

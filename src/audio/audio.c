@@ -34,7 +34,6 @@
 #include "audio_struct.h"
 #include "ext.h"
 #include "sampled_stream.h"
-#include "sfx.h"
 
 #include "../configure.h"
 #include "../data.h"

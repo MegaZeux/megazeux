@@ -2,7 +2,7 @@
  *
  * Copyright (C) 1996  Alexis Janson
  * Copyright (C) 2004  Gilead Kutnick <exophase@adelphia.net>
- * Copyright (C) 2018-2023  Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2018-2026  Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,22 +19,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Sound effects system- PLAY, SFX, and bkground code */
+/* This is the game-facing side of MegaZeux's PC speaker sound effects.
+ * See audio/audio_sfx.c for sound effect queue management and
+ * audio/audio_pcs.c for the PC speaker rendering code. */
 
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "audio.h"
-#include "audio_pcs.h"
-#include "audio_struct.h"
+#include "data.h"
 #include "sfx.h"
+#include "world.h"
+#include "world_format.h"
+#include "world_struct.h"
+#include "util.h"
 
-#include "../data.h"
-#include "../world.h"
-#include "../world_format.h"
-#include "../world_struct.h"
-#include "../util.h"
+#include "audio/audio.h"
+#include "audio/audio_sfx.h"
 
 #if defined(CONFIG_AUDIO) || defined(CONFIG_EDITOR)
 
@@ -111,62 +112,6 @@ __editor_maybe_static char sfx_strs[NUM_BUILTIN_SFX][LEGACY_SFX_SIZE] =
 
 #ifdef CONFIG_AUDIO
 
-// Size of sound queue
-#define NOISEMAX        4096
-
-// Special freqs
-#define F_REST          1
-
-/**
- * The circular buffer here was originally designed to keep this queue safe
- * in DOS, where the dequeues occurred in an interrupt that had no chance
- * of running concurrently with the enqueues.
- *
- * In a parallel environment circular buffers are prone to very subtle bugs
- * without the use of atomics or locks. While normally that wouldn't cause
- * serious issues here, to make things worse both the main thread and audio
- * thread can cancel the entire SFX queue arbitrarily (and were previously
- * modifying the other thread's queue index where this occurred!).
- *
- * Just to be sure this isn't a problem going forward, the queue is now
- * protected with a mutex. The locked functions are very small so this
- * shouldn't cause much of a performance issue.
- */
-#ifndef DEBUG
-
-#define SFX_LOCK()   platform_mutex_lock(&audio.audio_sfx_mutex)
-#define SFX_UNLOCK() platform_mutex_unlock(&audio.audio_sfx_mutex)
-
-#else /* DEBUG */
-
-#include "../platform/thread_debug.h"
-
-static platform_mutex_debug mutex_debug;
-
-#define SFX_LOCK()   platform_mutex_lock_debug(&audio.audio_sfx_mutex, \
-                      &audio.audio_debug_mutex, &mutex_debug, __FILE__, __LINE__)
-#define SFX_UNLOCK() platform_mutex_unlock_debug(&audio.audio_sfx_mutex, \
-                      &audio.audio_debug_mutex, &mutex_debug, __FILE__, __LINE__)
-
-#endif /* DEBUG */
-
-static int topindex = 0;  // Marks the top of the queue
-static int backindex = 0; // Marks bottom of queue
-
-/**
- * NOTE: these were signed 16-bit ints in DOS versions and signed 32-bit ints
- * up through 2.92e. It is highly unlikely anything ever relied on a duration
- * over 65535 (~131 seconds at 500 Hz).
- *
- * The frequency is guaranteed to never actually need anything higher than the
- * table below, so there's no reason for it to be 32-bit.
- */
-struct noise
-{
-  uint16_t duration;
-  uint16_t freq;
-};
-
 // Frequencies of 6C thru 6B
 static const int note_freq[12] =
  { 2032, 2152, 2280, 2416, 2560, 2712, 2880, 3048, 3232, 3424, 3624, 3840 };
@@ -174,14 +119,6 @@ static const int note_freq[12] =
 // Sample frequencies of 0C thru 0B
 static const int sam_freq[12] =
  { 3424, 3232, 3048, 2880, 2712, 2560, 2416, 2280, 2152, 2032, 1920, 1812 };
-
-static struct noise background[NOISEMAX];
-
-/**
- * Allows the audio thread to determine whether the note held over from the
- * previous pcs_mix_data call should be cancelled.
- */
-static boolean cancel_current_note = false;
 
 #ifdef CONFIG_DEBYTECODE
 static const char open_char  = '(';
@@ -191,34 +128,11 @@ static const char open_char  = '&';
 static const char close_char = '&';
 #endif
 
-static boolean sound_in_queue(void)
-{
-  return topindex != backindex;
-}
-
-static void submit_sound(int freq, int delay)
-{
-  int nextindex;
-  delay = CLAMP(delay, 0, UINT16_MAX);
-
-  SFX_LOCK();
-
-  nextindex = (topindex < NOISEMAX - 1) ? topindex + 1 : 0;
-  if(nextindex != backindex)
-  {
-    background[topindex].freq = freq;
-    background[topindex].duration = delay;
-    topindex = nextindex;
-  }
-
-  SFX_UNLOCK();
-}
-
 static void play_note(int note, int octave, int delay)
 {
   // Note is # 1-12
   // Octave #0-6
-  submit_sound(note_freq[note - 1] >> (6 - octave), delay);
+  audio_sfx_queue_sound(note_freq[note - 1] >> (6 - octave), delay);
 }
 
 void play_sfx(struct world *mzx_world, int sfxn)
@@ -263,7 +177,7 @@ void play_string(char *str, int sfx_play)
   }
   else
   {
-    if(!sound_in_queue())
+    if(!audio_sfx_has_queued_sounds())
       sfx_play = 0;
   }
 
@@ -290,7 +204,7 @@ void play_string(char *str, int sfx_play)
     {
       // Rest
       if(!sfx_play && !(digi_st > 0))
-        submit_sound(F_REST, dur + extra_duration);
+        audio_sfx_queue_sound(AUDIO_SFX_FREQ_REST, dur + extra_duration);
 
       continue;
     }
@@ -358,12 +272,12 @@ void play_string(char *str, int sfx_play)
       {
         if(dur <= 9)
         {
-          submit_sound(F_REST, 1 + extra_duration);
+          audio_sfx_queue_sound(AUDIO_SFX_FREQ_REST, 1 + extra_duration);
           play_note(note, oct, dur - 1 + extra_duration);
         }
         else
         {
-          submit_sound(F_REST, 2 + extra_duration);
+          audio_sfx_queue_sound(AUDIO_SFX_FREQ_REST, 2 + extra_duration);
           play_note(note, oct, dur - 2 + extra_duration);
         }
       }
@@ -452,109 +366,17 @@ void play_string(char *str, int sfx_play)
 
 void sfx_clear_queue(void)
 {
-  SFX_LOCK();
-
-  /**
-   * In DOS versions, clearing the SFX queue would also stop the current
-   * note. The best that can be done here is to alert the PC speaker stream
-   * to cancel the current playing sound the next time pcs_mix_data runs.
-   */
-  cancel_current_note = true;
-  topindex = 0;
-  backindex = 0;
-
-  SFX_UNLOCK();
-}
-
-// Called by audio_pcs.c under lock.
-void sfx_next_note(int *is_playing, int *freq, int *duration)
-{
-  int sfx_on = audio_get_pcs_on();
-
-  SFX_LOCK();
-
-  cancel_current_note = false;
-  if(sound_in_queue())
-  {
-    /**
-     * NOTE: originally, 1 was unconditionally added to the durations here.
-     * This is now done in play_string instead to keep things less messy.
-     */
-    if(background[backindex].freq == F_REST)
-    {
-      if(sfx_on)
-      {
-        *is_playing = false;
-        *duration = background[backindex].duration;
-      }
-    }
-    else
-
-    if(sfx_on)
-    {
-      // Start sound
-      *is_playing = true;
-      *freq = background[backindex].freq;
-      *duration = background[backindex].duration;
-    }
-
-    if(backindex < NOISEMAX - 1)
-      backindex++;
-    else
-      backindex = 0;
-
-    /**
-     * NOTE: originally, would reset topindex and backindex to 0 here if they
-     * were equal. There's not really much of a point to doing this.
-     */
-  }
-  else
-  {
-    if(sfx_on)
-    {
-      *is_playing = false;
-      *duration = 1;
-    }
-  }
-
-  SFX_UNLOCK();
-
-  // Silence the emulated PC speaker when sounds are disabled.
-  // NOTE: there was not a corresponding nosound() call here in DOS versions.
-  if(!sfx_on)
-  {
-    *is_playing = false;
-    *duration = 1;
-  }
-}
-
-// Called by audio_pcs.c under lock.
-boolean sfx_should_cancel_note(void)
-{
-  boolean ret;
-
-  SFX_LOCK();
-
-  ret = cancel_current_note;
-
-  SFX_UNLOCK();
-
-  return ret;
+  audio_sfx_clear_queue();
 }
 
 boolean sfx_is_playing(void)
 {
-  return sound_in_queue();
+  return audio_sfx_has_queued_sounds();
 }
 
 int sfx_length_left(void)
 {
-  int left = topindex - backindex;
-
-  if(left < 0)
-    left += NOISEMAX;
-
-  return left;
+  return audio_sfx_get_num_queued_sounds();
 }
 
 #endif // CONFIG_AUDIO

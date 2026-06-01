@@ -30,12 +30,11 @@
 #include "idput.h"
 #include "robot.h"
 #include "scrdisp.h"
+#include "sfx.h"
 #include "util.h"
 #include "window.h"
 #include "world.h"
 #include "world_struct.h"
-
-#include "audio/sfx.h"
 
 /**
  * Player functions for gameplay.

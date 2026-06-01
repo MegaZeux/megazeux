@@ -33,13 +33,12 @@
 #include "idput.h"
 #include "legacy_rasm.h"
 #include "rasm.h"
+#include "sfx.h"
 #include "sprite.h"
 #include "window.h"
 #include "world.h"
 #include "world_struct.h"
 #include "util.h"
-
-#include "audio/sfx.h"
 
 /* This file is a collection of the 2.84 file format saving functions.
  * Nothing here is guaranteed to work; this file exists mainly for reference.

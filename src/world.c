@@ -46,6 +46,7 @@
 #include "graphics.h"
 #include "idput.h"
 #include "robot.h"
+#include "sfx.h"
 #include "sprite.h"
 #include "str.h"
 #include "util.h"
@@ -57,7 +58,6 @@
 #include "io/zip.h"
 
 #include "audio/audio.h"
-#include "audio/sfx.h"
 #include "event/event.h"
 
 #ifdef CONFIG_LOADSAVE_METER

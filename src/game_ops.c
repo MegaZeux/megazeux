@@ -27,11 +27,10 @@
 #include "idarray.h"
 #include "idput.h"
 #include "robot.h"
+#include "sfx.h"
 #include "util.h"
 #include "window.h"
 #include "world_struct.h"
-
-#include "audio/sfx.h"
 
 /**
  * Utility functions for gameplay.

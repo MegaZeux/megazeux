@@ -11,6 +11,7 @@ GIT - MZX 2.93e
 
 USERS
 
++ NDS: fixed PC speaker playback of rests (e.g. game over SFX).
 + Unix/Darwin: installed utilities are now prefixed with
   "megazeux-" so they can be installed to PATH. Package
   maintainers should move --bindir from LIBDIR/bin to the normal
@@ -49,6 +50,10 @@ DEVELOPERS
   each source directory.
 + Utilities and the unit tests are now compiled to the source
   root instead of to src/utils/ and unit .build dirs.
++ Reorganized most platform-specific C/C++ code to subdirs of
+  the src/ tree. (Some parts of the NDS port remain in arch/.)
+* Reorganized platform misc. code to src/platform/.
++ Reorganized renderers to src/render/.
 + Renamed enum thing __TEXT to TEXT_ID to fix conflicts with
   libnix BSD sockets headers.
 + Fix vfwrite return value for size 0 on DragonFly BSD.
