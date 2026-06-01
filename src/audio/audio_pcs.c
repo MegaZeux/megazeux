@@ -22,8 +22,8 @@
 
 #include "audio.h"
 #include "audio_pcs.h"
+#include "audio_sfx.h"
 #include "audio_struct.h"
-#include "sfx.h"
 
 #include "../configure.h"
 
@@ -60,7 +60,7 @@ static boolean pcs_mix_data(struct audio_stream *a_src, int32_t * RESTRICT buffe
    * Cancel the current playing note if PC speaker effects were turned off or
    * if the sfx queue was cleared.
    */
-  if(!audio_get_pcs_on() || sfx_should_cancel_note())
+  if(!audio_get_pcs_on() || audio_sfx_should_cancel_note())
   {
     pcs_stream->last_playing = 0;
     pcs_stream->last_duration = 0;
@@ -104,9 +104,8 @@ static boolean pcs_mix_data(struct audio_stream *a_src, int32_t * RESTRICT buffe
 
   while(offset < dest_frames)
   {
-    int playing, frequency, note_duration;
-    sfx_next_note(&playing, &frequency, &note_duration);
-    pcs_stream->playing = playing;
+    int frequency, note_duration;
+    pcs_stream->playing = audio_sfx_get_next_sound(&frequency, &note_duration);
     pcs_stream->frequency = frequency;
     pcs_stream->note_duration = note_duration;
 

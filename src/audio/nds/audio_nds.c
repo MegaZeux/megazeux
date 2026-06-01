@@ -18,8 +18,8 @@
  */
 
 #include "../audio.h"
+#include "../audio_sfx.h"
 #include "../audio_struct.h"
-#include "../sfx.h"
 
 #include "../../util.h"
 #include "../../io/fsafeopen.h"
@@ -71,42 +71,27 @@ static inline void nds_pcs_tick(int duration)
   int ticks = 0;
   int ticked;
 
-  if(!audio_get_pcs_on() || sfx_should_cancel_note())
-    pcs_playing = 0;
+  if(!audio_get_pcs_on() || audio_sfx_should_cancel_note())
+    pcs_duration = 0;
 
   while(ticks < duration)
   {
-    if(pcs_playing)
+    if(pcs_duration < 1)
     {
-      if(pcs_duration <= 0)
-      {
-        pcs_playing = 0;
-      }
-      else
-      {
-        ticked = MIN(duration - ticks, pcs_duration);
-        ticks += ticked;
-        pcs_duration -= ticked;
-      }
-      continue;
+      pcs_playing = audio_sfx_get_next_sound(&pcs_frequency, &pcs_duration);
+      if(pcs_duration < 1)
+        pcs_duration = 1;
     }
 
-    // Update PC speaker.
-    sfx_next_note(&pcs_playing, &pcs_frequency, &pcs_duration);
-
-    if(!pcs_playing)
-      break;
+    ticked = MIN(duration - ticks, pcs_duration);
+    ticks += ticked;
+    pcs_duration -= ticked;
   }
 
-  if(pcs_playing != last_playing)
+  if(pcs_playing != last_playing || (pcs_playing && pcs_frequency != last_frequency))
   {
-    nds_pcs_sound(pcs_playing ? pcs_frequency : 0, NDS_VOLUME(audio_get_pcs_volume()));
-  }
-  else
-
-  if(pcs_playing && (pcs_frequency != last_frequency))
-  {
-    nds_pcs_sound(pcs_frequency, NDS_VOLUME(audio_get_pcs_volume()));
+    int freq = pcs_playing ? pcs_frequency : 0;
+    nds_pcs_sound(freq, NDS_VOLUME(audio_get_pcs_volume()));
   }
 }
 

@@ -30,6 +30,7 @@
 #include "graphics.h"
 #include "idarray.h"
 #include "idput.h"
+#include "sfx.h"
 #include "sprite.h"
 #include "robot.h"
 #include "util.h"
@@ -37,7 +38,6 @@
 #include "world_struct.h"
 
 #include "audio/audio.h"
-#include "audio/sfx.h"
 #include "event/event.h"
 
 #include <string.h>

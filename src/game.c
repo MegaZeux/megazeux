@@ -40,6 +40,7 @@
 #include "game_update.h"
 #include "graphics.h"
 #include "robot.h"
+#include "sfx.h"
 #include "window.h"
 #include "world.h"
 #include "world_struct.h"
@@ -47,7 +48,6 @@
 #include "io/vio.h"
 
 #include "audio/audio.h"
-#include "audio/sfx.h"
 #include "event/event.h"
 
 static const char *const world_ext[] = { ".MZX", NULL };

@@ -20,7 +20,7 @@
 #ifndef MEGAZEUX_SFX_H
 #define MEGAZEUX_SFX_H
 
-#include "../compat.h"
+#include "compat.h"
 
 MEGAZEUX_BEGIN_DECLS
 
@@ -107,10 +107,6 @@ CORE_LIBSPEC size_t sfx_ram_usage(const struct sfx_list *sfx_list);
 #endif // CONFIG_EDITOR
 
 #ifdef CONFIG_AUDIO
-
-// Called by audio_pcs.c under lock.
-void sfx_next_note(int *is_playing, int *freq, int *duration);
-boolean sfx_should_cancel_note(void);
 
 void play_sfx(struct world *mzx_world, int sfx);
 void play_string(char *str, int sfx_play);

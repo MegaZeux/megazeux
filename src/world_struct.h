@@ -33,8 +33,8 @@ MEGAZEUX_BEGIN_DECLS
 #include "counter_struct.h"
 #include "sprite_struct.h"
 
+#include "sfx.h"
 #include "io/vfile.h"
-#include "audio/sfx.h"
 
 #define COMMAND_CACHE_CURRENT_TIME (1 << 0)
 

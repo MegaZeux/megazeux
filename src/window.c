@@ -41,13 +41,13 @@
 #include "helpsys.h"
 #include "intake.h"
 #include "robot.h"
+#include "sfx.h"
 #include "window.h"
 #include "world.h"
 #include "util.h"
 #include "io/path.h"
 #include "io/vio.h"
 
-#include "audio/sfx.h"
 #include "event/event.h"
 #include "platform/platform.h"
 
