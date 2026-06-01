@@ -49,6 +49,7 @@ SRC_OBJS = \
   memio.o         \
   mixer.o         \
   mix_all.o       \
+  path.o          \
   period.o        \
   player.o        \
   read_event.o    \

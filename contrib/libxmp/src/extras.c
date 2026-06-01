@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2021 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2025 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -152,12 +152,12 @@ int libxmp_extras_get_linear_bend(struct context_data *ctx, struct channel_data 
 }
 
 void libxmp_extras_process_fx(struct context_data *ctx, struct channel_data *xc,
-			int chn, uint8 note, uint8 fxt, uint8 fxp, int fnum)
+			int chn, uint8 note, uint8 ins, uint8 fxt, uint8 fxp, int fnum)
 {
 	if (HAS_MED_CHANNEL_EXTRAS(*xc))
-		libxmp_med_extras_process_fx(ctx, xc, chn, note, fxt, fxp, fnum);
+		libxmp_med_extras_process_fx(ctx, xc, chn, note, ins, fxt, fxp, fnum);
 	else if (HAS_HMN_CHANNEL_EXTRAS(*xc))
-		libxmp_hmn_extras_process_fx(ctx, xc, chn, note, fxt, fxp, fnum);
+		libxmp_hmn_extras_process_fx(ctx, xc, chn, note, ins, fxt, fxp, fnum);
 	else if (HAS_FAR_CHANNEL_EXTRAS(*xc))
-		libxmp_far_extras_process_fx(ctx, xc, chn, note, fxt, fxp, fnum);
+		libxmp_far_extras_process_fx(ctx, xc, chn, note, ins, fxt, fxp, fnum);
 }

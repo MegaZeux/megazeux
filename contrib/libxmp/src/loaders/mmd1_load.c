@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2025 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -91,6 +91,7 @@ static int mmd1_load(struct module_data *m, HIO_HANDLE *f, const int start)
 	int annotxt_offset;
 	int bpm_on, bpmlen, med_8ch, hexvol;
 	int max_lines;
+	int tracker_ver;
 	int retval = -1;
 
 	LOAD_INIT();
@@ -380,7 +381,8 @@ static int mmd1_load(struct module_data *m, HIO_HANDLE *f, const int start)
 
 	mod->trk = mod->pat * mod->chn;
 
-	mmd_tracker_version(m, ver, mmdc, expdata_offset ? &expdata : NULL);
+	tracker_ver = mmd_tracker_version(m, ver, mmdc, med_8ch,
+					  expdata_offset ? &expdata : NULL);
 
 	MODULE_INFO();
 
@@ -473,11 +475,6 @@ static int mmd1_load(struct module_data *m, HIO_HANDLE *f, const int start)
 
 					event->ins = pos[1] & 0x3f;
 
-					/* Decay */
-					if (event->ins && !event->note) {
-						event->f2t = FX_MED_HOLD;
-					}
-
 					event->fxt = pos[2];
 					event->fxp = pos[3];
 					mmd_xlat_fx(event, bpm_on, bpmlen,
@@ -500,11 +497,6 @@ static int mmd1_load(struct module_data *m, HIO_HANDLE *f, const int start)
 					    (pos[1] >> 4) | ((pos[0] & 0x80) >> 3)
 					    | ((pos[0] & 0x40) >> 1);
 
-					/* Decay */
-					if (event->ins && !event->note) {
-						event->f2t = FX_MED_HOLD;
-					}
-
 					event->fxt = pos[1] & 0x0f;
 					event->fxp = pos[2];
 					mmd_xlat_fx(event, bpm_on, bpmlen,
@@ -519,6 +511,8 @@ static int mmd1_load(struct module_data *m, HIO_HANDLE *f, const int start)
 
 	if (libxmp_med_new_module_extras(m))
 		goto err_cleanup;
+
+	MED_MODULE_EXTRAS(*m)->tracker_version = tracker_ver;
 
 	/*
 	 * Read and convert instruments and samples
@@ -542,14 +536,20 @@ static int mmd1_load(struct module_data *m, HIO_HANDLE *f, const int start)
 		}
 
 		for (i = 0; i < mod->ins && i < expdata.s_ext_entries; i++) {
-			int skip = expdata.s_ext_entrsz - 4;
+			int skip = expdata.s_ext_entrsz;
 
 			D_(D_INFO "sample %d expsmp_offset = 0x%08lx", i, hio_tell(f));
 
-			exp_smp[i].hold = hio_read8(f);
-			exp_smp[i].decay = hio_read8(f);
-			exp_smp[i].suppress_midi_off = hio_read8(f);
-			exp_smp[i].finetune = hio_read8(f);
+			if (expdata.s_ext_entrsz >= 2) {	/* MED 3.00 / OctaMED V1 */
+				exp_smp[i].hold = hio_read8(f);
+				exp_smp[i].decay = hio_read8(f);
+				skip -= 2;
+			}
+			if (expdata.s_ext_entrsz >= 4) {	/* MED 3.20 / OctaMED V2 */
+				exp_smp[i].suppress_midi_off = hio_read8(f);
+				exp_smp[i].finetune = hio_read8(f);
+				skip -= 2;
+			}
 
 			if (hio_error(f)) {
 				D_(D_CRIT "read error at expsmp");

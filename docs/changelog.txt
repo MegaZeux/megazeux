@@ -54,6 +54,7 @@ DEVELOPERS
 + Fix vfwrite return value for size 0 on DragonFly BSD.
 + Replace various instances of audio and editor single-precision
   floating point with doubles or 64-bit integers.
++ Updated libxmp to 4.7.0.
 + Updated dependency builder scripts: SDL3 3.4.4, SDL2 2.32.10,
   libpng 1.6.57, libogg 1.3.6.
 
