@@ -133,4 +133,171 @@ static inline unsigned both_colors(const char_element *src)
   return reinterpret_cast<const uint16_t *>(src)[1];
 }
 
+#ifndef CONFIG_NO_VECTOR_RENDERING
+
+/**
+ * render_layer32x4_sse2
+ */
+boolean render_layer32x4_sse2(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+#if defined(__i386__) || defined(__x86_64__) || \
+    defined(_M_AMD64) || defined(_M_X64) || \
+    (defined(_M_IX86_FP) && _M_IX86_FP == 2)
+#define HAS_RENDER_LAYER32X4
+#define HAS_RENDER_LAYER32X4_SSE2
+
+static inline boolean render_layer32x4(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!platform_has_sse2())
+    return false;
+
+  return render_layer32x4_sse2(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* SSE2 */
+
+/**
+ * render_layer32x8_avx
+ */
+boolean render_layer32x8_avx(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+boolean render_layer32x8_avx2(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+// Only enable AVX if the version supports intrinsics (GCC 4.7+, clang 5?).
+// Currently requiring MSVC to enable them globally.
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__x86_64__) && \
+  ((__GNUC__ >= 4 && __GNUC_MINOR__ >= 7) || (__GNUC__ >= 5))
+#define GCC_HAS_AVX
+#endif
+
+#if defined(__clang__) && defined(__clang_major__) && defined(__x86_64__) && \
+ (__clang_major__ >= 5)
+#define CLANG_HAS_AVX
+#endif
+
+#if defined(_MSC_VER) && defined(__AVX__) && defined(__AVX2__)
+#define MSVC_HAS_AVX
+#endif
+
+#if defined(GCC_HAS_AVX) || defined(CLANG_HAS_AVX) || defined(MSVC_HAS_AVX)
+#define HAS_RENDER_LAYER32X8
+#define HAS_RENDER_LAYER32X8_AVX
+
+static inline boolean render_layer32x8(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!platform_has_avx())
+    return false;
+
+  // Only one of these sets of renderers is enabled per build.
+  if(platform_has_avx2())
+  {
+    if(render_layer32x8_avx2(
+     pixels, width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip))
+      return true;
+  }
+
+  return render_layer32x8_avx(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* AVX */
+
+/**
+ * render_layer32x4_neon
+ */
+boolean render_layer32x4_neon(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+#ifdef __ARM_NEON
+#define HAS_RENDER_LAYER32X4
+#define HAS_RENDER_LAYER32X4_NEON
+
+static inline boolean render_layer32x4(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!platform_has_neon())
+    return false;
+
+  return render_layer32x4_neon(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* NEON */
+
+/**
+ * render_layer32x8_rvv
+ */
+boolean render_layer32x8_rvv(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int tr, int clip);
+
+#if defined(__riscv) || defined(__riscv__)
+#define HAS_RENDER_LAYER32X8
+#define HAS_RENDER_LAYER32X8_RVV
+
+static inline boolean render_layer32x8(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!platform_has_rvv())
+    return false;
+
+  return render_layer32x8_rvv(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* RVV */
+
+/**
+ * render_layer32x4_altivec
+ */
+boolean render_layer32x4_altivec(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip);
+
+#if defined(__ppc__) || defined(__POWERPC__) || \
+ defined(__powerpc64__) || defined(__PPC64__)
+#define HAS_RENDER_LAYER32X4
+#define HAS_RENDER_LAYER32X4_ALTIVEC
+
+static inline boolean render_layer32x4(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  if(!platform_has_altivec())
+    return false;
+
+  return render_layer32x4_altivec(
+   pixels, width_px, height_px, pitch, graphics, layer,
+   smzx, trans, clip);
+}
+#endif /* AltiVec */
+
+#endif /* CONFIG_NO_VECTOR_RENDERING */
+
 #endif /* MEGAZEUX_RENDER_LAYER_COMMON_HPP */

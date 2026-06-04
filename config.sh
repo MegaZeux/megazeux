@@ -102,7 +102,10 @@ usage() {
 	echo "  --disable-gl-prog         Disable GL renderers for programmable h/w."
 	echo "  --disable-overlay         Disable SDL 1.2 overlay renderers."
 	echo "  --enable-gp2x             Enables half-res software renderer."
-	echo "  --disable-dos-svga        On the DOS platform, disable SVGA software renderer."
+	echo "  --disable-dos-svga        Disable SVGA renderer (DOS)."
+	echo "  --enable-neon-softfp      Enable ARM 32-bit Neon rendering (softfp, Linux)."
+	echo "  --enable-neon-hard        Enable ARM 32-bit Neon rendering (hard float, Linux)."
+	echo "  --enable-rvv              Enable RISC-V RVV rendering (Linux)."
 	echo "  --disable-libpng          Disable PNG screendump support."
 	echo "  --disable-screenshots     Disable the screenshot hotkey."
 	echo "  --enable-fps              Enable frames-per-second counter."
@@ -219,6 +222,8 @@ LAYER_RENDERING="true"
 DOS_SVGA="true"
 DOS_ROOTS="false"
 VFS="true"
+ARMHF="not-arm"
+RVV="false"
 
 #
 # User may override above settings
@@ -474,6 +479,13 @@ while [ "$1" != "" ]; do
 
 	[ "$1" = "--enable-dos-svga" ]  && DOS_SVGA="true"
 	[ "$1" = "--disable-dos-svga" ] && DOS_SVGA="false"
+
+	[ "$1" = "--enable-neon-softfp" ] && ARMHF="false"
+	[ "$1" = "--enable-neon-hard" ]   && ARMHF="true"
+	[ "$1" = "--disable-neon" ]       && ARMHF="not-arm"
+
+	[ "$1" = "--enable-rvv" ]  && RVV="true"
+	[ "$1" = "--disable-rvv" ] && RVV="false"
 
 	if [ "$1" = "--help" ]; then
 		usage
@@ -1986,6 +1998,61 @@ if [ "$SDL" != "false" ] && [ "$SDL" -ge "2" ] && \
 	echo "BUILD_GAMECONTROLLERDB=1" >> platform.inc
 else
 	echo "SDL_GameControllerDB disabled."
+fi
+
+#
+# ARM 32-bit float abi autodetection (if applicable).
+# If the platform already enables Neon this can be disregarded.
+#
+if [ "$ARCHNAME" = "arm" ] && [ "$ARMHF" != "not-arm" ]; then
+	if command -v "readelf" >/dev/null 2>&1; then
+		echo "Autodetecting float ABI..."
+		PREV=$ARMHF
+		if readelf $(command -v "readelf") | grep -q "VFP registers"; then
+			ARMHF=true
+		else
+			ARMHF=false
+		fi
+		if [ "$ARMHF" -ne "$PREV" ]; then
+			echo "WARNING: autodetection changed float ABI."
+		fi
+	fi
+fi
+if [ "$ARMHF" = "false" ]; then
+	echo "Neon layer renderer with softfp float ABI enabled."
+	echo "NEON_FLOAT_ABI=softfp" >>platform.inc
+elif [ "$ARMHF" = "true" ]; then
+	echo "Neon layer renderer with hard float ABI enabled."
+	echo "NEON_FLOAT_ABI=hard" >>platform.inc
+fi
+
+#
+# RISC-V RVV (if applicable).
+# If the platform already enables RVV and has a WELL-DEFINED
+# RVV version number, this option can be disregarded.
+#
+if [ "$RVV" = "true" ]; then
+	if [ "$ARCHNAME" = "riscv64" ]; then
+		echo "Enabled RVV layer renderer (as rv64gcv)."
+		echo "WARNING: RVV has incompatible versions! Do not distribute!"
+		echo "RVV_ABI=rv64gcv" >>platform.inc
+	elif [ "$ARCHNAME" = "riscv32" ]; then
+		echo "Enabled RVV layer renderer (as rv32gcv)."
+		echo "WARNING: RVV has incompatible versions! Do not distribute!"
+		echo "RVV_ABI=rv32gcv" >>platform.inc
+	else
+		echo "Ignoring invalid RVV option."
+	fi
+fi
+
+#
+# Autoconf-esque detection for some compilation flags.
+#
+echo
+if command -v gmake >/dev/null 2>&1; then
+	gmake -f Makefile.config || exit 1
+else
+	make -f Makefile.config || exit 1
 fi
 
 #

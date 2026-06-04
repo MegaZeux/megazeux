@@ -23,6 +23,7 @@
 #include "io/path.h"
 #include "io/vio.h"
 #include "platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
+#include "platform/platform_endian.h"
 
 #include <ctype.h>
 #include <zlib.h>
@@ -207,6 +208,35 @@ static char **about_text(int *num_lines)
   lines[i++] = about_line("CONFFILE: " CONFFILE);
   lines[i++] = about_line("SHAREDIR: " SHAREDIR);
   lines[i++] = about_line("LICENSEDIR: " LICENSEDIR);
+
+  // Report available SIMD/vector software renderers.
+  {
+    boolean has_sse2 = platform_has_sse2();
+    boolean has_avx = platform_has_avx();
+    boolean has_neon = platform_has_neon();
+    boolean has_sve = platform_has_sve();
+    boolean has_rvv = platform_has_rvv();
+    boolean has_altivec = platform_has_altivec();
+    boolean has_vsx = platform_has_altivec_vsx();
+
+    if(has_sse2 || has_avx || has_neon || has_sve || has_rvv ||
+     has_altivec || has_vsx)
+    {
+      lines[i++] = about_line(" ");
+      lines[i++] = about_line("Extra software renderers: %s%s%s%s%s%s",
+        has_sse2 ? "SSE2(32x4) " : "",
+        has_avx ? "AVX(32x8) " : "",
+#ifdef __aarch64__
+        has_neon ? "Neon(A64 32x4) " : "",
+#else
+        has_neon ? "Neon(32x4) " : "",
+#endif
+        has_sve ? "SVE(32x8) " : "",
+        has_rvv ? "RVV(32x8) " : "",
+        has_altivec ? has_vsx ? "VSX(32x4)" : "VMX(32x4)" : ""
+      );
+    }
+  }
 
   *num_lines = i;
   return lines;

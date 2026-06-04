@@ -24,13 +24,55 @@ render_layer_software = 1
 endif
 
 # Software layer renderer
-# This one tends to take forever for many builds. Prefix it to
+# These tend to take forever for many builds. Prefix them to
 # the list so hopefully it starts sooner during parallel builds.
 ifeq (${render_layer_software},1)
-core_cobjs  := ${render_obj}/render_layer.o ${core_cobjs}
+render_layer_objs += ${render_obj}/render_layer.o
 
--include ${render_obj}/render_layer.d
-${render_obj}/render_layer.o: $(filter-out $(wildcard ${render_obj}), ${render_obj})
+ifneq (${MSSE2},)
+render_layer_objs += ${render_obj}/render_layer_sse2.o
+
+${render_obj}/render_layer_sse2.o: ${render_src}/render_layer_sse2.cpp
+	$(if ${V},,@echo "  CXX     " $<)
+	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} ${MSSE2} -c $< -o $@
+endif
+
+ifneq (${MAVX},)
+render_layer_objs += ${render_obj}/render_layer_avx.o
+
+${render_obj}/render_layer_avx.o: ${render_src}/render_layer_avx.cpp
+	$(if ${V},,@echo "  CXX     " $<)
+	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} ${MAVX} -c $< -o $@
+endif
+
+ifneq (${MNEON},)
+render_layer_objs += ${render_obj}/render_layer_neon.o
+
+${render_obj}/render_layer_neon.o: ${render_src}/render_layer_neon.cpp
+	$(if ${V},,@echo "  CXX     " $<)
+	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} ${MNEON} -c $< -o $@
+endif
+
+ifneq (${MRVV},)
+render_layer_objs += ${render_obj}/render_layer_rvv.o
+
+${render_obj}/render_layer_rvv.o: ${render_src}/render_layer_rvv.cpp
+	$(if ${V},,@echo "  CXX     " $<)
+	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} ${MRVV} -c $< -o $@
+endif
+
+ifneq (${MALTIVEC},)
+render_layer_objs += ${render_obj}/render_layer_altivec.o
+
+${render_obj}/render_layer_altivec.o: ${render_src}/render_layer_altivec.cpp
+	$(if ${V},,@echo "  CXX     " $<)
+	${CXX} -MD ${core_cxxflags} ${core_flags} ${core_spec} ${MALTIVEC} -c $< -o $@
+endif
+
+-include ${render_layer_objs:.o=.d}
+${render_layer_objs}: $(filter-out $(wildcard ${render_obj}), ${render_obj})
+
+core_cobjs  := ${render_layer_objs} ${core_cobjs}
 endif
 
 -include ${render_objs:.o=.d}

@@ -49,6 +49,7 @@
 #define SKIP_8BPP
 #endif
 
+#include "render_layer_common.hpp"
 #include "render_layer_code.hpp"
 
 #ifdef BUILD_REFERENCE_RENDERER
@@ -292,6 +293,23 @@ void render_layer(void * RESTRICT pixels,
    bpp, align, smzx, trans, clip);
 
   select_unaligned_renderer(align);
+
+  if(bpp == 32)
+  {
+#if defined(HAS_RENDER_LAYER32X8)
+    if(render_layer32x8(reinterpret_cast<uint32_t * RESTRICT>(pixels),
+     width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip))
+      return;
+#endif
+
+#if defined(HAS_RENDER_LAYER32X4)
+    if(render_layer32x4(reinterpret_cast<uint32_t * RESTRICT>(pixels),
+     width_px, height_px, pitch, graphics, layer,
+     smzx, trans, clip))
+      return;
+#endif
+  }
 
   render_layer_func(pixels, width_px, height_px, pitch, graphics, layer,
    bpp, align, smzx, trans, clip);
