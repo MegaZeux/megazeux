@@ -18,12 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Provides a libopenmpt module stream backend
-
 #include "audio.h"
-#include "audio_openmpt.h"
+#include "audio_players.h"
 #include "audio_struct.h"
-#include "ext.h"
 #include "sampled_stream.h"
 
 #include "../util.h"
@@ -226,12 +223,10 @@ static const struct openmpt_stream_callbacks omp_callbacks =
   omp_tell_fn
 };
 
-static struct audio_stream *construct_openmpt_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *omp_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct openmpt_stream *omp_stream;
-  struct sampled_stream_spec s_spec;
-  struct audio_stream_spec a_spec;
   uint32_t *row_tbl;
   uint32_t row_pos;
   uint32_t ord;
@@ -257,6 +252,7 @@ static struct audio_stream *construct_openmpt_stream(vfile *vf,
     free(row_tbl);
     return NULL;
   }
+  omp_stream->s.a.player = &audio_player_openmpt;
 
   omp_stream->module_data = open_file;
   omp_stream->row_tbl = row_tbl;
@@ -276,32 +272,16 @@ static struct audio_stream *construct_openmpt_stream(vfile *vf,
 
   openmpt_module_set_repeat_count(omp_stream->module_data, -1);
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data     = omp_mix_data;
-  a_spec.set_volume   = omp_set_volume;
-  a_spec.set_repeat   = omp_set_repeat;
-  a_spec.set_order    = omp_set_order;
-  a_spec.set_position = omp_set_position;
-  a_spec.get_order    = omp_get_order;
-  a_spec.get_position = omp_get_position;
-  a_spec.get_length   = omp_get_length;
-  a_spec.destruct     = omp_destruct;
-
-  memset(&s_spec, 0, sizeof(struct sampled_stream_spec));
-  s_spec.set_frequency = omp_set_frequency;
-  s_spec.get_frequency = omp_get_frequency;
-
-  initialize_sampled_stream((struct sampled_stream *)omp_stream, &s_spec,
+  initialize_sampled_stream((struct sampled_stream *)omp_stream,
    audio.output_frequency, frequency, chn, false);
 
-  initialize_audio_stream((struct audio_stream *)omp_stream, &a_spec,
-   volume, repeat);
+  initialize_audio_stream((struct audio_stream *)omp_stream, volume, repeat);
 
   vfclose(vf);
   return (struct audio_stream *)omp_stream;
 }
 
-static boolean test_openmpt_stream(vfile *vf, const char *filename)
+static boolean omp_test(vfile *vf, const char *filename)
 {
   /* TODO: OpenMPT doesn't have a way to whitelist individual formats yet,
    * and having to add Symphonie/etc. support to libxmp because a package
@@ -326,7 +306,26 @@ static boolean test_openmpt_stream(vfile *vf, const char *filename)
   return false;
 }
 
-void init_openmpt(struct config_info *conf)
+const struct audio_player audio_player_openmpt =
 {
-  audio_ext_register(test_openmpt_stream, construct_openmpt_stream);
-}
+  "libopenmpt",
+  omp_test,
+
+  omp_construct,
+  omp_destruct,
+  omp_mix_data,
+  omp_set_volume,
+  omp_set_repeat,
+  omp_set_order,
+  omp_get_order,
+  omp_set_position,
+  omp_get_position,
+  omp_get_length,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  omp_set_frequency,
+  omp_get_frequency,
+  NULL,
+};

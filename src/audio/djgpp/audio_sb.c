@@ -31,6 +31,7 @@
 
 #include "audio_sb.h"
 #include "../audio.h"
+#include "../audio_drivers.h"
 #include "../audio_struct.h"
 #include "../../util.h"
 #include "../../platform/djgpp/platform_djgpp.h"
@@ -187,7 +188,7 @@ static void audio_sb_mixer_set_stereo(boolean enable)
   outportb(sb_cfg.port + 0x5, tmp);
 }
 
-void init_audio_platform(struct config_info *conf)
+static boolean init_audio_driver_sb(struct config_info *conf)
 {
   _go32_dpmi_seginfo new_irq_handler;
 
@@ -380,14 +381,14 @@ void init_audio_platform(struct config_info *conf)
     }
 #endif
   }
-  return;
+  return true;
 
 err:
   sb_cfg.port = 0;
-  return;
+  return false;
 }
 
-void quit_audio_platform(void)
+static void quit_audio_driver_sb(void)
 {
   // Deinitialize audio
   if(sb_cfg.port != 0)
@@ -429,3 +430,11 @@ void quit_audio_platform(void)
     __dpmi_free_dos_memory(sb_cfg.buffer_selector);
   }
 }
+
+const struct audio_driver audio_driver_sb =
+{
+  "Sound Blaster 16, Pro 2, Pro, 2, or DSP 2.0",
+  "sb",
+  init_audio_driver_sb,
+  quit_audio_driver_sb,
+};

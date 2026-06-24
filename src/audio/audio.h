@@ -36,7 +36,6 @@ MEGAZEUX_BEGIN_DECLS
 
 struct config_info;
 struct audio_stream;
-struct audio_stream_spec;
 
 CORE_LIBSPEC void init_audio(struct config_info *conf);
 CORE_LIBSPEC void quit_audio(void);
@@ -79,16 +78,12 @@ int audio_legacy_translate(const char *path, char *newpath, size_t buffer_len);
 int audio_get_real_frequency(int period);
 void destruct_audio_stream(struct audio_stream *a_src);
 void initialize_audio_stream(struct audio_stream *a_src,
- struct audio_stream_spec *a_spec, unsigned int volume, boolean repeat);
+ unsigned int volume, boolean repeat);
 
 size_t audio_mixer_render_frames(void *stream, unsigned frames,
  unsigned channels, unsigned format);
 boolean audio_mixer_init(unsigned rate, unsigned frames, unsigned channels);
 void audio_mixer_free(void);
-
-// Platform-related functions.
-void init_audio_platform(struct config_info *conf);
-void quit_audio_platform(void);
 
 #else // !CONFIG_AUDIO
 

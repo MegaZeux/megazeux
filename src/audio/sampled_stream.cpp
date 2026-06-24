@@ -438,11 +438,9 @@ void sampled_destruct(struct audio_stream *a_src)
 }
 
 void initialize_sampled_stream(struct sampled_stream *s_src,
- struct sampled_stream_spec *s_spec, uint32_t input_frequency,
- uint32_t relative_frequency, uint32_t channels, boolean use_volume)
+ uint32_t input_frequency, uint32_t relative_frequency,
+ uint32_t channels, boolean use_volume)
 {
-  s_src->set_frequency = s_spec->set_frequency;
-  s_src->get_frequency = s_spec->get_frequency;
   s_src->channels = channels;
   s_src->output_data = NULL;
   s_src->use_volume = use_volume;
@@ -451,7 +449,7 @@ void initialize_sampled_stream(struct sampled_stream *s_src,
   s_src->sample_index = 0;
 
   s_src->input_frequency = input_frequency;
-  s_src->set_frequency(s_src, relative_frequency);
+  s_src->a.player->set_frequency(s_src, relative_frequency);
 
   memset(s_src->output_data, 0, PROLOGUE_LENGTH);
 }

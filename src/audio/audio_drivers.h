@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2004 Gilead Kutnick <exophase@adelphia.net>
+ * Copyright (C) 2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,17 +17,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Declarations */
-
-#ifndef MEGAZEUX_AUDIO_MODPLUG_H
-#define MEGAZEUX_AUDIO_MODPLUG_H
+#ifndef MEGAZEUX_AUDIO_DRIVERS_H
+#define MEGAZEUX_AUDIO_DRIVERS_H
 
 #include "../compat.h"
 
 MEGAZEUX_BEGIN_DECLS
 
-void init_modplug(struct config_info *conf);
+#include "audio_struct.h"
+
+extern const struct audio_driver audio_driver_sdl;
+extern const struct audio_driver audio_driver_sdl3;
+extern const struct audio_driver audio_driver_sb;
+
+extern const struct audio_driver audio_driver_nds;
+extern const struct audio_driver audio_driver_3ds;
+extern const struct audio_driver audio_driver_wii;
+extern const struct audio_driver audio_driver_dreamcast;
+
+const struct audio_driver *audio_init_driver(struct config_info *conf,
+ const char *name);
 
 MEGAZEUX_END_DECLS
 
-#endif  /* MEGAZEUX_AUDIO_MODPLUG_H */
+#endif /* MEGAZEUX_AUDIO_DRIVERS_H */

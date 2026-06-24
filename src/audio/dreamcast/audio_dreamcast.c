@@ -67,20 +67,24 @@ static void *dc_audio_thread(void *dud)
   return NULL;
 }
 
-void init_audio_platform(struct config_info *conf)
+static boolean init_audio_driver_dreamcast(struct config_info *conf)
 {
   if(!audio_mixer_init(conf->audio_sample_rate, conf->audio_buffer_samples, 2))
-    return;
+    return false;
 
   buffer_frames = audio.buffer_frames;
   buffer_size = buffer_frames * sizeof(int16_t) * 2 /* stereo */;
 
   sound_thread = thd_create(0, dc_audio_thread, NULL);
   if(sound_thread)
+  {
     running = true;
+    return true;
+  }
+  return false;
 }
 
-void quit_audio_platform(void)
+static void quit_audio_driver_dreamcast(void)
 {
   if(running)
   {
@@ -88,3 +92,11 @@ void quit_audio_platform(void)
     thd_join(sound_thread, NULL);
   }
 }
+
+const struct audio_driver audio_driver_dreamcast =
+{
+  "Dreamcast Audio",
+  "dreamcast",
+  init_audio_driver_dreamcast,
+  quit_audio_driver_dreamcast,
+};

@@ -21,7 +21,7 @@
  */
 
 #include "audio.h"
-#include "audio_pcs.h"
+#include "audio_players.h"
 #include "audio_sfx.h"
 #include "audio_struct.h"
 
@@ -164,25 +164,41 @@ static void pcs_destruct(struct audio_stream *a_src)
   destruct_audio_stream(a_src);
 }
 
-static struct audio_stream *construct_pc_speaker_stream(void)
+static struct audio_stream *pcs_construct(vfile *vf, const char *path,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct pc_speaker_stream *pcs_stream;
-  struct audio_stream_spec a_spec;
 
   pcs_stream = ccalloc(1, sizeof(struct pc_speaker_stream));
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data   = pcs_mix_data;
-  a_spec.set_volume = pcs_set_volume;
-  a_spec.destruct   = pcs_destruct;
+  pcs_stream->a.player = &audio_player_pcs;
 
   // The volume here will be corrected after initialization...
-  initialize_audio_stream((struct audio_stream *)pcs_stream, &a_spec, 255, 0);
+  initialize_audio_stream((struct audio_stream *)pcs_stream, volume, repeat);
 
   return (struct audio_stream *)pcs_stream;
 }
 
-void init_pc_speaker(struct config_info *conf)
+const struct audio_player audio_player_pcs =
 {
-  audio.pcs_stream = construct_pc_speaker_stream();
-}
+  "PCS renderer",
+  NULL,
+
+  pcs_construct,
+  pcs_destruct,
+  pcs_mix_data,
+  pcs_set_volume,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+};

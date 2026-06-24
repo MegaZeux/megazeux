@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2004 Gilead Kutnick <exophase@adelphia.net>
  * Copyright (C) 2007 Alistair John Strachan <alistair@devzero.co.uk>
+ * Copyright (C) 2018-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -30,6 +31,7 @@ MEGAZEUX_BEGIN_DECLS
 #include <stdint.h>
 
 #include "../configure.h"
+#include "../io/vfile.h"
 #include "../platform/platform.h"
 
 #define AUDIO_SFX_QUEUE_SIZE 4096
@@ -43,6 +45,9 @@ MEGAZEUX_BEGIN_DECLS
 #else
 #define SAMPLE_S16 SAMPLE_S16LE
 #endif
+
+struct audio_stream;
+struct sampled_stream;
 
 enum wav_format
 {
@@ -65,49 +70,58 @@ struct wav_info
   boolean enable_sam_frequency_hack;
 };
 
+struct audio_driver
+{
+  const char *name;
+  const char *ident;
+
+  boolean (*init_audio_driver)(struct config_info *conf);
+  void    (*quit_audio_driver)(void);
+};
+
+struct audio_player
+{
+  const char *name;
+
+  boolean   (*test)(vfile *vf, const char *filename);
+  struct audio_stream *(*construct)(vfile *vf, const char *filename,
+                                    uint32_t frequency, unsigned int volume,
+                                    boolean repeat);
+  void      (*destruct)(struct audio_stream *a_src);
+
+  boolean   (* mix_data)(struct audio_stream *a_src, int32_t * RESTRICT buffer,
+                         size_t dest_frames, unsigned int dest_channels);
+
+  void      (* set_volume)(struct audio_stream *a_src, unsigned int volume);
+  void      (* set_repeat)(struct audio_stream *a_src, boolean repeat);
+
+  void      (* set_order)(struct audio_stream *a_src, uint32_t order);
+  uint32_t  (* get_order)(struct audio_stream *a_src);
+
+  void      (* set_position)(struct audio_stream *a_src, uint32_t pos);
+  uint32_t  (* get_position)(struct audio_stream *a_src);
+  uint32_t  (* get_length)(struct audio_stream *a_src);
+
+  void      (* set_loop_start)(struct audio_stream *a_src, uint32_t pos);
+  uint32_t  (* get_loop_start)(struct audio_stream *a_src);
+  void      (* set_loop_end)(struct audio_stream *a_src, uint32_t pos);
+  uint32_t  (* get_loop_end)(struct audio_stream *a_src);
+
+  void      (* set_frequency)(struct sampled_stream *s_src, uint32_t frequency);
+  uint32_t  (* get_frequency)(struct sampled_stream *s_src);
+
+  boolean   (* get_sample)(struct audio_stream *a_src, unsigned int which,
+             struct wav_info *dest);
+};
+
 struct audio_stream
 {
   struct audio_stream *next;
   struct audio_stream *previous;
+  const struct audio_player *player;
   unsigned int volume;
   boolean is_spot_sample;
   boolean repeat;
-  boolean   (* mix_data)(struct audio_stream *a_src, int32_t * RESTRICT buffer,
-                         size_t dest_frames, unsigned int dest_channels);
-  void      (* set_volume)(struct audio_stream *a_src, unsigned int volume);
-  void      (* set_repeat)(struct audio_stream *a_src, boolean repeat);
-  void      (* set_order)(struct audio_stream *a_src, uint32_t order);
-  void      (* set_position)(struct audio_stream *a_src, uint32_t pos);
-  void      (* set_loop_start)(struct audio_stream *a_src, uint32_t pos);
-  void      (* set_loop_end)(struct audio_stream *a_src, uint32_t pos);
-  uint32_t  (* get_order)(struct audio_stream *a_src);
-  uint32_t  (* get_position)(struct audio_stream *a_src);
-  uint32_t  (* get_length)(struct audio_stream *a_src);
-  uint32_t  (* get_loop_start)(struct audio_stream *a_src);
-  uint32_t  (* get_loop_end)(struct audio_stream *a_src);
-  boolean   (* get_sample)(struct audio_stream *a_src, unsigned int which,
-             struct wav_info *dest);
-  void      (* destruct)(struct audio_stream *a_src);
-};
-
-struct audio_stream_spec
-{
-  boolean   (* mix_data)(struct audio_stream *a_src, int32_t * RESTRICT buffer,
-                         size_t dest_frames, unsigned int dest_channels);
-  void      (* set_volume)(struct audio_stream *a_src, unsigned int volume);
-  void      (* set_repeat)(struct audio_stream *a_src, boolean repeat);
-  void      (* set_order)(struct audio_stream *a_src, uint32_t order);
-  void      (* set_position)(struct audio_stream *a_src, uint32_t pos);
-  void      (* set_loop_start)(struct audio_stream *a_src, uint32_t pos);
-  void      (* set_loop_end)(struct audio_stream *a_src, uint32_t pos);
-  uint32_t  (* get_order)(struct audio_stream *a_src);
-  uint32_t  (* get_position)(struct audio_stream *a_src);
-  uint32_t  (* get_length)(struct audio_stream *a_src);
-  uint32_t  (* get_loop_start)(struct audio_stream *a_src);
-  uint32_t  (* get_loop_end)(struct audio_stream *a_src);
-  boolean   (* get_sample)(struct audio_stream *a_src, unsigned int which,
-             struct wav_info *dest);
-  void      (* destruct)(struct audio_stream *a_src);
 };
 
 /**
@@ -138,6 +152,7 @@ struct audio_sfx_data
 
 struct audio
 {
+  const struct audio_driver *driver;
   int32_t *mix_buffer;
   size_t buffer_bytes;
   unsigned buffer_frames;

@@ -24,9 +24,8 @@
 #include <string.h>
 
 #include "audio.h"
+#include "audio_players.h"
 #include "audio_struct.h"
-#include "audio_vorbis.h"
-#include "ext.h"
 #include "sampled_stream.h"
 
 #include "../io/memfile.h"
@@ -427,13 +426,10 @@ static void get_loopstart_loopend(struct vorbis_stream *v_stream)
   }
 }
 
-static struct audio_stream *construct_vorbis_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *vorbis_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct vorbis_stream *v_stream;
-  struct sampled_stream_spec s_spec;
-  struct audio_stream_spec a_spec;
-
   audio_vorbis_handle handle;
   audio_vorbis_info info;
 
@@ -453,6 +449,7 @@ static struct audio_stream *construct_vorbis_stream(vfile *vf,
     audio_vorbis_handle_close(&handle);
     return NULL;
   }
+  v_stream->s.a.player = &audio_player_vorbis;
 
   v_stream->handle = handle;
   v_stream->info = info;
@@ -462,33 +459,15 @@ static struct audio_stream *construct_vorbis_stream(vfile *vf,
   v_stream->loop_end = 0;
   get_loopstart_loopend(v_stream);
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data       = vorbis_mix_data;
-  a_spec.set_volume     = vorbis_set_volume;
-  a_spec.set_repeat     = vorbis_set_repeat;
-  a_spec.set_position   = vorbis_set_position;
-  a_spec.set_loop_start = vorbis_set_loop_start;
-  a_spec.set_loop_end   = vorbis_set_loop_end;
-  a_spec.get_position   = vorbis_get_position;
-  a_spec.get_length     = vorbis_get_length;
-  a_spec.get_loop_start = vorbis_get_loop_start;
-  a_spec.get_loop_end   = vorbis_get_loop_end;
-  a_spec.destruct       = vorbis_destruct;
-
-  memset(&s_spec, 0, sizeof(struct sampled_stream_spec));
-  s_spec.set_frequency = vorbis_set_frequency;
-  s_spec.get_frequency = vorbis_get_frequency;
-
-  initialize_sampled_stream((struct sampled_stream *)v_stream, &s_spec,
+  initialize_sampled_stream((struct sampled_stream *)v_stream,
    info.rate, frequency, info.channels, true);
 
-  initialize_audio_stream((struct audio_stream *)v_stream, &a_spec,
-   volume, repeat);
+  initialize_audio_stream((struct audio_stream *)v_stream, volume, repeat);
 
   return (struct audio_stream *)v_stream;
 }
 
-static boolean test_vorbis_stream(vfile *vf, const char *filename)
+static boolean vorbis_test(vfile *vf, const char *filename)
 {
   char buf[4];
   if(!vfread(buf, 4, 1, vf))
@@ -497,7 +476,26 @@ static boolean test_vorbis_stream(vfile *vf, const char *filename)
   return memcmp(buf, "OggS", 4) == 0;
 }
 
-void init_vorbis(struct config_info *conf)
+const struct audio_player audio_player_vorbis =
 {
-  audio_ext_register(test_vorbis_stream, construct_vorbis_stream);
-}
+  "Ogg Vorbis",
+  vorbis_test,
+
+  vorbis_construct,
+  vorbis_destruct,
+  vorbis_mix_data,
+  vorbis_set_volume,
+  vorbis_set_repeat,
+  NULL,
+  NULL,
+  vorbis_set_position,
+  vorbis_get_position,
+  vorbis_get_length,
+  vorbis_set_loop_start,
+  vorbis_get_loop_start,
+  vorbis_set_loop_end,
+  vorbis_get_loop_end,
+  vorbis_set_frequency,
+  vorbis_get_frequency,
+  NULL,
+};

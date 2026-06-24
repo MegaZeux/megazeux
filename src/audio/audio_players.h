@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2019 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2018-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,15 +17,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MEGAZEUX_AUDIO_REALITY_H
-#define MEGAZEUX_AUDIO_REALITY_H
+#ifndef MEGAZEUX_AUDIO_PLAYERS_H
+#define MEGAZEUX_AUDIO_PLAYERS_H
 
 #include "../compat.h"
 
 MEGAZEUX_BEGIN_DECLS
 
-void init_reality(struct config_info *conf);
+#include "audio_struct.h"
+
+extern const struct audio_player audio_player_pcs;
+extern const struct audio_player audio_player_sam;
+extern const struct audio_player audio_player_wav;
+extern const struct audio_player audio_player_vorbis;
+extern const struct audio_player audio_player_reality;
+
+extern const struct audio_player audio_player_xmp;
+extern const struct audio_player audio_player_modplug;
+extern const struct audio_player audio_player_mikmod;
+extern const struct audio_player audio_player_openmpt;
+
+struct audio_stream *audio_construct_stream(const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat);
 
 MEGAZEUX_END_DECLS
 
-#endif /* MEGAZEUX_AUDIO_REALITY_H */
+#endif /* MEGAZEUX_AUDIO_PLAYERS_H */

@@ -18,6 +18,7 @@
  */
 
 #include "../audio.h"
+#include "../audio_drivers.h"
 #include "../audio_struct.h"
 
 #include "../../util.h"
@@ -54,7 +55,7 @@ static void sdl_audio_callback(void *userdata, Uint8 *stream, int len)
   audio_mixer_render_frames(stream, frames, audio_settings.channels, SAMPLE_S16);
 }
 
-void init_audio_platform(struct config_info *conf)
+static boolean init_audio_driver_sdl(struct config_info *conf)
 {
   SDL_AudioSpec desired_spec =
   {
@@ -78,7 +79,7 @@ void init_audio_platform(struct config_info *conf)
   if(!audio_device)
   {
     warn("failed to init SDL audio device: %s\n", SDL_GetError());
-    return;
+    return false;
   }
 #else
   SDL_OpenAudio(&desired_spec, &audio_settings);
@@ -86,11 +87,11 @@ void init_audio_platform(struct config_info *conf)
 
   if(!audio_mixer_init(audio_settings.freq, audio_settings.samples,
    audio_settings.channels))
-    return;
+    return false;
   // If the mixer doesn't like SDL's selected config, exit to avoid bugs...
   if(audio.output_frequency != (size_t)audio_settings.freq ||
    audio.buffer_channels != audio_settings.channels)
-    return;
+    return false;
 
   // now set the audio going
 #if SDL_VERSION_ATLEAST(2,0,0)
@@ -109,9 +110,10 @@ void init_audio_platform(struct config_info *conf)
   // This swap should only happen if it's required by the web browser.
   EM_ASM({ window.replaceSdlAudioContext(Module["SDL2"]); });
 #endif
+  return true;
 }
 
-void quit_audio_platform(void)
+static void quit_audio_driver_sdl(void)
 {
 #if SDL_VERSION_ATLEAST(2,0,0)
   if(audio_device)
@@ -124,3 +126,11 @@ void quit_audio_platform(void)
   SDL_PauseAudio(1);
 #endif
 }
+
+const struct audio_driver audio_driver_sdl =
+{
+  "SDL Audio",
+  "sdl",
+  init_audio_driver_sdl,
+  quit_audio_driver_sdl,
+};

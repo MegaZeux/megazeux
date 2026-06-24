@@ -18,6 +18,7 @@
  */
 
 #include "../audio.h"
+#include "../audio_drivers.h"
 #include "../audio_struct.h"
 #include "../../platform/3ds/platform_3ds.h"
 
@@ -43,7 +44,7 @@ static void ndsp_callback(void *dud)
   }
 }
 
-void init_audio_platform(struct config_info *conf)
+static boolean init_audio_driver_3ds(struct config_info *conf)
 {
   // buffer size must be multiple of 32 bytes(?), so samples must be multiple of 8
   unsigned frames = (conf->audio_buffer_samples + 7) & ~7;
@@ -51,13 +52,13 @@ void init_audio_platform(struct config_info *conf)
 
   audio_buffer = NULL;
   if(!audio_mixer_init(conf->audio_sample_rate, frames, 2))
-    return;
+    return false;
 
   buffer_frames = audio.buffer_frames;
   buffer_size = buffer_frames * sizeof(int16_t) * 2 /* stereo */;
 
   if(ndspInit() != 0)
-    return;
+    return false;
 
   memset(mix, 0, sizeof(mix));
   mix[0] = mix[1] = 1.0f;
@@ -84,9 +85,10 @@ void init_audio_platform(struct config_info *conf)
 
   ndspChnWaveBufAdd(0, &ndsp_buffer[0]);
   ndspChnWaveBufAdd(0, &ndsp_buffer[1]);
+  return true;
 }
 
-void quit_audio_platform(void)
+static void quit_audio_driver_3ds(void)
 {
   if(audio_buffer)
   {
@@ -96,3 +98,11 @@ void quit_audio_platform(void)
     ndspExit();
   }
 }
+
+const struct audio_driver audio_driver_3ds =
+{
+  "3DS Audio",
+  "3ds",
+  init_audio_driver_3ds,
+  quit_audio_driver_3ds,
+};

@@ -43,14 +43,6 @@ struct sampled_stream
   boolean use_volume;
   int64_t frequency_delta;
   int64_t sample_index;
-  void      (* set_frequency)(struct sampled_stream *s_src, uint32_t frequency);
-  uint32_t  (* get_frequency)(struct sampled_stream *s_src);
-};
-
-struct sampled_stream_spec
-{
-  void      (* set_frequency)(struct sampled_stream *s_src, uint32_t frequency);
-  uint32_t  (* get_frequency)(struct sampled_stream *s_src);
 };
 
 void *sampled_get_buffer(struct sampled_stream *s_src, size_t *needed);
@@ -69,8 +61,7 @@ void sampled_destruct(struct audio_stream *a_src);
  * provided relative frequency to recalculate the frequency ratio and allocate
  * a mixing buffer.
  *
- * @param s_src               audio_stream/sampled_stream struct
- * @param s_spec              override member function pointers
+ * @param s_src               audio_stream/sampled_stream struct.
  * @param input_frequency     the native rate of the input stream. For module
  *                            players, this is set to the output frequency
  *                            (to allow them to use internal resamplers); for
@@ -83,8 +74,8 @@ void sampled_destruct(struct audio_stream *a_src);
  * @param use_volume          if true, compute volume, otherwise always max.
  */
 void initialize_sampled_stream(struct sampled_stream *s_src,
- struct sampled_stream_spec *s_spec, uint32_t input_frequency,
- uint32_t relative_frequency, uint32_t channels, boolean use_volume);
+ uint32_t input_frequency, uint32_t relative_frequency,
+ uint32_t channels, boolean use_volume);
 
 MEGAZEUX_END_DECLS
 

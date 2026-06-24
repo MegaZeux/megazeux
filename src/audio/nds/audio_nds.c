@@ -18,6 +18,7 @@
  */
 
 #include "../audio.h"
+#include "../audio_drivers.h"
 #include "../audio_sfx.h"
 #include "../audio_struct.h"
 
@@ -497,23 +498,25 @@ void nds_audio_vblank(void)
 
 void init_audio(struct config_info *conf)
 {
+  audio.driver = &audio_driver_nds;
+
   audio_set_music_volume(conf->music_volume);
   audio_set_sound_volume(conf->sam_volume);
   audio_set_music_on(conf->music_on);
   audio_set_pcs_on(conf->pc_speaker_on);
   audio_set_pcs_volume(conf->pc_speaker_volume);
 
-  init_audio_platform(conf);
+  audio.driver->init_audio_driver(conf);
 
   audio_set_max_samples(-1);
 }
 
 void quit_audio(void)
 {
-  quit_audio_platform();
+  audio.driver->quit_audio_driver();
 }
 
-void init_audio_platform(struct config_info *conf)
+static boolean init_audio_driver_nds(struct config_info *conf)
 {
   // PC speaker init
   pcs_playing = 0;
@@ -525,12 +528,22 @@ void init_audio_platform(struct config_info *conf)
 
   // maxmod init
   nds_maxmod_init();
+
+  return true;
 }
 
-void quit_audio_platform(void)
+static void quit_audio_driver_nds(void)
 {
   audio_end_module();
 
   nds_sound_volume(0);
   nds_pcs_sound(0, 0);
 }
+
+const struct audio_driver audio_driver_nds =
+{
+  "NDS Audio",
+  "nds",
+  init_audio_driver_nds,
+  quit_audio_driver_nds,
+};

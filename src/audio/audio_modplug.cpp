@@ -17,16 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Provides a ModPlug module stream backend
-
+#include <stdint.h>
 #include <modplug.h>
 #include <stdafx.h>
 #include <sndfile.h>
 
 #include "audio.h"
-#include "audio_modplug.h"
+#include "audio_players.h"
 #include "audio_struct.h"
-#include "ext.h"
 #include "sampled_stream.h"
 
 #include "../const.h"
@@ -116,7 +114,7 @@ static boolean mp_mix_data(struct audio_stream *a_src, int32_t * RESTRICT buffer
 
     if(a_src->repeat)
     {
-      a_src->set_position(a_src, a_src->get_position(a_src));
+      a_src->player->set_position(a_src, a_src->player->get_position(a_src));
     }
     else
     {
@@ -200,12 +198,10 @@ static void mp_destruct(struct audio_stream *a_src)
   sampled_destruct(a_src);
 }
 
-static struct audio_stream *construct_modplug_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *mp_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct modplug_stream *mp_stream;
-  struct sampled_stream_spec s_spec;
-  struct audio_stream_spec a_spec;
   void *input_buffer;
 
   size_t file_size = vfilelength(vf, false);
@@ -235,35 +231,39 @@ static struct audio_stream *construct_modplug_stream(vfile *vf,
     ModPlug_Unload(open_file);
     return NULL;
   }
+  mp_stream->s.a.player = &audio_player_modplug;
 
   mp_stream->module_data = open_file;
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data     = mp_mix_data;
-  a_spec.set_volume   = mp_set_volume;
-  a_spec.set_repeat   = mp_set_repeat;
-  a_spec.set_order    = mp_set_order;
-  a_spec.set_position = mp_set_position;
-  a_spec.get_order    = mp_get_order;
-  a_spec.get_position = mp_get_position;
-  a_spec.get_length   = mp_get_length;
-  a_spec.destruct     = mp_destruct;
-
-  memset(&s_spec, 0, sizeof(struct sampled_stream_spec));
-  s_spec.set_frequency = mp_set_frequency;
-  s_spec.get_frequency = mp_get_frequency;
-
-  initialize_sampled_stream((struct sampled_stream *)mp_stream, &s_spec,
+  initialize_sampled_stream((struct sampled_stream *)mp_stream,
    audio.output_frequency, frequency, 2, false);
 
-  initialize_audio_stream((struct audio_stream *)mp_stream, &a_spec,
-   volume, repeat);
+  initialize_audio_stream((struct audio_stream *)mp_stream, volume, repeat);
 
   vfclose(vf);
   return (struct audio_stream *)mp_stream;
 }
 
-void init_modplug(struct config_info *conf)
+const struct audio_player audio_player_modplug =
 {
-  audio_ext_register(NULL, construct_modplug_stream);
-}
+  "libmodplug",
+  NULL,
+
+  mp_construct,
+  mp_destruct,
+  mp_mix_data,
+  mp_set_volume,
+  mp_set_repeat,
+  mp_set_order,
+  mp_get_order,
+  mp_set_position,
+  mp_get_position,
+  mp_get_length,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  mp_set_frequency,
+  mp_get_frequency,
+  NULL,
+};
