@@ -25,9 +25,9 @@
 #include <string.h>
 
 #include "audio.h"
+#include "audio_players.h"
 #include "audio_struct.h"
 #include "audio_wav.h"
-#include "ext.h"
 #include "sampled_stream.h"
 
 #include "../util.h"
@@ -629,8 +629,6 @@ struct audio_stream *construct_wav_stream_direct(struct wav_info *w_info,
  uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct wav_stream *w_stream;
-  struct sampled_stream_spec s_spec;
-  struct audio_stream_spec a_spec;
 
   w_stream = (struct wav_stream *)malloc(sizeof(struct wav_stream));
   if(!w_stream)
@@ -638,6 +636,7 @@ struct audio_stream *construct_wav_stream_direct(struct wav_info *w_info,
     free(w_info->wav_data);
     return NULL;
   }
+  w_stream->s.a.player = &audio_player_wav;
 
   w_stream->wav_data = w_info->wav_data;
   w_stream->data_length = w_info->data_length;
@@ -661,34 +660,16 @@ struct audio_stream *construct_wav_stream_direct(struct wav_info *w_info,
   if((w_info->format != SAMPLE_U8) && (w_info->format != SAMPLE_S8))
     w_stream->bytes_per_sample *= 2;
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data       = wav_mix_data;
-  a_spec.set_volume     = wav_set_volume;
-  a_spec.set_repeat     = wav_set_repeat;
-  a_spec.set_position   = wav_set_position;
-  a_spec.set_loop_start = wav_set_loop_start;
-  a_spec.set_loop_end   = wav_set_loop_end;
-  a_spec.get_position   = wav_get_position;
-  a_spec.get_length     = wav_get_length;
-  a_spec.get_loop_start = wav_get_loop_start;
-  a_spec.get_loop_end   = wav_get_loop_end;
-  a_spec.destruct       = wav_destruct;
-
-  memset(&s_spec, 0, sizeof(struct sampled_stream_spec));
-  s_spec.set_frequency = wav_set_frequency;
-  s_spec.get_frequency = wav_get_frequency;
-
-  initialize_sampled_stream((struct sampled_stream *)w_stream, &s_spec,
+  initialize_sampled_stream((struct sampled_stream *)w_stream,
    w_info->freq, frequency, w_info->channels, true);
 
-  initialize_audio_stream((struct audio_stream *)w_stream, &a_spec,
-   volume, repeat);
+  initialize_audio_stream((struct audio_stream *)w_stream, volume, repeat);
 
   return (struct audio_stream *)w_stream;
 }
 
-static struct audio_stream *construct_wav_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *wav_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct audio_stream *a_src;
   struct wav_info w_info;
@@ -708,8 +689,8 @@ static struct audio_stream *construct_wav_stream(vfile *vf,
   return a_src;
 }
 
-static struct audio_stream *construct_sam_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *sam_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct audio_stream *a_src;
   struct wav_info w_info;
@@ -725,7 +706,7 @@ static struct audio_stream *construct_sam_stream(vfile *vf,
   return a_src;
 }
 
-static boolean test_wav_stream(vfile *vf, const char *filename)
+static boolean wav_test(vfile *vf, const char *filename)
 {
   char buf[12];
   if(!vfread(buf, 12, 1, vf))
@@ -737,7 +718,7 @@ static boolean test_wav_stream(vfile *vf, const char *filename)
   return true;
 }
 
-static boolean test_sam_stream(vfile *vf, const char *filename)
+static boolean sam_test(vfile *vf, const char *filename)
 {
   // .SAM files are raw 8363Hz signed 8-bit samples and can only be identified
   // by their .SAM extension.
@@ -748,8 +729,50 @@ static boolean test_sam_stream(vfile *vf, const char *filename)
   return strcasecmp(filename + ext_pos, ".sam") == 0;
 }
 
-void init_wav(struct config_info *conf)
+const struct audio_player audio_player_wav =
 {
-  audio_ext_register(test_sam_stream, construct_sam_stream);
-  audio_ext_register(test_wav_stream, construct_wav_stream);
-}
+  "WAV",
+  wav_test,
+
+  wav_construct,
+  wav_destruct,
+  wav_mix_data,
+  wav_set_volume,
+  wav_set_repeat,
+  NULL,
+  NULL,
+  wav_set_position,
+  wav_get_position,
+  wav_get_length,
+  wav_set_loop_start,
+  wav_get_loop_start,
+  wav_set_loop_end,
+  wav_get_loop_end,
+  wav_set_frequency,
+  wav_get_frequency,
+  NULL,
+};
+
+const struct audio_player audio_player_sam =
+{
+  "SAM",
+  sam_test,
+
+  sam_construct,
+  wav_destruct,
+  wav_mix_data,
+  wav_set_volume,
+  wav_set_repeat,
+  NULL,
+  NULL,
+  wav_set_position,
+  wav_get_position,
+  wav_get_length,
+  wav_set_loop_start,
+  wav_get_loop_start,
+  wav_set_loop_end,
+  wav_get_loop_end,
+  wav_set_frequency,
+  wav_get_frequency,
+  NULL,
+};

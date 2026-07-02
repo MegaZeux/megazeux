@@ -30,9 +30,11 @@
 #include <sys/stat.h>
 
 #include "audio.h"
-#include "audio_pcs.h"
+#include "audio_drivers.h"
+#include "audio_players.h"
+#include "audio_sfx.h"
 #include "audio_struct.h"
-#include "ext.h"
+#include "audio_wav.h"
 #include "sampled_stream.h"
 
 #include "../configure.h"
@@ -40,38 +42,6 @@
 #include "../util.h"
 #include "../io/fsafeopen.h"
 #include "../platform/platform.h"
-
-#if defined(CONFIG_MODPLUG) + defined(CONFIG_MIKMOD) + \
- defined(CONFIG_XMP) + defined(CONFIG_OPENMPT) > 1
-
-#error Can only have one module system enabled concurrently!
-#endif
-
-#include "audio_wav.h"
-
-#if defined(CONFIG_VORBIS)
-#include "audio_vorbis.h"
-#endif
-
-#ifdef CONFIG_MODPLUG
-#include "audio_modplug.h"
-#endif
-
-#ifdef CONFIG_MIKMOD
-#include "audio_mikmod.h"
-#endif
-
-#ifdef CONFIG_XMP
-#include "audio_xmp.h"
-#endif
-
-#ifdef CONFIG_OPENMPT
-#include "audio_openmpt.h"
-#endif
-
-#ifdef CONFIG_REALITY
-#include "audio_reality.h"
-#endif
 
 // May be used by audio plugins
 struct audio audio;
@@ -170,7 +140,7 @@ static void audio_garbage_collect(void)
   for(a_src = audio.garbage_list_base; a_src; a_src = next)
   {
     next = a_src->next;
-    a_src->destruct(a_src);
+    a_src->player->destruct(a_src);
   }
   audio.garbage_list_base = audio.garbage_list_end = NULL;
 #endif
@@ -186,7 +156,7 @@ static void audio_garbage_queue(struct audio_stream *a_src)
   audio_stream_insert_list(&audio.garbage_list_base,
    &audio.garbage_list_end, a_src);
 #else
-  a_src->destruct(a_src);
+  a_src->player->destruct(a_src);
 #endif
 }
 
@@ -197,30 +167,15 @@ void destruct_audio_stream(struct audio_stream *a_src)
 }
 
 void initialize_audio_stream(struct audio_stream *a_src,
- struct audio_stream_spec *a_spec, unsigned int volume, boolean repeat)
+ unsigned int volume, boolean repeat)
 {
-  // TODO should probably just memcpy into a spec in the audio_stream instead.
-  a_src->mix_data = a_spec->mix_data;
-  a_src->set_volume = a_spec->set_volume;
-  a_src->set_repeat = a_spec->set_repeat;
-  a_src->set_order = a_spec->set_order;
-  a_src->set_position = a_spec->set_position;
-  a_src->set_loop_start = a_spec->set_loop_start;
-  a_src->set_loop_end = a_spec->set_loop_end;
-  a_src->get_order = a_spec->get_order;
-  a_src->get_position = a_spec->get_position;
-  a_src->get_length = a_spec->get_length;
-  a_src->get_loop_start = a_spec->get_loop_start;
-  a_src->get_loop_end = a_spec->get_loop_end;
-  a_src->get_sample = a_spec->get_sample;
-  a_src->destruct = a_spec->destruct;
   a_src->is_spot_sample = false;
 
-  if(a_src->set_volume)
-    a_src->set_volume(a_src, volume);
+  if(a_src->player->set_volume)
+    a_src->player->set_volume(a_src, volume);
 
-  if(a_src->set_repeat)
-    a_src->set_repeat(a_src, repeat);
+  if(a_src->player->set_repeat)
+    a_src->player->set_repeat(a_src, repeat);
 
   a_src->next = NULL;
 
@@ -331,9 +286,9 @@ size_t audio_mixer_render_frames(void *stream, unsigned frames,
     {
       struct audio_stream *next_astream = current_astream->next;
 
-      if(current_astream->mix_data)
+      if(current_astream->player->mix_data)
       {
-        destroy_flag = current_astream->mix_data(current_astream,
+        destroy_flag = current_astream->player->mix_data(current_astream,
          audio.mix_buffer, frames, channels);
 
         if(destroy_flag)
@@ -462,58 +417,46 @@ void init_audio(struct config_info *conf)
   audio.max_simultaneous_samples = -1;
   audio.max_simultaneous_samples_config = conf->max_simultaneous_samples;
 
-  init_wav(conf);
-
-#ifdef CONFIG_VORBIS
-  init_vorbis(conf);
-#endif
-
-#ifdef CONFIG_REALITY
-  init_reality(conf);
-#endif
-
-  // Generic module players may misidentify files due to the ambiguity of
-  // formats like Soundtracker MOD, so register them last.
-#ifdef CONFIG_XMP
-  init_xmp(conf);
-#endif
-
-#ifdef CONFIG_MODPLUG
-  init_modplug(conf);
-#endif
-
-#ifdef CONFIG_MIKMOD
-  init_mikmod(conf);
-#endif
-
-#ifdef CONFIG_OPENMPT
-  init_openmpt(conf);
-#endif
-
   audio_set_music_volume(conf->music_volume);
   audio_set_sound_volume(conf->sam_volume);
   audio_set_music_on(conf->music_on);
   audio_set_pcs_on(conf->pc_speaker_on);
 
-  init_pc_speaker(conf);
+  /* This player is not in the player list and must be handled manually. */
+  audio.pcs_stream = audio_player_pcs.construct(NULL, NULL, 0, 255, 0);
 
   audio_set_pcs_volume(conf->pc_speaker_volume);
 
-  init_audio_platform(conf);
+  audio.driver = audio_init_driver(conf, NULL);
 }
 
 void quit_audio(void)
 {
+  struct audio_stream *a_src;
+
   // Signal the audio thread to stop and wait for it to release the lock.
-  quit_audio_platform();
+  if(audio.driver)
+  {
+    audio.driver->quit_audio_driver();
+    audio.driver = NULL;
+  }
 
   LOCK();
 
+  audio_sfx_clear_queue();
+
+  a_src = audio.stream_list_base;
+  while(a_src)
+  {
+    struct audio_stream *next = a_src->next;
+    a_src->player->destruct(a_src);
+    a_src = next;
+  }
+  audio.stream_list_base = audio.stream_list_end = NULL;
+  audio.pcs_stream = NULL;
+
   audio_garbage_collect();
   audio_mixer_free();
-  audio_ext_free_registry();
-  free(audio.pcs_stream);
-  audio.pcs_stream = NULL;
 
   UNLOCK();
 
@@ -554,7 +497,7 @@ int audio_play_module(char *filename, boolean safely, int volume)
   audio_end_module();
 
   real_volume = volume_function(volume, audio.music_volume);
-  a_src = audio_ext_construct_stream(filename, 0, real_volume, 1);
+  a_src = audio_construct_stream(filename, 0, real_volume, 1);
 
   LOCK();
 
@@ -575,7 +518,7 @@ void audio_end_module(void)
     // Ensure that this didn't change while waiting for the lock.
     if(audio.primary_stream)
     {
-      audio.primary_stream->destruct(audio.primary_stream);
+      audio.primary_stream->player->destruct(audio.primary_stream);
       audio.primary_stream = NULL;
     }
 
@@ -586,7 +529,7 @@ void audio_end_module(void)
       struct audio_stream *next_astream = current_astream->next;
 
       if(current_astream->is_spot_sample)
-        current_astream->destruct(current_astream);
+        current_astream->player->destruct(current_astream);
 
       current_astream = next_astream;
     }
@@ -653,7 +596,7 @@ static void limit_samples(int max)
       if((current_astream != audio.primary_stream) &&
        (current_astream != (struct audio_stream *)(audio.pcs_stream)))
       {
-        current_astream->destruct(current_astream);
+        current_astream->player->destruct(current_astream);
         cancel_num--;
       }
 
@@ -684,7 +627,7 @@ void audio_play_sample(char *filename, boolean safely, int period)
   if(period == 0)
   {
     // Use 0 to instruct handler to get default frequency
-    audio_ext_construct_stream(filename, 0, vol, 0);
+    audio_construct_stream(filename, 0, vol, 0);
   }
   else
   {
@@ -698,7 +641,7 @@ void audio_play_sample(char *filename, boolean safely, int period)
      * are treated as stereo and must also have this buggy doubling. In other
      * words, just double the frequency in the SAM loader.
      */
-    audio_ext_construct_stream(filename,
+    audio_construct_stream(filename,
      audio_get_real_frequency(period * 2), vol, 0);
   }
 
@@ -718,8 +661,8 @@ void audio_spot_sample(int period, int which)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->get_sample)
-    ret = audio.primary_stream->get_sample(audio.primary_stream, which, &wav);
+  if(audio.primary_stream && audio.primary_stream->player->get_sample)
+    ret = audio.primary_stream->player->get_sample(audio.primary_stream, which, &wav);
 
   UNLOCK();
 
@@ -757,7 +700,7 @@ void audio_end_sample(void)
     if((current_astream != audio.primary_stream) &&
      (current_astream != (struct audio_stream *)(audio.pcs_stream)))
     {
-      current_astream->destruct(current_astream);
+      current_astream->player->destruct(current_astream);
     }
 
     current_astream = next_astream;
@@ -774,8 +717,8 @@ void audio_set_module_order(int order)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->set_order)
-    audio.primary_stream->set_order(audio.primary_stream, order);
+  if(audio.primary_stream && audio.primary_stream->player->set_order)
+    audio.primary_stream->player->set_order(audio.primary_stream, order);
 
   UNLOCK();
 }
@@ -786,8 +729,8 @@ int audio_get_module_order(void)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->get_order)
-    order = audio.primary_stream->get_order(audio.primary_stream);
+  if(audio.primary_stream && audio.primary_stream->player->get_order)
+    order = audio.primary_stream->player->get_order(audio.primary_stream);
 
   UNLOCK();
 
@@ -801,7 +744,7 @@ void audio_set_module_volume(int volume)
   LOCK();
 
   if(audio.primary_stream)
-    audio.primary_stream->set_volume(audio.primary_stream, real_volume);
+    audio.primary_stream->player->set_volume(audio.primary_stream, real_volume);
 
   UNLOCK();
 }
@@ -824,7 +767,7 @@ void audio_set_module_frequency(int freq)
     if(audio.primary_stream)
     {
       struct sampled_stream *s = (struct sampled_stream *)audio.primary_stream;
-      s->set_frequency(s, freq);
+      audio.primary_stream->player->set_frequency(s, freq);
     }
 
     UNLOCK();
@@ -840,7 +783,7 @@ int audio_get_module_frequency(void)
   if(audio.primary_stream)
   {
     struct sampled_stream *s = (struct sampled_stream *)audio.primary_stream;
-    freq = s->get_frequency(s);
+    freq = audio.primary_stream->player->get_frequency(s);
   }
 
   UNLOCK();
@@ -855,8 +798,8 @@ void audio_set_module_position(int pos)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->set_position)
-    audio.primary_stream->set_position(audio.primary_stream, pos);
+  if(audio.primary_stream && audio.primary_stream->player->set_position)
+    audio.primary_stream->player->set_position(audio.primary_stream, pos);
 
   UNLOCK();
 }
@@ -867,8 +810,8 @@ int audio_get_module_position(void)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->get_position)
-    pos = audio.primary_stream->get_position(audio.primary_stream);
+  if(audio.primary_stream && audio.primary_stream->player->get_position)
+    pos = audio.primary_stream->player->get_position(audio.primary_stream);
 
   UNLOCK();
 
@@ -881,8 +824,8 @@ int audio_get_module_length(void)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->get_length)
-    length = audio.primary_stream->get_length(audio.primary_stream);
+  if(audio.primary_stream && audio.primary_stream->player->get_length)
+    length = audio.primary_stream->player->get_length(audio.primary_stream);
 
   UNLOCK();
 
@@ -893,8 +836,8 @@ void audio_set_module_loop_start(int pos)
 {
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->set_loop_start)
-    audio.primary_stream->set_loop_start(audio.primary_stream, pos);
+  if(audio.primary_stream && audio.primary_stream->player->set_loop_start)
+    audio.primary_stream->player->set_loop_start(audio.primary_stream, pos);
 
   UNLOCK();
 }
@@ -905,8 +848,8 @@ int audio_get_module_loop_start(void)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->get_loop_start)
-    loop_start = audio.primary_stream->get_loop_start(audio.primary_stream);
+  if(audio.primary_stream && audio.primary_stream->player->get_loop_start)
+    loop_start = audio.primary_stream->player->get_loop_start(audio.primary_stream);
 
   UNLOCK();
 
@@ -917,8 +860,8 @@ void audio_set_module_loop_end(int pos)
 {
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->set_loop_end)
-    audio.primary_stream->set_loop_end(audio.primary_stream, pos);
+  if(audio.primary_stream && audio.primary_stream->player->set_loop_end)
+    audio.primary_stream->player->set_loop_end(audio.primary_stream, pos);
 
   UNLOCK();
 }
@@ -929,8 +872,8 @@ int audio_get_module_loop_end(void)
 
   LOCK();
 
-  if(audio.primary_stream && audio.primary_stream->get_loop_end)
-    loop_end = audio.primary_stream->get_loop_end(audio.primary_stream);
+  if(audio.primary_stream && audio.primary_stream->player->get_loop_end)
+    loop_end = audio.primary_stream->player->get_loop_end(audio.primary_stream);
 
   UNLOCK();
 
@@ -1004,7 +947,7 @@ void audio_set_sound_volume(int volume)
     if((current_astream != audio.primary_stream) &&
      (current_astream != audio.pcs_stream))
     {
-      current_astream->set_volume(current_astream, real_volume);
+      current_astream->player->set_volume(current_astream, real_volume);
     }
 
     current_astream = current_astream->next;
@@ -1023,7 +966,7 @@ void audio_set_pcs_volume(int volume)
   real_volume = volume_function(255, audio.pcs_volume);
 
   if(audio.pcs_stream)
-    audio.pcs_stream->set_volume(audio.pcs_stream, real_volume);
+    audio.pcs_stream->player->set_volume(audio.pcs_stream, real_volume);
 
   UNLOCK();
 }

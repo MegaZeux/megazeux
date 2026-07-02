@@ -18,6 +18,7 @@
  */
 
 #include "../audio.h"
+#include "../audio_drivers.h"
 #include "../audio_struct.h"
 
 #include <stdlib.h>
@@ -63,14 +64,14 @@ static void voice_callback(s32 voice)
   LWP_ThreadSignal(audio_queue);
 }
 
-void init_audio_platform(struct config_info *conf)
+static boolean init_audio_driver_wii(struct config_info *conf)
 {
   // buffer size must be multiple of 32 bytes, so samples must be multiple of 8
   unsigned frames = (conf->audio_buffer_samples + 7) & ~7;
   int i;
 
   if(!audio_mixer_init(conf->audio_sample_rate, frames, 2))
-    return;
+    return false;
 
   buffer_frames = audio.buffer_frames;
   buffer_size = buffer_frames * sizeof(int16_t) * 2 /* stereo */;
@@ -91,10 +92,12 @@ void init_audio_platform(struct config_info *conf)
      audio_buffer[0], buffer_size, 255, 255, voice_callback);
     ASND_Pause(0);
     active = true;
+    return true;
   }
+  return false;
 }
 
-void quit_audio_platform(void)
+static void quit_audio_driver_wii(void)
 {
   void *dud;
 
@@ -110,3 +113,11 @@ void quit_audio_platform(void)
   // Don't free hardware audio buffers
   // Memory allocated with memalign() can't neccessarily be free()'d
 }
+
+const struct audio_driver audio_driver_wii =
+{
+  "Wii Audio",
+  "wii",
+  init_audio_driver_wii,
+  quit_audio_driver_wii,
+};

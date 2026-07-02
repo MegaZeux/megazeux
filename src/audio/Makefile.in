@@ -8,12 +8,13 @@ audio_src      = ${core_src}/audio
 audio_obj      = ${build_base}/${audio_src}
 audio_cobjs   += \
   ${audio_obj}/audio.o \
+  ${audio_obj}/audio_drivers.o \
   ${audio_obj}/audio_sfx.o \
-  ${audio_obj}/ext.o \
 
 # TODO: need a better solution to this
 ifneq (${BUILD_NDS},1)
 audio_cobjs   += \
+  ${audio_obj}/audio_players.o \
   ${audio_obj}/audio_pcs.o \
   ${audio_obj}/audio_wav.o \
 

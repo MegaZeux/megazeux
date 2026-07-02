@@ -20,9 +20,8 @@
 // Parts of this code are based off of the RAD v2 example.cpp player by Reality.
 
 #include "audio.h"
-#include "audio_reality.h"
+#include "audio_players.h"
 #include "audio_struct.h"
-#include "ext.h"
 #include "sampled_stream.h"
 
 #include "../util.h"
@@ -195,13 +194,11 @@ static void rad_player_callback(void *arg, uint16_t reg, uint8_t data)
   cls->adlib.Port(reg, data);
 }
 
-static struct audio_stream *construct_rad_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *rad_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct rad_stream *rad_stream = NULL;
   struct rad_stream_cls *cls;
-  struct audio_stream_spec a_spec;
-  struct sampled_stream_spec s_spec;
   const char *validate;
   size_t length;
   uint8_t *data;
@@ -239,6 +236,7 @@ static struct audio_stream *construct_rad_stream(vfile *vf,
     free(data);
     return NULL;
   }
+  rad_stream->s.a.player = &audio_player_reality;
 
   cls = new rad_stream_cls();
 
@@ -251,32 +249,16 @@ static struct audio_stream *construct_rad_stream(vfile *vf,
   rad_stream->sample_update_timer = 0;
   rad_stream->sample_update_max = OPL_FREQUENCY / rate;
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data     = rad_mix_data;
-  a_spec.set_volume   = rad_set_volume;
-  a_spec.set_repeat   = rad_set_repeat;
-  a_spec.set_order    = rad_set_order;
-  a_spec.set_position = rad_set_position;
-  a_spec.get_order    = rad_get_order;
-  a_spec.get_position = rad_get_position;
-  a_spec.get_length   = rad_get_length;
-  a_spec.destruct     = rad_destruct;
-
-  memset(&s_spec, 0, sizeof(struct sampled_stream_spec));
-  s_spec.set_frequency = rad_set_frequency;
-  s_spec.get_frequency = rad_get_frequency;
-
-  initialize_sampled_stream((struct sampled_stream *)rad_stream, &s_spec,
+  initialize_sampled_stream((struct sampled_stream *)rad_stream,
    OPL_FREQUENCY, frequency, 2, true);
 
-  initialize_audio_stream((struct audio_stream *)rad_stream, &a_spec,
-   volume, repeat);
+  initialize_audio_stream((struct audio_stream *)rad_stream, volume, repeat);
 
   vfclose(vf);
   return (struct audio_stream *)rad_stream;
 }
 
-static boolean test_rad_stream(vfile *vf, const char *filename)
+static boolean rad_test(vfile *vf, const char *filename)
 {
   char tmp[16];
   if(!vfread(tmp, 16, 1, vf))
@@ -285,7 +267,26 @@ static boolean test_rad_stream(vfile *vf, const char *filename)
   return memcmp(tmp, "RAD by REALiTY!!", 16) == 0;
 }
 
-void init_reality(struct config_info *conf)
+const struct audio_player audio_player_reality =
 {
-  audio_ext_register(test_rad_stream, construct_rad_stream);
-}
+  "Reality Adlib Tracker",
+  rad_test,
+
+  rad_construct,
+  rad_destruct,
+  rad_mix_data,
+  rad_set_volume,
+  rad_set_repeat,
+  rad_set_order,
+  rad_get_order,
+  rad_set_position,
+  rad_get_position,
+  rad_get_length,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  rad_set_frequency,
+  rad_get_frequency,
+  NULL,
+};

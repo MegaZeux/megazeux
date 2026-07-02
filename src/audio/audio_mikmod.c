@@ -18,12 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Provides a Mikmod module stream backend
-
 #include "audio.h"
-#include "audio_mikmod.h"
+#include "audio_players.h"
 #include "audio_struct.h"
-#include "ext.h"
 #include "sampled_stream.h"
 
 #include "../const.h"
@@ -50,6 +47,66 @@ struct LMM_MREADER
   vfile *vf;
   int eof;
 };
+
+static boolean init_mikmod(void)
+{
+  static boolean is_initialized = false;
+
+  md_mixfreq = audio.output_frequency;
+  md_mode = DMODE_16BITS;
+  if(audio.buffer_channels >= 2)
+    md_mode |= DMODE_STEREO;
+  md_device = 0;
+  md_volume = 96;
+  md_musicvolume = 128;
+  md_sndfxvolume = 128;
+  md_pansep = 128;
+  md_reverb = 0;
+  md_mode |= DMODE_SOFT_MUSIC | DMODE_SURROUND;
+
+  if(is_initialized)
+  {
+    /* Previous module was unloaded by audio_play_module, so this is safe. */
+    if(MikMod_Reset(NULL) != 0)
+    {
+      warn("MikMod Reset failed: %s\n", MikMod_strerror(MikMod_errno));
+      return false;
+    }
+    return true;
+  }
+
+  MikMod_RegisterDriver(&drv_nos);
+
+  /**
+   * These are arranged in the same order as MikMod_RegisterAllLoaders
+   * registers them--alphabetical, with the exception of SoundTracker 15-sample
+   * .MODs last (presumably since they do not have a magic string).
+   */
+  MikMod_RegisterLoader(&load_669);
+  MikMod_RegisterLoader(&load_amf); // DSMI .AMF
+  MikMod_RegisterLoader(&load_asy); // ASYLUM .AMF
+  MikMod_RegisterLoader(&load_dsm);
+  MikMod_RegisterLoader(&load_far);
+  MikMod_RegisterLoader(&load_gdm);
+  MikMod_RegisterLoader(&load_it);
+  MikMod_RegisterLoader(&load_mod);
+  MikMod_RegisterLoader(&load_med);
+  MikMod_RegisterLoader(&load_mtm);
+  MikMod_RegisterLoader(&load_okt);
+  MikMod_RegisterLoader(&load_stm);
+  MikMod_RegisterLoader(&load_s3m);
+  MikMod_RegisterLoader(&load_ult);
+  MikMod_RegisterLoader(&load_xm);
+  MikMod_RegisterLoader(&load_m15); // Soundtracker .MOD
+
+  if(MikMod_Init(NULL) != 0)
+  {
+    warn("MikMod Init failed: %s\n", MikMod_strerror(MikMod_errno));
+    return false;
+  }
+  is_initialized = true;
+  return true;
+}
 
 static BOOL LMM_Seek(struct MREADER *mr, long to, int dir)
 {
@@ -266,12 +323,10 @@ static void mm_destruct(struct audio_stream *a_src)
   sampled_destruct(a_src);
 }
 
-static struct audio_stream *construct_mikmod_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *mm_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct mikmod_stream *mm_stream;
-  struct sampled_stream_spec s_spec;
-  struct audio_stream_spec a_spec;
   MODULE *open_file;
 
   /**
@@ -280,6 +335,9 @@ static struct audio_stream *construct_mikmod_stream(vfile *vf,
    * this hack to ignore any modules played as samples for now. :(
    */
   if(!repeat)
+    return NULL;
+
+  if(!init_mikmod())
     return NULL;
 
   open_file = mm_load_vfile(vf, 64);
@@ -295,6 +353,7 @@ static struct audio_stream *construct_mikmod_stream(vfile *vf,
     Player_Free(open_file);
     return NULL;
   }
+  mm_stream->s.a.player = &audio_player_mikmod;
 
   mm_stream->module_data = open_file;
   Player_Start(mm_stream->module_data);
@@ -302,72 +361,35 @@ static struct audio_stream *construct_mikmod_stream(vfile *vf,
   mm_init_order_table(mm_stream, open_file);
   mm_set_resample_mode();
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data     = mm_mix_data;
-  a_spec.set_volume   = mm_set_volume;
-  a_spec.set_repeat   = mm_set_repeat;
-  a_spec.set_order    = mm_set_order;
-  a_spec.set_position = mm_set_position;
-  a_spec.get_order    = mm_get_order;
-  a_spec.get_position = mm_get_position;
-  a_spec.get_length   = mm_get_length;
-  a_spec.destruct     = mm_destruct;
-
-  memset(&s_spec, 0, sizeof(struct sampled_stream_spec));
-  s_spec.set_frequency = mm_set_frequency;
-  s_spec.get_frequency = mm_get_frequency;
-
-  initialize_sampled_stream((struct sampled_stream *)mm_stream, &s_spec,
+  initialize_sampled_stream((struct sampled_stream *)mm_stream,
    md_mixfreq, frequency, 2, false);
 
-  initialize_audio_stream((struct audio_stream *)mm_stream, &a_spec,
-   volume, repeat);
+  initialize_audio_stream((struct audio_stream *)mm_stream, volume, repeat);
 
   vfclose(vf);
   return (struct audio_stream *)mm_stream;
 }
 
-void init_mikmod(struct config_info *conf)
+const struct audio_player audio_player_mikmod =
 {
-  md_mixfreq = audio.output_frequency;
-  md_mode = DMODE_16BITS;
-  md_mode |= DMODE_STEREO;
-  md_device = 0;
-  md_volume = 96;
-  md_musicvolume = 128;
-  md_sndfxvolume = 128;
-  md_pansep = 128;
-  md_reverb = 0;
-  md_mode |= DMODE_SOFT_MUSIC | DMODE_SURROUND;
+  "MikMod",
+  NULL,
 
-  MikMod_RegisterDriver(&drv_nos);
-
-  /**
-   * These are arranged in the same order as MikMod_RegisterAllLoaders
-   * registers them--alphabetical, with the exception of SoundTracker 15-sample
-   * .MODs last (presumably since they do not have a magic string).
-   */
-  MikMod_RegisterLoader(&load_669);
-  MikMod_RegisterLoader(&load_amf); // DSMI .AMF
-  MikMod_RegisterLoader(&load_asy); // ASYLUM .AMF
-  MikMod_RegisterLoader(&load_dsm);
-  MikMod_RegisterLoader(&load_far);
-  MikMod_RegisterLoader(&load_gdm);
-  MikMod_RegisterLoader(&load_it);
-  MikMod_RegisterLoader(&load_mod);
-  MikMod_RegisterLoader(&load_med);
-  MikMod_RegisterLoader(&load_mtm);
-  MikMod_RegisterLoader(&load_okt);
-  MikMod_RegisterLoader(&load_stm);
-  MikMod_RegisterLoader(&load_s3m);
-  MikMod_RegisterLoader(&load_ult);
-  MikMod_RegisterLoader(&load_xm);
-  MikMod_RegisterLoader(&load_m15); // Soundtracker .MOD
-
-  if(MikMod_Init(NULL) == 0)
-  {
-    audio_ext_register(NULL, construct_mikmod_stream);
-  }
-  else
-    warn("MikMod Init failed: %s\n", MikMod_strerror(MikMod_errno));
-}
+  mm_construct,
+  mm_destruct,
+  mm_mix_data,
+  mm_set_volume,
+  mm_set_repeat,
+  mm_set_order,
+  mm_get_order,
+  mm_set_position,
+  mm_get_position,
+  mm_get_length,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  mm_set_frequency,
+  mm_get_frequency,
+  NULL,
+};

@@ -24,10 +24,6 @@
 #include "platform.h"
 #include "../event/event.h"
 
-#ifdef CONFIG_AUDIO
-#include "../audio/audio.h"
-#endif
-
 #include <sys/time.h>
 
 #include <unistd.h>
@@ -113,17 +109,3 @@ void __warp_mouse(int x, int y)
 {
   // stub
 }
-
-#ifdef CONFIG_AUDIO
-
-void init_audio_platform(struct config_info *conf)
-{
-  // stub
-}
-
-void quit_audio_platform(void)
-{
-  // stub
-}
-
-#endif // CONFIG_AUDIO

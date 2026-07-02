@@ -18,13 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Provides a libxmp module stream backend
-
 #include "audio.h"
+#include "audio_players.h"
 #include "audio_struct.h"
-#include "audio_xmp.h"
 #include "audio_wav.h"
-#include "ext.h"
 #include "sampled_stream.h"
 
 #include "../const.h"
@@ -254,12 +251,10 @@ static struct xmp_callbacks xmp_callbacks =
   NULL
 };
 
-static struct audio_stream *construct_xmp_stream(vfile *vf,
- const char *filename, uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *audio_xmp_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
 {
   struct xmp_stream *xmp_stream;
-  struct sampled_stream_spec s_spec;
-  struct audio_stream_spec a_spec;
   struct xmp_module_info info;
   xmp_context ctx;
   unsigned char ord;
@@ -288,6 +283,7 @@ static struct audio_stream *construct_xmp_stream(vfile *vf,
     xmp_free_context(ctx);
     return NULL;
   }
+  xmp_stream->s.a.player = &audio_player_xmp;
 
   xmp_stream->ctx = ctx;
   xmp_start_player(ctx, audio.output_frequency, flags);
@@ -313,33 +309,35 @@ static struct audio_stream *construct_xmp_stream(vfile *vf,
     info.seq_data[i].entry_point = 0;
   }
 
-  memset(&a_spec, 0, sizeof(struct audio_stream_spec));
-  a_spec.mix_data     = audio_xmp_mix_data;
-  a_spec.set_volume   = audio_xmp_set_volume;
-  a_spec.set_repeat   = audio_xmp_set_repeat;
-  a_spec.set_order    = audio_xmp_set_order;
-  a_spec.set_position = audio_xmp_set_position;
-  a_spec.get_order    = audio_xmp_get_order;
-  a_spec.get_position = audio_xmp_get_position;
-  a_spec.get_length   = audio_xmp_get_length;
-  a_spec.get_sample   = audio_xmp_get_sample;
-  a_spec.destruct     = audio_xmp_destruct;
-
-  memset(&s_spec, 0, sizeof(struct sampled_stream_spec));
-  s_spec.set_frequency = audio_xmp_set_frequency;
-  s_spec.get_frequency = audio_xmp_get_frequency;
-
-  initialize_sampled_stream((struct sampled_stream *)xmp_stream, &s_spec,
+  initialize_sampled_stream((struct sampled_stream *)xmp_stream,
    audio.output_frequency, frequency, chn, false);
 
-  initialize_audio_stream((struct audio_stream *)xmp_stream, &a_spec,
-   volume, repeat);
+  initialize_audio_stream((struct audio_stream *)xmp_stream, volume, repeat);
 
   vfclose(vf);
   return (struct audio_stream *)xmp_stream;
 }
 
-void init_xmp(struct config_info *conf)
+const struct audio_player audio_player_xmp =
 {
-  audio_ext_register(NULL, construct_xmp_stream);
-}
+  "libxmp",
+  NULL,
+
+  audio_xmp_construct,
+  audio_xmp_destruct,
+  audio_xmp_mix_data,
+  audio_xmp_set_volume,
+  audio_xmp_set_repeat,
+  audio_xmp_set_order,
+  audio_xmp_get_order,
+  audio_xmp_set_position,
+  audio_xmp_get_position,
+  audio_xmp_get_length,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  audio_xmp_set_frequency,
+  audio_xmp_get_frequency,
+  audio_xmp_get_sample,
+};

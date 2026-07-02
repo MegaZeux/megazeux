@@ -20,11 +20,12 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "../audio.h"
+#include "../audio_drivers.h"
+#include "../audio_struct.h"
+
 #include "../../util.h"
 #include "../../platform/sdl/SDLmzx.h"
-
-#include "../audio.h"
-#include "../audio_struct.h"
 
 static SDL_AudioSpec audio_settings;
 static SDL_AudioStream *audio_stream;
@@ -49,7 +50,7 @@ static void sdl_audio_callback(void *userdata, SDL_AudioStream *stream,
   }
 }
 
-void init_audio_platform(struct config_info *conf)
+static boolean init_audio_driver_sdl3(struct config_info *conf)
 {
   SDL_AudioDeviceID audio_device = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
   int frames = 0;
@@ -57,14 +58,14 @@ void init_audio_platform(struct config_info *conf)
   void *tmp;
   // TODO: 8-bit?
 
-  debug("--AUDIO_DRIVER_SDL3-- init_audio_platform\n");
+  debug("--AUDIO_SDL3-- init_audio_driver_sdl3\n");
 
   audio_format = SAMPLE_S16;
 
   memset(&audio_settings, 0, sizeof(audio_settings));
   if(!SDL_GetAudioDeviceFormat(audio_device, &audio_settings, &frames))
   {
-    debug("--AUDIO_DRIVER_SDL3-- failed to query default device format: %s\n",
+    debug("--AUDIO_SDL3-- failed to query default device format: %s\n",
      SDL_GetError());
     // Can't query, try to continue anyway...
     audio_settings.freq = 48000;
@@ -86,7 +87,7 @@ void init_audio_platform(struct config_info *conf)
     audio_settings.channels = MIN(conf->audio_output_channels, 2);
 
   if(!audio_mixer_init(audio_settings.freq, frames, audio_settings.channels))
-    return;
+    return false;
 
   audio_settings.freq = audio.output_frequency;
 
@@ -94,8 +95,8 @@ void init_audio_platform(struct config_info *conf)
    audio.buffer_frames * audio.buffer_channels * sizeof(int16_t));
   if(!tmp)
   {
-    warn("--AUDIO_DRIVER_SDL3-- failed to allocate buffer\n");
-    return;
+    warn("--AUDIO_SDL3-- failed to allocate buffer\n");
+    return false;
   }
 
   // The buffer frames need to be configured with this hack.
@@ -103,7 +104,7 @@ void init_audio_platform(struct config_info *conf)
   snprintf(hint, sizeof(hint), "%u", audio.buffer_frames);
   SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, hint);
 
-  debug("--AUDIO_DRIVER_SDL3-- initializing default audio device %" PRIu32 ": "
+  debug("--AUDIO_SDL3-- initializing default audio device %" PRIu32 ": "
    "S16 %dch %dHz %dfr\n", audio_device, audio_settings.channels,
    audio_settings.freq, audio.buffer_frames);
 
@@ -112,7 +113,7 @@ void init_audio_platform(struct config_info *conf)
    sdl_audio_callback, tmp);
   if(!audio_stream)
   {
-    warn("--AUDIO_DRIVER_SDL3-- failed to initialize default audio device: %s\n",
+    warn("--AUDIO_SDL3-- failed to initialize default audio device: %s\n",
      SDL_GetError());
     goto err;
   }
@@ -120,30 +121,30 @@ void init_audio_platform(struct config_info *conf)
   audio_device = SDL_GetAudioStreamDevice(audio_stream);
   if(audio_device == 0)
   {
-    debug("--AUDIO_DRIVER_SDL3-- failed to get device ID to resume: %s\n",
+    debug("--AUDIO_SDL3-- failed to get device ID to resume: %s\n",
      SDL_GetError());
     audio_device = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
   }
 
   if(SDL_ResumeAudioDevice(audio_device))
   {
-    debug("--AUDIO_DRIVER_SDL3-- audio device %" PRIu32
+    debug("--AUDIO_SDL3-- audio device %" PRIu32
      " initialized successfully\n", audio_device);
   }
   else
   {
-    warn("--AUDIO_DRIVER_SDL3-- failed to resume audio device %" PRIu32 ": %s\n",
+    warn("--AUDIO_SDL3-- failed to resume audio device %" PRIu32 ": %s\n",
      audio_device, SDL_GetError());
   }
-  return;
+  return true;
 
 err:
   free(tmp);
   audio_buffer = NULL;
-  return;
+  return false;
 }
 
-void quit_audio_platform(void)
+static void quit_audio_driver_sdl3(void)
 {
   if(audio_stream)
   {
@@ -153,3 +154,11 @@ void quit_audio_platform(void)
   free(audio_buffer);
   audio_buffer = NULL;
 }
+
+const struct audio_driver audio_driver_sdl3 =
+{
+  "SDL3 Audio",
+  "sdl",
+  init_audio_driver_sdl3,
+  quit_audio_driver_sdl3,
+};
