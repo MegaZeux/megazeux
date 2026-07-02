@@ -65,7 +65,7 @@ ifneq (${BUILD_SDL},)
 3DS_CFLAGS    += -Dkey_press=mzx_key_press -Dkey_release=mzx_key_release
 endif
 
-3DS_CFLAGS    += ${EXTRA_INCLUDES} ${MACHDEP} -DARM11 -D__3DS__ -Iarch/3ds
+3DS_CFLAGS    += ${EXTRA_INCLUDES} ${MACHDEP} -DARM11 -D__3DS__
 
 ARCH_CFLAGS   += ${3DS_CFLAGS}
 ARCH_CXXFLAGS += ${3DS_CFLAGS}

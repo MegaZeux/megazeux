@@ -46,7 +46,7 @@ EXTRA_LIBS := ${PORTLIBS_LIBS} \
              -L$(LIBNDS)/lib -lfat -lm -lnds9 -lmm9
 
 NDS_CFLAGS    := -marm -mthumb-interwork -march=armv5te -mtune=arm946e-s
-NDS_CFLAGS    += ${EXTRA_INCLUDES} -DARM9 -D__NDS__ -Iarch/nds
+NDS_CFLAGS    += ${EXTRA_INCLUDES} -DARM9 -D__NDS__
 
 ARCH_CFLAGS   += ${NDS_CFLAGS}
 ARCH_CXXFLAGS += ${NDS_CFLAGS}

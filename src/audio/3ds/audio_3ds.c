@@ -19,7 +19,7 @@
 
 #include "../audio.h"
 #include "../audio_struct.h"
-#include "../../src/platform/3ds/platform_3ds.h"
+#include "../../platform/3ds/platform_3ds.h"
 
 #include <3ds.h>
 #include <string.h>
