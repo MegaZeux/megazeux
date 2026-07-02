@@ -38,7 +38,7 @@ EXTRA_LIBS := $(foreach path,$(EXTRA_LIBS_DIRS),-L$(path)/lib) \
               -Wl,--start-group $(EXTRA_LIBS_NAMES) -Wl,--end-group
 
 NDS_CFLAGS    += -marm -mcpu=arm946e-s+nofp
-NDS_CFLAGS    += ${EXTRA_INCLUDES} -Iarch/nds -ffunction-sections -fdata-sections
+NDS_CFLAGS    += ${EXTRA_INCLUDES} -ffunction-sections -fdata-sections
 
 NDS_LDFLAGS   += -marm -mcpu=arm946e-s+nofp
 NDS_LDFLAGS   += ${EXTRA_LIBS}

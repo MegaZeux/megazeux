@@ -44,7 +44,8 @@
 
 #include <nds/arm9/keyboard.h>
 
-#include "protected_palette_bin.h"
+/* FIXME: */
+#include "../../../arch/nds/protected_palette_bin.h"
 
 #define SCALED_USE_CELL_CACHE /* 5% penalty on full redraws, up to 20x speed increase on no redraws */
 
