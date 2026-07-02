@@ -25,7 +25,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define BOOL _BOOL
 #include <gcutil.h>
 #include <ogc/lwp.h>
 #include <ogc/message.h>
@@ -35,7 +34,6 @@
 #include <ogc/usbmouse.h>
 #include <wiikeyboard/keyboard.h>
 #include <wiiuse/wpad.h>
-#undef BOOL
 
 // Shut an annoying warning up
 #if WPAD_CLASSIC_BUTTON_RIGHT == (0x8000 << 16)

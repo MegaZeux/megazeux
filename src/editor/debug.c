@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2004 Gilead Kutnick <exophase@adelphia.net>
  * Copyright (C) 2008 Alistair John Strachan <alistair@devzero.co.uk>
- * Copyright (C) 2012-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2012-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -676,7 +676,7 @@ int get_counter_safe(struct world *mzx_world, const char *name, int id)
   return get_counter(mzx_world, name, id);
 }
 
-static void get_var_name(struct debug_var *v, const char **name, int *len,
+static boolean get_var_name(struct debug_var *v, const char **name, int *len,
  char buffer[VAR_LIST_WIDTH + 1])
 {
   switch((enum debug_var_type)v->type)
@@ -684,42 +684,43 @@ static void get_var_name(struct debug_var *v, const char **name, int *len,
     case V_COUNTER:
       if(name) *name = v->data.counter->name;
       if(len)  *len = v->data.counter->name_length;
-      return;
+      return true;
 
     case V_STRING:
       if(name) *name = v->data.string->name;
       if(len)  *len = v->data.string->name_length;
-      return;
+      return true;
 
     case V_VAR:
     case V_SCROLL_TEXT:
       if(name) *name = (char *)v->data.var_name;
       if(len)  *len = strlen(*name);
-      return;
+      return true;
 
     case V_VIRTUAL_VAR:
       if(name) *name = (char *)virtual_var_names[v->data.virtual_var];
       if(len)  *len = strlen(*name);
-      return;
+      return true;
 
     case V_SPRITE_VAR:
       snprintf(buffer, 32, "spr%d_%s", v->id, v->data.var_name);
       if(name) *name = buffer;
       if(len)  *len = strlen(buffer);
-      return;
+      return true;
 
     case V_SPRITE_CLIST:
       snprintf(buffer, 32, "spr_clist%d*", v->data.clist_num);
       if(name) *name = buffer;
       if(len)  *len = strlen(buffer);
-      return;
+      return true;
 
     case V_LOCAL_VAR:
       snprintf(buffer, 32, "local%d", v->data.local_num);
       if(name) *name = buffer;
       if(len)  *len = strlen(buffer);
-      return;
+      return true;
   }
+  return false; /* should never happen */
 }
 
 #define match_var(_name) (strlen(_name) == len && !memcmp(var, _name, len))
@@ -1723,10 +1724,11 @@ static boolean search_vars(struct world *mzx_world, struct debug_node *node,
 
     if(search_flags & VAR_SEARCH_NAMES)
     {
-      get_var_name(current, &var_text, &var_text_length, var_text_buffer);
-
-      matched = search_match(var_text, var_text_length, match_text,
-       match_text_index, match_length, search_flags);
+      if(get_var_name(current, &var_text, &var_text_length, var_text_buffer))
+      {
+        matched = search_match(var_text, var_text_length, match_text,
+         match_text_index, match_length, search_flags);
+      }
     }
 
     if((search_flags & VAR_SEARCH_VALUES) && !matched)
@@ -3367,14 +3369,17 @@ void __debug_counters(context *ctx)
     const char *var_name;
     int len;
 
-    get_var_name(var_list[var_selected], &var_name, &len, buffer);
-    if(len > VAR_SEARCH_MAX)
-      len = VAR_SEARCH_MAX;
-
     memcpy(previous_node_name, focus->name, DEBUG_NODE_NAME_SIZE);
     previous_node_name[DEBUG_NODE_NAME_SIZE - 1] = '\0';
-    memcpy(previous_var, var_name, len + 1);
-    previous_var[len] = '\0';
+
+    if(get_var_name(var_list[var_selected], &var_name, &len, buffer))
+    {
+      if(len > VAR_SEARCH_MAX)
+        len = VAR_SEARCH_MAX;
+
+      memcpy(previous_var, var_name, len + 1);
+      previous_var[len] = '\0';
+    }
   }
 
   // Clear the big dumb tree first

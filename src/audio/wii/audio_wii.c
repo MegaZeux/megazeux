@@ -25,13 +25,11 @@
 #include <string.h>
 #include <malloc.h>
 
-#define BOOL _BOOL
 #include <asndlib.h>
 #include <gctypes.h>
 #include <ogc/lwp.h>
 #include <ogc/cache.h>
 #include <ogc/system.h>
-#undef BOOL
 
 #define STACKSIZE 8192
 

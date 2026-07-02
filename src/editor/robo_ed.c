@@ -3186,7 +3186,7 @@ static int validate_lines(struct robot_editor_context *rstate, int show_none)
   struct world *mzx_world = ((context *)rstate)->world;
   struct element *elements[VALIDATE_ELEMENTS];
   struct dialog di;
-  char information[64] = { 0 };
+  char information[72] = { 0 };
   int start_line = 0;
   int num_errors = 0;
   char error_messages[MAX_ERRORS][64];

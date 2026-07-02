@@ -607,7 +607,7 @@ boolean Manifest::download_and_replace_entry(HTTPHost &http,
 
   request.clear();
   request.allowed_types = HTTPRequestInfo::binary_types;
-  snprintf(request.url, LINE_BUF_LEN, "%s/%08x%08x%08x%08x%08x%08x%08x%08x", basedir,
+  snprintf(request.url, LINE_BUF_LEN, "%s/" SHA256_PRINT_FMT, basedir,
     e->sha256[0], e->sha256[1], e->sha256[2], e->sha256[3],
     e->sha256[4], e->sha256[5], e->sha256[6], e->sha256[7]);
 
@@ -639,7 +639,7 @@ boolean Manifest::write_to_file(const char *filename) const
 
     for(ManifestEntry *e = this->head; e; e = e->next)
     {
-      vf_printf(vf, "%08x%08x%08x%08x%08x%08x%08x%08x %zu %s\n",
+      vf_printf(vf, SHA256_PRINT_FMT " %zu %s\n",
        e->sha256[0], e->sha256[1], e->sha256[2], e->sha256[3],
        e->sha256[4], e->sha256[5], e->sha256[6], e->sha256[7],
        e->size, e->name);
