@@ -54,7 +54,7 @@ ARCH_LDFLAGS  += ${NDS_LDFLAGS}
 # Use gnu17, as that's the standard currently used by the official template files.
 ARCH_CFLAGS   += -std=gnu17
 
-ARM7_BINARY := arch/nds-blocksds/megazeux.arm7.elf
+ARM7_BINARY := megazeux.arm7.elf
 
 #
 # Vile hack, remove me ASAP

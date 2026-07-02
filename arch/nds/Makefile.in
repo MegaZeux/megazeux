@@ -52,6 +52,8 @@ ARCH_CFLAGS   += ${NDS_CFLAGS}
 ARCH_CXXFLAGS += ${NDS_CFLAGS}
 ARCH_LDFLAGS  += ${EXTRA_LIBS} -specs=ds_arm9.specs
 
+ARM7_BINARY   := mzxrun.arm7.elf
+
 #
 # Vile hack, remove me ASAP
 #
@@ -65,12 +67,13 @@ arch/nds/%.bin.o arch/nds/%_bin.h : arch/nds/%.bin
 	@sed -i 's/^#if __cplusplus >= 201103L$$/#if 0/g' arch/nds/*_bin.h
 
 package: mzx
-	${MAKE} -C arch/nds TARGET=${mzxrun}
-	ndstool -c ${mzxrun}.nds -7 arch/nds/${mzxrun}.arm7.elf -9 ${mzxrun} -b contrib/icons/generated/icon_nds.bmp "MegaZeux ${VERSION}"
+	${MAKE} -f arch/nds/Makefile TARGET=${mzxrun}
+	ndstool -c ${mzxrun}.nds -7 ${ARM7_BINARY} -9 ${mzxrun} \
+	  -b contrib/icons/generated/icon_nds.bmp "MegaZeux ${VERSION}"
 
 clean:
-	@${MAKE} -C arch/nds TARGET=${mzxrun} clean
-	${RM} -f ${mzxrun}.nds arch/nds/*.d arch/nds/*.o arch/nds/*.elf
+	@${MAKE} -f arch/nds/Makefile TARGET=${mzxrun} clean
+	${RM} -f ${mzxrun}.nds ${ARM7_BINARY} arch/nds/*.d arch/nds/*.o
 	${RM} -f arch/nds/protected_palette.bin.S arch/nds/protected_palette_bin.h
 	${RM} -f arch/nds/protected_palette_bin.c
 
