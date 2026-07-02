@@ -41,10 +41,10 @@ static const struct audio_driver * const available_drivers[] =
 #ifdef CONFIG_NDS
   &audio_driver_nds,
 #endif
-#ifdef CONFIG_3DS
+#if defined(CONFIG_3DS) && !defined(CONFIG_SDL)
   &audio_driver_3ds,
 #endif
-#ifdef CONFIG_WII
+#if defined(CONFIG_WII) && !defined(CONFIG_SDL)
   &audio_driver_wii,
 #endif
 #ifdef CONFIG_DREAMCAST

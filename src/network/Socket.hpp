@@ -1,7 +1,7 @@
 /* MegaZeux
  *
  * Copyright (C) 2008 Alistair John Strachan <alistair@devzero.co.uk>
- * Copyright (C) 2018-2021 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2018-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -53,19 +53,25 @@
 
 #elif defined(CONFIG_WII)
 
-// See arch/wii/network.cpp.
+// See Socket_wii.cpp.
 #include <network.h>
 #include <fcntl.h>
 #define UNIX_INLINE(x)
 
-// libogc uses a structure different from the regular structure and does not
-// declare pollfd. Declare this to be identical to the libogc version...
-struct pollfd
+/* libogc moved the poll defines to poll.h with no replacement net_poll
+ * defines. poll.h declares a pollfd incompatible with network.h pollsd.
+ * Interrim compile-time workaround: */
+#ifdef CONFIG_POLL
+#include <poll.h>
+#define pollfd net_pollfd
+
+struct net_pollfd
 {
   s32 fd;
   u32 events;
   u32 revents;
 };
+#endif
 
 #else // !_WIN32 && !CONFIG_WII
 

@@ -19,7 +19,7 @@
  */
 
 #ifndef MEGAZEUX_MANIFEST_HPP
-#define MEGAZEXU_MANIFEST_HPP
+#define MEGAZEUX_MANIFEST_HPP
 
 #include "../compat.h"
 #include "../io/vfile.h"

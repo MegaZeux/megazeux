@@ -24,7 +24,13 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-#include <stdint.h>
+#include <inttypes.h>
+
+/* printf format string fragment for SHA256_ctx::H */
+#define SHA256_PRINT_FMT_1 "%08" PRIx32
+#define SHA256_PRINT_FMT_2 SHA256_PRINT_FMT_1 SHA256_PRINT_FMT_1
+#define SHA256_PRINT_FMT_4 SHA256_PRINT_FMT_2 SHA256_PRINT_FMT_2
+#define SHA256_PRINT_FMT   SHA256_PRINT_FMT_4 SHA256_PRINT_FMT_4
 
 struct SHA256_ctx
 {

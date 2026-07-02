@@ -28,13 +28,10 @@
 #include <unistd.h>
 #include <sys/iosupport.h>
 
-#define BOOL _BOOL
 #include <ogc/system.h>
 #include <ogc/lwp.h>
 #include <ogc/lwp_watchdog.h>
-#include <ogc/message.h> // Suppress unused BOOL warning.
 #include <fat.h>
-#undef BOOL
 
 #define STACKSIZE 8192
 
