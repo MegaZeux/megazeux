@@ -1,6 +1,3 @@
-arch/3ds/*.d
-arch/3ds/*.o
-arch/3ds/*shbin*
 arch/android/deps
 arch/android/include
 arch/android/project/.eclipse
@@ -22,10 +19,6 @@ arch/android/project/app/*.iml
 arch/android/project/build
 arch/android/project/keystore.properties
 arch/android/project/local.properties
-arch/djgpp/*.d
-arch/djgpp/*.o
-arch/dreamcast/*.d
-arch/dreamcast/*.o
 arch/emscripten/web/mzxrun_web.js*
 arch/emscripten/web/node_modules
 arch/emscripten/web/package-lock.json
@@ -37,18 +30,13 @@ arch/msvc/MegaZeux.sdf
 arch/msvc/MegaZeux.v12.suo
 arch/msvc/obj
 arch/msvc/version.h
-arch/nds/mzxrun.arm7.elf
+arch/nds/arm7/source/*.d
+arch/nds/arm7/source/*.o
+arch/nds/protected_palette.bin.d
+arch/nds/protected_palette.bin.o
 arch/nds/protected_palette_bin.c
 arch/nds/protected_palette_bin.h
-arch/nds/*.S
-arch/nds/*.d
-arch/nds/*.o
-arch/psp/*.d
-arch/psp/*.o
-arch/psvita/*.d
-arch/psvita/*.o
-arch/wii/*.d
-arch/wii/*.o
+arch/nds/protected_palette_bin.S
 arch/xcode/version.h
 build
 1ST_READ.BIN
@@ -77,6 +65,7 @@ libeditor.so
 libeditor.dylib
 megazeux-cia.*
 megazeux.3dsx
+megazeux.arm7.elf
 megazeux.bin
 megazeux.dol
 megazeux.elf
@@ -96,6 +85,7 @@ megazeux.velf
 megazeux.vpk
 /megazeux
 mzxrun.3dsx
+mzxrun.arm7.elf
 mzxrun.bin
 mzxrun.cia
 mzxrun.dol
@@ -147,6 +137,7 @@ Thumbs.db
 .clangd
 .vscode
 .DS_Store
+/compile_commands.json
 xcuserdata/
 
 # Utilities
