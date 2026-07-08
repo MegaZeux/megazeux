@@ -31,34 +31,17 @@ unit_objs := \
   ${unit_obj}/expr.o                   \
   ${unit_obj}/render.o                 \
   ${unit_obj}/memcasecmp.o             \
-  ${unit_obj_audio}/mixer.o            \
   ${unit_obj_io}/bitstream.o           \
   ${unit_obj_io}/memfile.o             \
   ${unit_obj_io}/path.o                \
   ${unit_obj_io}/vfs.o                 \
   ${unit_obj_io}/vio.o                 \
   ${unit_obj_io}/zip.o                 \
-
-ifneq (${BUILD_EDITOR},)
-
-unit_objs += \
-  ${unit_obj_editor}/stringsearch.o
-
-endif
-
-ifneq (${BUILD_NETWORK},)
-
-unit_objs += \
-  ${unit_obj_network}/sha256.o
-
-endif
-
-ifneq (${BUILD_UTILS},)
-
-unit_objs += \
-  ${unit_obj_utils}/image_file.o
-
-endif
+  ${unit_obj_audio}/audio_wav_load.o   \
+  ${unit_obj_audio}/mixer.o            \
+  ${unit_obj_editor}/stringsearch.o    \
+  ${unit_obj_network}/sha256.o         \
+  ${unit_obj_utils}/image_file.o       \
 
 ifeq (${PLATFORM},mingw)
 unit_objs += \
@@ -80,11 +63,11 @@ unit_objs += \
   ${unit_obj}/world.o                  \
 
 unit_ldflags += ${DSORPATH} -L. -lcore
-${unit_objs}: ${core_target}
+${unit_target}: ${core_target}
 
 ifneq (${BUILD_EDITOR},)
 unit_ldflags += ${DSORPATH} -L. -leditor
-${unit_objs}: ${editor_target}
+${unit_target}: ${editor_target}
 endif
 
 ifneq (${BUILD_NETWORK},)

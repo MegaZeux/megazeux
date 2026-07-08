@@ -64,14 +64,6 @@ static platform_mutex_debug mutex_debug;
 
 #endif // DEBUG
 
-static const int freq_conversion = 3579364;
-
-int audio_get_real_frequency(int period)
-{
-  /* Convert MZX's "frequencies" to an actual usable frequency. */
-  return freq_conversion / period;
-}
-
 static unsigned int volume_function(int input, int volume_setting)
 {
   /* Adjust volume (0-255) exponentially according to a given setting (0-10).
@@ -624,26 +616,17 @@ void audio_play_sample(char *filename, boolean safely, int period)
     filename = translated_filename;
   }
 
-  if(period == 0)
-  {
-    // Use 0 to instruct handler to get default frequency
-    audio_construct_stream(filename, 0, vol, 0);
-  }
-  else
-  {
-    /**
-     * NOTE: the period is doubled here to compensate for a SAM to WAV
-     * conversion bug introduced in MZX 2.80. Unfortunately this has
-     * permanently affected the way the frequency field has been used for WAV
-     * and OGG samples and needs to be carried forward.
-     *
-     * Note that WAVs generated from the buggy SAM to WAV conversion routine
-     * are treated as stereo and must also have this buggy doubling. In other
-     * words, just double the frequency in the SAM loader.
-     */
-    audio_construct_stream(filename,
-     audio_get_real_frequency(period * 2), vol, 0);
-  }
+  /**
+   * NOTE: the period is doubled here to compensate for a SAM to WAV
+   * conversion bug introduced in MZX 2.80. Unfortunately this has
+   * permanently affected the way the frequency field has been used for
+   * WAV, Ogg, and any modules used here and needs to be carried forward.
+   *
+   * Note that WAVs generated from the buggy SAM to WAV conversion routine
+   * are treated as stereo and must also have this buggy doubling. In other
+   * words, just double the frequency in the SAM loader.
+   */
+  audio_construct_stream(filename, audio_get_real_frequency(period * 2), vol, 0);
 
   limit_samples(audio.max_simultaneous_samples);
 }

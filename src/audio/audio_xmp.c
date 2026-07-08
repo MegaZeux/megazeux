@@ -209,7 +209,7 @@ static boolean audio_xmp_get_sample(struct audio_stream *a_src, unsigned int whi
       else
         dest->format = SAMPLE_S8;
 
-      dest->wav_data = cmalloc(dest->data_length);
+      dest->wav_data = (uint8_t *)cmalloc(dest->data_length);
       memcpy(dest->wav_data, sam->data, dest->data_length);
       return true;
     }
