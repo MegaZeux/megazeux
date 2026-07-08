@@ -75,7 +75,6 @@ void audio_set_pcs_volume(int volume);
 int audio_legacy_translate(const char *path, char *newpath, size_t buffer_len);
 
 // Internal functions
-int audio_get_real_frequency(int period);
 void destruct_audio_stream(struct audio_stream *a_src);
 void initialize_audio_stream(struct audio_stream *a_src,
  unsigned int volume, boolean repeat);
@@ -84,6 +83,14 @@ size_t audio_mixer_render_frames(void *stream, unsigned frames,
  unsigned channels, unsigned format);
 boolean audio_mixer_init(unsigned rate, unsigned frames, unsigned channels);
 void audio_mixer_free(void);
+
+/* Convert MOD periods to their real corresponding frequency.
+ * If the provided period is 0 ("natural" frequency), pass it through.
+ * Note that due to a 2.80-era bug, the SAM command doubles the period. */
+static inline uint32_t audio_get_real_frequency(int period)
+{
+  return (uint32_t)(period ? 3579364 / period : 0);
+}
 
 #else // !CONFIG_AUDIO
 

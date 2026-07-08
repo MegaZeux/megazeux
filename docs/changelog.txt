@@ -42,6 +42,9 @@ USERS
   on volumes in the directory list for Wii, PS Vita, and Amiga.
 + Fixed file manager crashes with world filenames over 56 chars.
 + Fixed file manager deleting files with names over 56 chars.
++ Fixed WAV smpl chunk end point off-by-one (the loop end value
+  stored in the chunk is inclusive).
++ WAV files loaded by the SDL fallback now load the smpl chunk.
 
 DEVELOPERS
 
