@@ -46,6 +46,7 @@ MEGAZEUX_BEGIN_DECLS
 #define SAMPLE_S16 SAMPLE_S16LE
 #endif
 
+struct audio_player;
 struct audio_stream;
 struct sampled_stream;
 
@@ -75,6 +76,11 @@ struct audio_driver
   const char *name;
   const char *ident;
 
+  /* Driver-specific audio players. Put general players in audio_players.c. */
+  const struct audio_player * const * const driver_players;
+  const struct audio_player * const pcs_software_player;
+  const struct audio_player * const pcs_hardware_player;
+
   boolean (*init_audio_driver)(struct config_info *conf);
   void    (*quit_audio_driver)(void);
 };
@@ -83,33 +89,67 @@ struct audio_player
 {
   const char *name;
 
-  boolean   (*test)(vfile *vf, const char *filename);
+  boolean   (*test)(vfile *vf, const char *filename, boolean is_primary);
   struct audio_stream *(*construct)(vfile *vf, const char *filename,
                                     uint32_t frequency, unsigned int volume,
                                     boolean repeat);
   void      (*destruct)(struct audio_stream *a_src);
 
+  /* Render data to PCM. Non-PCM players do not need to implement this.
+   * A return value of true signals to the software mixer that this stream
+   * has finished playing and may be destroyed.
+   */
   boolean   (* mix_data)(struct audio_stream *a_src, int32_t * RESTRICT buffer,
                          size_t dest_frames, unsigned int dest_channels);
 
+  /* Volume--this should be implemented for everything possible. An example
+   * of a rare exception where it is not possible: hardware PIT PC speaker.
+   */
   void      (* set_volume)(struct audio_stream *a_src, unsigned int volume);
+
+  /* Repeat--if set to 0, the stream should terminate when it has reached
+   * the end. Should be implemented for everything except PC speaker.
+   */
   void      (* set_repeat)(struct audio_stream *a_src, boolean repeat);
 
+  /* Module position in sequence ("order")--this is intended for modules only.
+   * It currently has no meaning for other formats and should not be supported
+   * by them (TODO: maybe cue points in Ogg/WAV?).
+   */
   void      (* set_order)(struct audio_stream *a_src, uint32_t order);
   uint32_t  (* get_order)(struct audio_stream *a_src);
 
+  /* Position and length--for module formats, this is measured in rows from
+   * the start of the module (originally derived from libmodplug). For PCM,
+   * this is measured in sample frames from the start of the stream. Every
+   * player needs to implement this where possible, but some module rendering
+   * libraries make it more difficult than others.
+   */
   void      (* set_position)(struct audio_stream *a_src, uint32_t pos);
   uint32_t  (* get_position)(struct audio_stream *a_src);
   uint32_t  (* get_length)(struct audio_stream *a_src);
 
+  /* Loop start and loop end--the position (in sample frames, measured from
+   * the start of the stream) of the current start and end of the loop. This
+   * is only relevant for PCM, and module players should not implement it.
+   * The loop end position must be EXCLUSIVE for all players.
+   */
   void      (* set_loop_start)(struct audio_stream *a_src, uint32_t pos);
   uint32_t  (* get_loop_start)(struct audio_stream *a_src);
   void      (* set_loop_end)(struct audio_stream *a_src, uint32_t pos);
   uint32_t  (* get_loop_end)(struct audio_stream *a_src);
 
+  /* Resampling frequency--this is a feature of MegaZeux's resampler,
+   * and it should not be implemented by anything except sampled streams.
+   * Do not attempt to approximate this by e.g. adjusting module timing.
+   */
   void      (* set_frequency)(struct sampled_stream *s_src, uint32_t frequency);
   uint32_t  (* get_frequency)(struct sampled_stream *s_src);
 
+  /* Get a copy of a sample from this audio stream as a raw PCM spec for use
+   * by audio_spot_sample. Currently, only the libxmp player implements this.
+   * audio_spot_sample assumes this function allocates a copy of the sample.
+   */
   boolean   (* get_sample)(struct audio_stream *a_src, unsigned int which,
              struct wav_info *dest);
 };
@@ -162,6 +202,9 @@ struct audio
   unsigned int global_resample_mode;
   int max_simultaneous_samples;
   int max_simultaneous_samples_config;
+  boolean pc_speaker_use_hardware;
+  boolean opl_use_hardware;
+  int opl_port;
 
   struct audio_stream *primary_stream;
   struct audio_stream *pcs_stream;

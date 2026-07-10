@@ -281,7 +281,7 @@ static struct audio_stream *omp_construct(vfile *vf, const char *filename,
   return (struct audio_stream *)omp_stream;
 }
 
-static boolean omp_test(vfile *vf, const char *filename)
+static boolean omp_test(vfile *vf, const char *filename, boolean is_primary)
 {
   /* TODO: OpenMPT doesn't have a way to whitelist individual formats yet,
    * and having to add Symphonie/etc. support to libxmp because a package

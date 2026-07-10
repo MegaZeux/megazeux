@@ -19,6 +19,7 @@
 
 #include "../audio.h"
 #include "../audio_drivers.h"
+#include "../audio_players.h"
 #include "../audio_sfx.h"
 #include "../audio_struct.h"
 
@@ -544,6 +545,11 @@ const struct audio_driver audio_driver_nds =
 {
   "NDS Audio",
   "nds",
+
+  NULL, /* &audio_player_nds_maxmod, &audio_player_nds_maxmod_sam, &audio_player_nds_maxmod_wav */
+  NULL,
+  NULL, /* &audio_player_nds_pcs */
+
   init_audio_driver_nds,
   quit_audio_driver_nds,
 };

@@ -65,29 +65,36 @@ const struct audio_driver *audio_init_driver(struct config_info *conf,
     return NULL;
   }
 
+  /* If specified, search for the named driver first. */
+  if(name && name[0])
+  {
+    for(i = 0; i < ARRAY_SIZE(available_drivers); i++)
+    {
+      const struct audio_driver *driver = available_drivers[i];
+      if(!driver)
+        break;
+      if(strcasecmp(driver->name, name))
+        continue;
+
+      name_match = driver;
+      break;
+    }
+    if(name_match && name_match->init_audio_driver(conf))
+      return name_match;
+  }
+
+  /* Attempt every other driver in the list. */
   for(i = 0; i < ARRAY_SIZE(available_drivers); i++)
   {
     const struct audio_driver *driver = available_drivers[i];
     if(!driver)
       break;
-
-    if(name)
-    {
-      if(!strcasecmp(driver->name, name))
-        name_match = driver;
-      else
-        continue;
-    }
+    if(driver == name_match)
+      continue;
 
     if(driver->init_audio_driver(conf))
       return driver;
   }
 
-  // If a name was specified and it's not the default driver, try the default.
-  if(name_match && name_match != available_drivers[0])
-  {
-    if(available_drivers[0]->init_audio_driver(conf))
-      return available_drivers[0];
-  }
   return NULL;
 }

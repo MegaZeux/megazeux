@@ -32,6 +32,7 @@
 #include "audio_sb.h"
 #include "../audio.h"
 #include "../audio_drivers.h"
+#include "../audio_players.h"
 #include "../audio_struct.h"
 #include "../../util.h"
 #include "../../platform/djgpp/platform_djgpp.h"
@@ -435,6 +436,11 @@ const struct audio_driver audio_driver_sb =
 {
   "Sound Blaster 16, Pro 2, Pro, 2, or DSP 2.0",
   "sb",
+
+  NULL,
+  &audio_player_pcs,
+  NULL, /* &audio_player_pcs_pit */
+
   init_audio_driver_sb,
   quit_audio_driver_sb,
 };
