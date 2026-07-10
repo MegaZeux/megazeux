@@ -142,11 +142,6 @@ CORE_LIBSPEC char *strsep(char **stringp, const char *delim);
 #include <strings.h>
 #endif // !__WIN32__
 
-#if defined(__amigaos__)
-CORE_LIBSPEC extern long __stack_chk_guard[8];
-CORE_LIBSPEC void __stack_chk_fail(void);
-#endif
-
 #if defined(ANDROID)
 
 #include <android/log.h>

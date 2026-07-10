@@ -1,10 +1,9 @@
 #
-# amiga makefile generics
+# Amiga, AmigaOS 4, MorphOS et al. makefile generics
 #
 
-CC      = ppc-amigaos-gcc -mcrt=clib2 -I${PREFIX}/clib2/include
-CXX     = ppc-amigaos-g++ -mcrt=clib2 -I${PREFIX}/clib2/include
-STRIP   = ppc-amigaos-strip
+# prefix-cc not provided
+CC      = gcc
 OBJCOPY = true
 CHMOD   = true
 
@@ -16,14 +15,28 @@ DSOPOST    = .so
 DSORPATH   = -Wl,-rpath,${LIBDIR}
 DSOSONAME  = -Wl,-soname,
 
-# Block --host, which will break things.
-CROSS_COMPILE =
+#
+# Amiga Workbench 2.04+
+#
+ifeq (${SUBPLATFORM},amiga-m68k)
+ARCH_CFLAGS   += -m68030 -fomit-frame-pointer
+ARCH_CXXFLAGS += -m68030 -fomit-frame-pointer
 
-ifeq (${BUILD_MODULAR},1)
-ARCH_CFLAGS   += -fPIC
-ARCH_CXXFLAGS += -fPIC
-ARCH_LDFLAGS  += -use-dynld -lunix
+# bebbo sdl-config is broken...
+ifeq (${BUILD_SDL},1)
+SDL_PREFIX  := ${PREFIX}
+SDL_CFLAGS  := -I${PREFIX}/include/SDL
+SDL_LDFLAGS := -L${PREFIX}/lib -lSDL
 endif
+else
+
+#
+# AmigaOS 4
+#
+ifeq (${SUBPLATFORM},amiga-ppc)
+# TODO: compare different CRTs...
+AMIGA_MCRT :=
+#AMIGA_MCRT ?= -mcrt=clib2 -I${PREFIX}/clib2/include
 
 # MZX breaks this optimisation on Amiga
 ARCH_CFLAGS   += -fno-strict-aliasing
@@ -31,6 +44,37 @@ ARCH_CXXFLAGS += -fno-strict-aliasing
 
 # Amiga needs PNG to be statically linked (inc. zlib)
 LIBPNG_LDFLAGS = $(shell libpng12-config --static --ldflags)
+else
+
+#
+# MorphOS
+#
+ifeq (${SUBPLATFORM},morphos-ppc)
+# nop
+else
+
+$(warning Unknown AmigaOS variant; please add to arch/amiga/Makefile.in)
+
+endif # MorphOS
+endif # AmigaOS 4
+endif # Workbench
+
+ifeq (${BUILD_MODULAR},1)
+ARCH_CFLAGS   += -fPIC
+ARCH_CXXFLAGS += -fPIC
+ARCH_LDFLAGS  += -use-dynld -lunix
+endif
+
+ARCH_LIBS     += -lm
+
+#
+# libnix is the preferred CRT for Amiga m68k and MorphOS.
+# ixemul is supported but is tainted (BSD 4-clause).
+# It's not clear if the stubs are affected, so avoid use.
+#
+AMIGA_MCRT    ?= -noixemul
+CC            += ${AMIGA_MCRT}
+CXX           += ${AMIGA_MCRT}
 
 #
 # Need to nest Amiga binaries in a subdir

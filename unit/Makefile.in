@@ -90,6 +90,12 @@ unit_extra_objs += \
 
 endif
 
+# Patch in a main replacement if the platform added it to main_objs.
+ifneq (${main_objs},)
+unit_extra_objs += ${main_objs}
+unit_cflags += -DCONFIG_REPLACE_MAIN
+endif
+
 #
 # Build unit tests with debug optimizations and without link-time optimzations.
 # (Overrides these optimization flags from the global flags.)
@@ -133,6 +139,12 @@ unit_ldflags += ${ARCH_LDFLAGS} ${ARCH_LIBS}
 # TODO: mingw hack
 ifeq (${PLATFORM},mingw)
 unit_ldflags += ${LINK_STATIC_IF_MIXED} -lstdc++ -lwinpthread
+endif
+
+# Fix compilation, issue closed despite no resolution:
+# https://github.com/AmigaPorts/ppc-morphos-gcc/issues/2
+ifeq (${SUBPLATFORM},morphos-ppc)
+unit_ldflags += -lstdc++ -lpthread
 endif
 
 ifneq (${HAS_CXX_11},1)

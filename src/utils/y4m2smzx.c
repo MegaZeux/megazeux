@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "image_file.h"
+#include "utils_alloc.h"
 #include "smzxconv.h"
 #include "y4m.h"
 

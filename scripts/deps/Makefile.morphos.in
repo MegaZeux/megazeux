@@ -1,0 +1,32 @@
+#
+# MorphOS dependency builder support.
+#
+
+ALL_ARCH = ppc
+
+HOST	 = ppc-amigaos
+CFLAGS	 = -O3 -noixemul
+CXXFLAGS = ${CFLAGS}
+
+ifneq (${USE_CMAKE},)
+$(error use Autotools for this arch.)
+endif
+
+ifneq (${ARCH},)
+ARCH = ${ALL_ARCH}
+ARCH_INIT = \
+	export CC='ppc-morphos-gcc'; \
+	export CFLAGS='${CFLAGS}'; \
+	export CXXFLAGS='${CXXFLAGS}'; \
+	export PKG_CONFIG_PATH='${PREFIX}/lib/pkgconfig'; \
+	true
+
+FORCE_STATIC_LIBS	= 1
+TREMOR_LOWMEM		= 1
+
+all: ${ZLIB_TARGET} ${PNG_TARGET}
+all: ${TREMOR_TARGET} ${STB_TARGET}
+all: SDL12_MORPHOS_TARGET
+
+package: zlib_package png_package tremor_package stb_package SDL12_package
+endif

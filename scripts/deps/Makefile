@@ -20,6 +20,7 @@ VORBIS		= libvorbis-1.3.7
 TREMOR		= tremor
 STB		= stb
 SDL12		= SDL-1.2.15
+SDL12_AMIGA	= SDL-amiga
 SDL2_TIGER	= panther_sdl2
 SDL2_22		= SDL2-2.0.22
 SDL2_LATEST	= SDL2-2.32.10
@@ -52,6 +53,10 @@ STB_GIT		= https://github.com/sezero/stb
 # panther_SDL2 is a backport of SDL 2.0.3 to these Mac OS X releases.
 #SDL2_TIGER_GIT	= https://github.com/panther_SDL2/panther_SDL2
 SDL2_TIGER_GIT	= https://github.com/AliceLR/panther_SDL2
+
+# SDL 1.2.14 fork for Amiga m68k, AROS, MorphOS.
+# Forked from: https://github.com/AmigaPorts/libSDL12.git
+SDL12_AMIGA_GIT	= https://github.com/AliceLR/AmigaPorts-libSDL12.git
 
 LIB		= ${PLATFORM}/${ARCH}/lib
 BIN		= ${PLATFORM}/${ARCH}/bin
@@ -110,7 +115,8 @@ SDL3_PACKAGE	= ${TARGET}/${LIB}/libSDL3.a \
 .PHONY: vorbis_package tremor_package stb_package
 .PHONY: SDL12_package SDL2_package SDL3_package
 .PHONY: clean zlib_clean png_clean ogg_clean vorbis_clean tremor_clean
-.PHONY: SDL12_clean SDL2_tiger_clean SDL2_22_clean SDL2_clean SDL3_clean
+.PHONY: SDL12_clean SDL12_amiga_clean
+.PHONY: SDL2_tiger_clean SDL2_22_clean SDL2_clean SDL3_clean
 .PHONY: fetch distclean
 
 .NOTPARALLEL:
@@ -193,6 +199,13 @@ build/${SDL12}: build/${SDL12}.tar.gz | build
 	cd build && \
 	tar -xzf '${SDL12}.tar.gz'
 
+# fetch: build/${SDL12_AMIGA}
+build/${SDL12_AMIGA}: | build
+	cd build && \
+	git clone "${SDL12_AMIGA_GIT}" "${SDL12_AMIGA}" && \
+	cd "${SDL12_AMIGA}" && \
+	git apply ../../sdl-amiga-fix-morphos.patch
+
 # fetch: build/${SDL2_TIGER}
 build/${SDL2_TIGER}: | build
 	cd build && \
@@ -243,6 +256,10 @@ tremor_clean:
 SDL12_clean:
 	cd build/${SDL12} && make distclean || true
 
+SDL12_amiga_clean:
+	cd build/${SDL12_AMIGA}; make clean || true
+	cd build/${SDL12_AMIGA}; make -f Makefile.morphos clean || true
+
 SDL2_tiger_clean:
 	rm -rf build/cmake/${SDL2_TIGER}
 	cd build/${SDL2_TIGER} && make distclean || true
@@ -269,7 +286,8 @@ ${ALL_ARCH}:
 	${MAKE} ARCH='$@'
 
 clean: zlib_clean png_clean ogg_clean vorbis_clean
-clean: SDL12_clean SDL2_tiger_clean SDL2_22_clean SDL2_clean SDL3_clean
+clean: SDL12_clean SDL12_amiga_clean
+clean: SDL2_tiger_clean SDL2_22_clean SDL2_clean SDL3_clean
 
 distclean:
 	rm -rf ${TARGET}
@@ -332,6 +350,7 @@ $(error must define ARCH_INIT.)
 endif
 
 .PHONY: zlib png ogg vorbis tremor SDL12 SDL2 SDL3
+.PHONY: SDL12_AMIGA_TARGET SDL12_MORPHOS_TARGET
 
 zlib: ${ZLIB_TARGET}
 png: ${PNG_TARGET}
@@ -476,6 +495,23 @@ ${SDL12_TARGET}: | build/${SDL12} SDL12_clean
 	${CONFIGURE} ${ARCH_CONFIGURE_SDL12_ARGS}; \
 	${MAKE}; \
 	${MAKE} install;
+
+# These require different Makefiles from ${SDL12_TARGET} but still create it.
+SDL12_AMIGA_TARGET: | build/${SDL12_AMIGA} SDL12_amiga_clean
+	cd build/${SDL12_AMIGA}; \
+	set -e \
+	${ARCH_INIT}; \
+	export INSTALL_PREFIX="${PREFIX}"; \
+	${MAKE} -f Makefile; \
+	${MAKE} -f Makefile install;
+
+SDL12_MORPHOS_TARGET: | build/${$SDL12_AMIGA} SDL12_amiga_clean
+	cd build/${SDL12_AMIGA}; \
+	set -e \
+	${ARCH_INIT}; \
+	export INSTALL_PREFIX="${PREFIX}"; \
+	${MAKE} -f Makefile.morphos; \
+	${MAKE} -f Makefile.morphos install;
 
 # SDL2 supports Autotools and CMake. Early versions have a broken CMakeFiles.txt.
 ${SDL2_TARGET}: | build/${SDL2} SDL2_tiger_clean SDL2_22_clean SDL2_clean

@@ -1,0 +1,31 @@
+#
+# Amiga Workbench 2.04+ dependency builder support.
+#
+
+ALL_ARCH = m68k
+
+HOST	 = m68k-amigaos
+CFLAGS	 = -Os -noixemul -m68030 -mhard-float -fomit-frame-pointer
+CXXFLAGS = ${CFLAGS}
+
+ifneq (${USE_CMAKE},)
+$(error use Autotools for this arch.)
+endif
+
+ifneq (${ARCH},)
+ARCH = ${ALL_ARCH}
+ARCH_INIT = \
+	export CFLAGS='${CFLAGS}'; \
+	export CXXFLAGS='${CXXFLAGS}'; \
+	export PKG_CONFIG_PATH='${PREFIX}/lib/pkgconfig'; \
+	true
+
+FORCE_STATIC_LIBS	= 1
+TREMOR_LOWMEM		= 1
+
+all: ${ZLIB_TARGET} ${PNG_TARGET}
+all: ${TREMOR_TARGET} ${STB_TARGET}
+all: SDL12_AMIGA_TARGET
+
+package: zlib_package png_package tremor_package stb_package SDL12_package
+endif

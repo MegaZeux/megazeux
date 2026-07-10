@@ -123,6 +123,13 @@ endif
 core_cxxobjs :=
 
 #
+# Main replacement objects. These will be included when linking anything
+# that would normally contain a main() function. Usually, only one object
+# with a replacement main() function should be added here, if anything.
+#
+main_objs :=
+
+#
 # MegaZeux subsystem Makefiles.
 #
 include src/io/Makefile.in
@@ -230,7 +237,7 @@ ifeq (${BUILD_EDITOR},1)
 
 include src/editor/Makefile.in
 
-mzx_objs += ${core_obj}/main.o
+mzx_objs += ${core_obj}/main.o ${main_objs}
 
 -include ${mzx_objs:.o=.d}
 ${mzx_objs}: $(filter-out $(wildcard ${core_obj}), ${core_obj})
@@ -267,7 +274,7 @@ endif
 
 ifeq (${BUILD_MZXRUN},1)
 
-mzxrun_objs += ${core_obj}/main.o ${core_obj}/run_stubs.o
+mzxrun_objs += ${core_obj}/main.o ${core_obj}/run_stubs.o ${main_objs}
 
 -include ${mzxrun_objs:.o=.d}
 ${mzxrun_objs}: $(filter-out $(wildcard ${core_obj}), ${core_obj})

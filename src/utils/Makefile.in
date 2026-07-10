@@ -11,6 +11,9 @@ build_dirs += ${utils_obj}
 # Some core objects are required for file format purposes.
 # Define UTILS_LIBSPEC so these properly link.
 utils_cflags := ${LIBPNG_CFLAGS} ${PTHREAD_CFLAGS} -DUTILS_LIBSPEC=
+ifneq (${main_objs},)
+utils_cflags += -DCONFIG_REPLACE_MAIN
+endif
 
 # Hack for static linking the utilities on macOS.
 UTILS_ZLIB_LDFLAGS ?= ${ZLIB_LDFLAGS}
@@ -42,44 +45,45 @@ utils_objs += \
   ${utils_obj}/pefix.o \
 
 checkres := ${BINPRE}checkres${BINEXT}
-checkres_objs := ${utils_obj}/checkres.o ${io_obj}/fsafeopen.o ${zip_objs}
+checkres_objs := ${utils_obj}/checkres.o ${io_obj}/fsafeopen.o ${zip_objs} ${main_objs}
 checkres_ldflags := ${UTILS_ZLIB_LDFLAGS}
 
 downver := ${BINPRE}downver${BINEXT}
-downver_objs := ${utils_obj}/downver.o ${zip_objs}
+downver_objs := ${utils_obj}/downver.o ${zip_objs} ${main_objs}
 downver_ldflags := ${UTILS_ZLIB_LDFLAGS}
 
 emzip := emzip${BINEXT}
-emzip_objs := ${utils_obj}/emzip.o ${zip_objs}
+emzip_objs := ${utils_obj}/emzip.o ${zip_objs} ${main_objs}
 emzip_ldflags += ${UTILS_ZLIB_LDFLAGS}
 
 hlp2html := ${BINPRE}hlp2html${BINEXT}
-hlp2html_objs := ${utils_obj}/hlp2html.o
+hlp2html_objs := ${utils_obj}/hlp2html.o ${main_objs}
 
 hlp2txt := ${BINPRE}hlp2txt${BINEXT}
-hlp2txt_objs := ${utils_obj}/hlp2txt.o
+hlp2txt_objs := ${utils_obj}/hlp2txt.o ${main_objs}
 
 txt2hlp := ${BINPRE}txt2hlp${BINEXT}
-txt2hlp_objs := ${utils_obj}/txt2hlp.o
+txt2hlp_objs := ${utils_obj}/txt2hlp.o ${main_objs}
 
 png2smzx := ${BINPRE}png2smzx${BINEXT}
-png2smzx_objs := ${utils_obj}/png2smzx.o ${utils_obj}/smzxconv.o ${img_objs}
+png2smzx_objs := ${utils_obj}/png2smzx.o ${utils_obj}/smzxconv.o ${img_objs} ${main_objs}
 png2smzx_ldflags := ${img_flags}
 
 y4m2smzx := ${BINPRE}y4m2smzx${BINEXT}
-y4m2smzx_objs := ${utils_obj}/y4m2smzx.o ${utils_obj}/smzxconv.o ${utils_obj}/y4m.o
+y4m2smzx_objs := ${utils_obj}/y4m2smzx.o ${utils_obj}/smzxconv.o \
+                 ${utils_obj}/y4m.o ${main_objs}
 y4m2smzx_ldflags :=
 ifeq (${PTHREAD},1)
 y4m2smzx_ldflags += ${PTHREAD_LDFLAGS}
 endif
 
 ccv := ${BINPRE}ccv${BINEXT}
-ccv_objs := ${utils_obj}/ccv.o
+ccv_objs := ${utils_obj}/ccv.o ${main_objs}
 ccv_objs += ${img_objs}
 ccv_ldflags := ${img_flags}
 
 pefix := pefix
-pefix_objs := ${utils_src}/pefix.c
+pefix_objs := ${utils_src}/pefix.c ${main_objs}
 
 ${utils_obj}/%.o: ${utils_src}/%.c src/config.h
 	$(if ${V},,@echo "  CC      " $<)

@@ -668,15 +668,3 @@ char *strsep(char **stringp, const char *delim)
 }
 
 #endif // __WIN32__ || __amigaos__
-
-#if defined(__amigaos__)
-
-long __stack_chk_guard[8];
-
-void __stack_chk_fail(void)
-{
-  warn("Stack overflow detected; terminated");
-  exit(0);
-}
-
-#endif // __amigaos__

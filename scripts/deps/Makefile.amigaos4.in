@@ -1,0 +1,32 @@
+#
+# AmigaOS 4.x dependency builder support.
+#
+
+ALL_ARCH = ppc
+
+HOST	 = ppc-amigaos
+CFLAGS	 = -O3
+CXXFLAGS = ${CFLAGS}
+
+ifneq (${USE_CMAKE},)
+$(error use Autotools for this arch.)
+endif
+
+ifneq (${ARCH},)
+ARCH = ${ALL_ARCH}
+ARCH_INIT = \
+	export CFLAGS='${CFLAGS}'; \
+	export CXXFLAGS='${CXXFLAGS}'; \
+	export PKG_CONFIG_PATH='${PREFIX}/lib/pkgconfig'; \
+	true
+
+FORCE_STATIC_LIBS	= 1
+
+all: ${ZLIB_TARGET} ${PNG_TARGET}
+all: ${OGG_TARGET} ${VORBIS_TARGET} ${STB_TARGET}
+#all: SDL12_AMIGA_TARGET
+
+package: zlib_package png_package
+package: ogg_package vorbis_package stb_package
+package: SDL12_package
+endif
