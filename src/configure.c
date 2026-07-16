@@ -314,6 +314,7 @@ static const struct config_info user_conf_default =
   true,                         // allow screenshots
 
   // Audio options
+  "",                           // audio_driver
   AUDIO_SAMPLE_RATE,            // audio_sample_rate
   AUDIO_BUFFER_SAMPLES,         // audio_buffer_samples
   AUDIO_OUTPUT_CHANNELS,        // audio_output_channels
@@ -326,6 +327,9 @@ static const struct config_info user_conf_default =
   8,                            // pc_speaker_volume
   true,                         // music_on
   true,                         // pc_speaker_on
+  false,                        // audio_pc_speaker_use_hardware
+  false,                        // audio_opl_use_hardware
+  0x388,                        // audio_opl_port
 
   // Event options
   true,                         // allow_gamepad
@@ -609,7 +613,7 @@ static void config_set_network_address_family(struct config_info *conf,
 {
   int result;
   if(config_enum(&result, value, network_address_family_values))
-    conf->network_address_family = result;
+    conf->network_address_family = (enum host_family)result;
 }
 
 static void config_set_socks_host(struct config_info *conf,
@@ -719,7 +723,7 @@ static void config_set_dialog_cursor_hints(struct config_info *conf,
 {
   int result;
   if(config_enum(&result, value, cursor_hint_type_values))
-    conf->cursor_hint_mode = result;
+    conf->cursor_hint_mode = (enum cursor_mode_types)result;
 }
 
 static void config_set_fullscreen(struct config_info *conf,
@@ -732,6 +736,12 @@ static void config_set_fullscreen_windowed(struct config_info *conf,
  const char *name, const char *value, const char *extended_data)
 {
   config_boolean(&conf->fullscreen_windowed, value);
+}
+
+static void config_set_audio_driver(struct config_info *conf,
+ const char *name, const char *value, const char *extended_data)
+{
+  config_string(conf->audio_driver, value);
 }
 
 static void config_set_music(struct config_info *conf,
@@ -768,6 +778,26 @@ static void config_set_sam_volume(struct config_info *conf,
   int result;
   if(config_int(&result, value, 0, 10))
     conf->sam_volume = result;
+}
+
+static void config_set_audio_pc_speaker_use_hardware(struct config_info *conf,
+ const char *name, const char *value, const char *extended_data)
+{
+  config_boolean(&conf->audio_pc_speaker_use_hardware, value);
+}
+
+static void config_set_audio_opl_use_hardware(struct config_info *conf,
+ const char *name, const char *value, const char *extended_data)
+{
+  config_boolean(&conf->audio_opl_use_hardware, value);
+}
+
+static void config_set_audio_opl_port(struct config_info *conf,
+ const char *name, const char *value, const char *extended_data)
+{
+  int result;
+  if(config_int(&result, value, 0, 65535))
+    conf->audio_opl_port = result;
 }
 
 static void config_save_file(struct config_info *conf,
@@ -823,7 +853,7 @@ static void config_system_mouse(struct config_info *conf,
 {
   int result;
   if(config_enum(&result, value, system_mouse_values))
-    conf->system_mouse = result;
+    conf->system_mouse = (enum system_mouse_type)result;
 }
 
 static void config_grab_mouse(struct config_info *conf,
@@ -837,7 +867,7 @@ static void config_disable_screensaver(struct config_info *conf,
 {
   int result;
   if(config_enum(&result, value, screensaver_disable_values))
-    conf->disable_screensaver = result;
+    conf->disable_screensaver = (enum screensaver_disable_mode)result;
 }
 
 static void config_save_slots(struct config_info *conf,
@@ -871,7 +901,7 @@ static void config_resample_mode(struct config_info *conf,
 {
   int result;
   if(config_enum(&result, value, resample_mode_values))
-    conf->resample_mode = result;
+    conf->resample_mode = (enum resample_mode)result;
 }
 
 static void config_mod_resample_mode(struct config_info *conf,
@@ -879,7 +909,7 @@ static void config_mod_resample_mode(struct config_info *conf,
 {
   int result;
   if(config_enum(&result, value, module_resample_mode_values))
-    conf->module_resample_mode = result;
+    conf->module_resample_mode = (enum resample_mode)result;
 }
 
 #define JOY_ENUM "%15[0-9A-Za-z_]"
@@ -1295,7 +1325,11 @@ static const struct config_entry config_options[] =
   { "allow_screenshots", config_set_allow_screenshots, false },
   { "audio_buffer", config_set_audio_buffer, false },
   { "audio_buffer_samples", config_set_audio_buffer, false },
+  { "audio_driver", config_set_audio_driver, false },
+  { "audio_opl_port", config_set_audio_opl_port, false },
+  { "audio_opl_use_hardware", config_set_audio_opl_use_hardware, false },
   { "audio_output_channels", config_set_audio_channels, false },
+  { "audio_pc_speaker_use_hardware", config_set_audio_pc_speaker_use_hardware, false },
   { "audio_sample_rate", config_set_audio_freq, false },
   { "auto_decrypt_worlds", config_set_auto_decrypt_worlds, false },
   { "dialog_cursor_hints", config_set_dialog_cursor_hints, false },

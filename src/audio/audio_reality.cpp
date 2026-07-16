@@ -258,7 +258,7 @@ static struct audio_stream *rad_construct(vfile *vf, const char *filename,
   return (struct audio_stream *)rad_stream;
 }
 
-static boolean rad_test(vfile *vf, const char *filename)
+static boolean rad_test(vfile *vf, const char *filename, boolean is_primary)
 {
   char tmp[16];
   if(!vfread(tmp, 16, 1, vf))

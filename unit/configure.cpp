@@ -551,6 +551,11 @@ UNITTEST(Settings)
 
   // Audio options.
 
+  SECTION(audio_driver)
+  {
+    TEST_STRING("audio_driver", conf->audio_driver, string_data);
+  }
+
   SECTION(audio_sample_rate)
   {
     TEST_INT("audio_sample_rate", conf->audio_sample_rate, 1, INT_MAX);
@@ -631,6 +636,21 @@ UNITTEST(Settings)
   SECTION(pc_speaker_on)
   {
     TEST_ENUM("pc_speaker_on", conf->pc_speaker_on, boolean_data);
+  }
+
+  SECTION(audio_pc_speaker_use_hardware)
+  {
+    TEST_ENUM("audio_pc_speaker_use_hardware", conf->audio_pc_speaker_use_hardware, boolean_data);
+  }
+
+  SECTION(audio_opl_use_hardware)
+  {
+    TEST_ENUM("audio_opl_use_hardware", conf->audio_opl_use_hardware, boolean_data);
+  }
+
+  SECTION(audio_opl_port)
+  {
+    TEST_INT("audio_opl_port", conf->audio_opl_port, 0, 65535);
   }
 
   // Event options.

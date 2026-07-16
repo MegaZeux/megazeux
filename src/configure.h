@@ -136,6 +136,7 @@ struct config_info
   boolean allow_screenshots;
 
   // Audio options
+  char audio_driver[16];
   int audio_sample_rate;
   int audio_buffer_samples;
   int audio_output_channels;
@@ -148,6 +149,9 @@ struct config_info
   int pc_speaker_volume;
   boolean music_on;
   boolean pc_speaker_on;
+  boolean audio_pc_speaker_use_hardware;
+  boolean audio_opl_use_hardware;
+  int audio_opl_port;
 
   // Event options
   boolean allow_gamepad;

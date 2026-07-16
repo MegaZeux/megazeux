@@ -334,7 +334,7 @@ static struct audio_stream *sam_construct(vfile *vf, const char *filename,
   return a_src;
 }
 
-static boolean wav_test(vfile *vf, const char *filename)
+static boolean wav_test(vfile *vf, const char *filename, boolean is_primary)
 {
   char buf[12];
   if(!vfread(buf, 12, 1, vf))
@@ -346,7 +346,7 @@ static boolean wav_test(vfile *vf, const char *filename)
   return true;
 }
 
-static boolean sam_test(vfile *vf, const char *filename)
+static boolean sam_test(vfile *vf, const char *filename, boolean is_primary)
 {
   // .SAM files are raw 8363Hz signed 8-bit samples and can only be identified
   // by their .SAM extension.

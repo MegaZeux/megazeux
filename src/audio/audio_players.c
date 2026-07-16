@@ -56,10 +56,32 @@ static const struct audio_player * const available_players[] =
   NULL
 };
 
-struct audio_stream *audio_construct_stream(const char *filename,
- uint32_t frequency, unsigned int volume, boolean repeat)
+static struct audio_stream *try_construct(const struct audio_player *player,
+ vfile *vf, const char *filename, uint32_t frequency, unsigned int volume,
+ boolean is_primary, boolean repeat)
 {
-  struct audio_stream *a_return = NULL;
+  struct audio_stream *stream;
+
+  if(player->test)
+  {
+    boolean result = player->test(vf, filename, is_primary);
+    vrewind(vf);
+    if(!result)
+      return NULL;
+  }
+
+  stream = player->construct(vf, filename, frequency, volume, repeat);
+  if(!stream)
+    vrewind(vf);
+
+  return stream;
+}
+
+struct audio_stream *audio_construct_stream(const char *filename,
+ uint32_t frequency, unsigned int volume, boolean is_primary, boolean repeat)
+{
+  const struct audio_player * const *driver_players;
+  struct audio_stream *stream = NULL;
   vfile *vf;
   unsigned i;
 
@@ -71,34 +93,34 @@ struct audio_stream *audio_construct_stream(const char *filename,
   if(!vf)
     return NULL;
 
-  if(!available_players[0])
+  driver_players = audio.driver ? audio.driver->driver_players : NULL;
+
+  if((!driver_players || !driver_players[0]) && !available_players[0])
     warn("no available audio players.\n");
 
-  for(i = 0; i < ARRAY_SIZE(available_players); i++)
+  if(driver_players)
   {
-    const struct audio_player *player = available_players[i];
-    if(!player)
-      break;
-
-    if(player->test)
+    for(i = 0; driver_players[i]; i++)
     {
-      boolean result = player->test(vf, filename);
-      vrewind(vf);
-      if(!result)
-        continue;
+      stream = try_construct(driver_players[i], vf, filename,
+       frequency, volume, is_primary, repeat);
+
+      if(stream)
+        return stream;
     }
+  }
 
-    a_return = player->construct(vf, filename, frequency, volume, repeat);
-    if(a_return)
-      break;
+  for(i = 0; i < ARRAY_SIZE(available_players) && available_players[i]; i++)
+  {
+    stream = try_construct(available_players[i], vf, filename,
+     frequency, volume, is_primary, repeat);
 
-    vrewind(vf);
+    if(stream)
+      return stream;
   }
 
   // The constructor function is responsible for closing or
   // retaining the file handle on successful loads.
-  if(!a_return)
-    vfclose(vf);
-
-  return a_return;
+  vfclose(vf);
+  return NULL;
 }

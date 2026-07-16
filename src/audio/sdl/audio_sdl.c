@@ -19,6 +19,7 @@
 
 #include "../audio.h"
 #include "../audio_drivers.h"
+#include "../audio_players.h"
 #include "../audio_struct.h"
 
 #include "../../util.h"
@@ -131,6 +132,11 @@ const struct audio_driver audio_driver_sdl =
 {
   "SDL Audio",
   "sdl",
+
+  NULL,
+  &audio_player_pcs,
+  NULL,
+
   init_audio_driver_sdl,
   quit_audio_driver_sdl,
 };

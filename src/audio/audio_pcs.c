@@ -169,7 +169,7 @@ static struct audio_stream *pcs_construct(vfile *vf, const char *path,
 {
   struct pc_speaker_stream *pcs_stream;
 
-  pcs_stream = ccalloc(1, sizeof(struct pc_speaker_stream));
+  pcs_stream = (struct pc_speaker_stream *)ccalloc(1, sizeof(struct pc_speaker_stream));
 
   pcs_stream->a.player = &audio_player_pcs;
 

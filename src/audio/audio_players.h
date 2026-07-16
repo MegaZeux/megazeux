@@ -38,7 +38,7 @@ extern const struct audio_player audio_player_mikmod;
 extern const struct audio_player audio_player_openmpt;
 
 struct audio_stream *audio_construct_stream(const char *filename,
- uint32_t frequency, unsigned int volume, boolean repeat);
+ uint32_t frequency, unsigned int volume, boolean is_primary, boolean repeat);
 
 MEGAZEUX_END_DECLS
 

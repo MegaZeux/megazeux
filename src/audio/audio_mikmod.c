@@ -189,7 +189,7 @@ static void mm_init_order_table(struct mikmod_stream *mm_stream, MODULE *mm_data
   uint32_t num_orders;
 
   num_orders = mm_data->numpos;
-  tbl = cmalloc((num_orders + 1) * sizeof(uint32_t));
+  tbl = (uint32_t *)cmalloc((num_orders + 1) * sizeof(uint32_t));
 
   for(i = 0; i < num_orders; i++)
   {
@@ -329,14 +329,6 @@ static struct audio_stream *mm_construct(vfile *vf, const char *filename,
   struct mikmod_stream *mm_stream;
   MODULE *open_file;
 
-  /**
-   * FIXME since MikMod uses a global player state, attempting to play
-   * multiple modules at the same time predictably causes crashes. Use
-   * this hack to ignore any modules played as samples for now. :(
-   */
-  if(!repeat)
-    return NULL;
-
   if(!init_mikmod())
     return NULL;
 
@@ -370,10 +362,19 @@ static struct audio_stream *mm_construct(vfile *vf, const char *filename,
   return (struct audio_stream *)mm_stream;
 }
 
+static boolean mm_test(vfile *vf, const char *filename, boolean is_primary)
+{
+  /* MikMod uses global state even for the software output driver,
+   * so it needs to be reserved for the primary stream only.
+   * Accept all primary stream inputs and let MikMod figure the format out.
+   */
+  return is_primary;
+}
+
 const struct audio_player audio_player_mikmod =
 {
   "MikMod",
-  NULL,
+  mm_test,
 
   mm_construct,
   mm_destruct,

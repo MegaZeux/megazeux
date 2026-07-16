@@ -20,9 +20,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Code to handle module playing, sample playing, and PC speaker
-// sfx emulation.
-
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -408,18 +405,35 @@ void init_audio(struct config_info *conf)
 
   audio.max_simultaneous_samples = -1;
   audio.max_simultaneous_samples_config = conf->max_simultaneous_samples;
+  audio.pc_speaker_use_hardware = conf->audio_pc_speaker_use_hardware;
+  audio.opl_use_hardware = conf->audio_opl_use_hardware;
+  audio.opl_port = conf->audio_opl_port;
 
   audio_set_music_volume(conf->music_volume);
   audio_set_sound_volume(conf->sam_volume);
   audio_set_music_on(conf->music_on);
   audio_set_pcs_on(conf->pc_speaker_on);
 
-  /* This player is not in the player list and must be handled manually. */
-  audio.pcs_stream = audio_player_pcs.construct(NULL, NULL, 0, 255, 0);
+  audio.driver = audio_init_driver(conf, conf->audio_driver);
+
+  if(audio.driver)
+  {
+    /* PC speaker providers are not kept in the regular player list and
+     * are handled on a per-driver basis. */
+    const struct audio_player *pcs_player = audio.pc_speaker_use_hardware ?
+     audio.driver->pcs_hardware_player : audio.driver->pcs_software_player;
+
+    if(!pcs_player)
+      pcs_player = audio.driver->pcs_software_player;
+
+    if(!pcs_player)
+      pcs_player = audio.driver->pcs_hardware_player;
+
+    if(pcs_player)
+      audio.pcs_stream = pcs_player->construct(NULL, NULL, 0, 255, 0);
+  }
 
   audio_set_pcs_volume(conf->pc_speaker_volume);
-
-  audio.driver = audio_init_driver(conf, NULL);
 }
 
 void quit_audio(void)
@@ -489,7 +503,7 @@ int audio_play_module(char *filename, boolean safely, int volume)
   audio_end_module();
 
   real_volume = volume_function(volume, audio.music_volume);
-  a_src = audio_construct_stream(filename, 0, real_volume, 1);
+  a_src = audio_construct_stream(filename, 0, real_volume, true, true);
 
   LOCK();
 
@@ -552,10 +566,9 @@ int audio_get_max_samples(void)
 
 static void limit_samples(int max)
 {
-  int samples_playing = 0;
-  int cancel_num = 0;
   struct audio_stream *current_astream;
-  struct audio_stream *next_astream;
+  struct audio_stream *prev_astream;
+  int samples_playing = 0;
 
   // Don't limit samples if the max samples setting is -1.
   if(max < 0)
@@ -563,37 +576,22 @@ static void limit_samples(int max)
 
   LOCK();
 
-  current_astream = audio.stream_list_base;
+  /* The most recent audio streams are at the end of the list.
+   * For efficiency, walk the list in reverse. */
+  current_astream = audio.stream_list_end;
   while(current_astream)
   {
-    next_astream = current_astream->next;
+    prev_astream = current_astream->previous;
 
-    if((current_astream != audio.primary_stream) &&
-     (current_astream != (struct audio_stream *)(audio.pcs_stream)))
+    if(current_astream != audio.primary_stream && current_astream != audio.pcs_stream)
     {
+      if(samples_playing >= max)
+        current_astream->player->destruct(current_astream);
+
       samples_playing++;
     }
 
-    current_astream = next_astream;
-  }
-
-  cancel_num = samples_playing - max;
-  if(cancel_num > 0)
-  {
-    current_astream = audio.stream_list_base;
-    while(current_astream && cancel_num > 0)
-    {
-      next_astream = current_astream->next;
-
-      if((current_astream != audio.primary_stream) &&
-       (current_astream != (struct audio_stream *)(audio.pcs_stream)))
-      {
-        current_astream->player->destruct(current_astream);
-        cancel_num--;
-      }
-
-      current_astream = next_astream;
-    }
+    current_astream = prev_astream;
   }
 
   UNLOCK();
@@ -626,7 +624,8 @@ void audio_play_sample(char *filename, boolean safely, int period)
    * are treated as stereo and must also have this buggy doubling. In other
    * words, just double the frequency in the SAM loader.
    */
-  audio_construct_stream(filename, audio_get_real_frequency(period * 2), vol, 0);
+  audio_construct_stream(filename,
+   audio_get_real_frequency(period * 2), vol, false, false);
 
   limit_samples(audio.max_simultaneous_samples);
 }
@@ -666,10 +665,6 @@ void audio_spot_sample(int period, int which)
 
 void audio_end_sample(void)
 {
-  // Destroy all samples - something is a sample if it's not a
-  // primary or PC speaker stream. This is a bit of a dirty way
-  // to do it though (might want to keep multiple lists instead)
-
   struct audio_stream *current_astream;
   struct audio_stream *next_astream;
 
@@ -680,11 +675,8 @@ void audio_end_sample(void)
   {
     next_astream = current_astream->next;
 
-    if((current_astream != audio.primary_stream) &&
-     (current_astream != (struct audio_stream *)(audio.pcs_stream)))
-    {
+    if(current_astream != audio.primary_stream && current_astream != audio.pcs_stream)
       current_astream->player->destruct(current_astream);
-    }
 
     current_astream = next_astream;
   }
@@ -693,11 +685,25 @@ void audio_end_sample(void)
   UNLOCK();
 }
 
+/**
+ * Functions to modify the current primary stream.
+ * Keep these functions in the same order as in struct audio_stream.
+ */
+
+void audio_set_module_volume(int volume)
+{
+  int real_volume = volume_function(volume, audio.music_volume);
+
+  LOCK();
+
+  if(audio.primary_stream)
+    audio.primary_stream->player->set_volume(audio.primary_stream, real_volume);
+
+  UNLOCK();
+}
+
 void audio_set_module_order(int order)
 {
-  // This is intended for modules only, and should not be supported for any
-  // other formats.
-
   LOCK();
 
   if(audio.primary_stream && audio.primary_stream->player->set_order)
@@ -720,65 +726,8 @@ int audio_get_module_order(void)
   return order;
 }
 
-void audio_set_module_volume(int volume)
-{
-  int real_volume = volume_function(volume, audio.music_volume);
-
-  LOCK();
-
-  if(audio.primary_stream)
-    audio.primary_stream->player->set_volume(audio.primary_stream, real_volume);
-
-  UNLOCK();
-}
-
-void audio_set_module_frequency(int freq)
-{
-  // Primary had better be a sampled stream (in reality I can't imagine
-  // ever letting it be anything but, but if it comes up a type
-  // enumeration could weed this out)
-
-  // Note that shifting the frequency dynamically messes up the phase
-  // counters somewhat producing an audible pop. I've tried to reduce
-  // this without too much success... This might be less noticeable
-  // when interpolation isn't used (but the tradeoff is hardly worth it)
-
-  if(freq >= 16)
-  {
-    LOCK();
-
-    if(audio.primary_stream)
-    {
-      struct sampled_stream *s = (struct sampled_stream *)audio.primary_stream;
-      audio.primary_stream->player->set_frequency(s, freq);
-    }
-
-    UNLOCK();
-  }
-}
-
-int audio_get_module_frequency(void)
-{
-  int freq = 0;
-
-  LOCK();
-
-  if(audio.primary_stream)
-  {
-    struct sampled_stream *s = (struct sampled_stream *)audio.primary_stream;
-    freq = audio.primary_stream->player->get_frequency(s);
-  }
-
-  UNLOCK();
-
-  return freq;
-}
-
 void audio_set_module_position(int pos)
 {
-  // Position isn't a universal thing and instead depends on the
-  // medium and what it supports.
-
   LOCK();
 
   if(audio.primary_stream && audio.primary_stream->player->set_position)
@@ -863,7 +812,46 @@ int audio_get_module_loop_end(void)
   return loop_end;
 }
 
+void audio_set_module_frequency(int freq)
+{
+  if(freq < 16 || freq > (2 << 20))
+    return;
+
+  LOCK();
+
+  if(audio.primary_stream && audio.primary_stream->player->set_frequency)
+  {
+    struct sampled_stream *s = (struct sampled_stream *)audio.primary_stream;
+    audio.primary_stream->player->set_frequency(s, freq);
+  }
+
+  UNLOCK();
+}
+
+int audio_get_module_frequency(void)
+{
+  int freq = 0;
+
+  LOCK();
+
+  if(audio.primary_stream && audio.primary_stream->player->get_frequency)
+  {
+    struct sampled_stream *s = (struct sampled_stream *)audio.primary_stream;
+    freq = audio.primary_stream->player->get_frequency(s);
+  }
+
+  UNLOCK();
+
+  return freq;
+}
+
 #endif
+
+/**
+ * Functions to modify the global audio settings.
+ *
+ * The volumes are only used by the main thread and don't need read locks.
+ */
 
 void audio_set_music_on(int val)
 {
@@ -879,16 +867,15 @@ void audio_set_pcs_on(int val)
   UNLOCK();
 }
 
-// These don't have to be locked because only one thread can
-// modify them.
-
 int audio_get_music_on(void)
 {
+  /* TODO: locking would be ideal here */
   return audio.music_on;
 }
 
 int audio_get_pcs_on(void)
 {
+  /* TODO: locking would be ideal here */
   return audio.pcs_on;
 }
 
@@ -927,11 +914,8 @@ void audio_set_sound_volume(int volume)
   current_astream = audio.stream_list_base;
   while(current_astream)
   {
-    if((current_astream != audio.primary_stream) &&
-     (current_astream != audio.pcs_stream))
-    {
+    if(current_astream != audio.primary_stream && current_astream != audio.pcs_stream)
       current_astream->player->set_volume(current_astream, real_volume);
-    }
 
     current_astream = current_astream->next;
   }

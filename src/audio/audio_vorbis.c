@@ -467,7 +467,7 @@ static struct audio_stream *vorbis_construct(vfile *vf, const char *filename,
   return (struct audio_stream *)v_stream;
 }
 
-static boolean vorbis_test(vfile *vf, const char *filename)
+static boolean vorbis_test(vfile *vf, const char *filename, boolean is_primary)
 {
   char buf[4];
   if(!vfread(buf, 4, 1, vf))

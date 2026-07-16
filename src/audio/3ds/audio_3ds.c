@@ -19,6 +19,7 @@
 
 #include "../audio.h"
 #include "../audio_drivers.h"
+#include "../audio_players.h"
 #include "../audio_struct.h"
 #include "../../platform/3ds/platform_3ds.h"
 
@@ -103,6 +104,11 @@ const struct audio_driver audio_driver_3ds =
 {
   "3DS Audio",
   "3ds",
+
+  NULL,
+  &audio_player_pcs,
+  NULL,
+
   init_audio_driver_3ds,
   quit_audio_driver_3ds,
 };
