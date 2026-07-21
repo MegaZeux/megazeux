@@ -36,6 +36,9 @@ static const struct audio_player * const available_players[] =
   &audio_player_vorbis,
 #endif
 #ifdef CONFIG_REALITY
+#ifdef CONFIG_DJGPP
+  &audio_player_reality_hwopl,
+#endif
   &audio_player_reality,
 #endif
 
