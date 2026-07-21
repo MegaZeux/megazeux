@@ -37,7 +37,7 @@
 #include "platform_djgpp.h"
 
 /* TODO: Most of the audio callback code can't currently be locked or moved
- * outside of the callback, which causes CWSDMPI to crash during paging.
+ * outside of the callback, which causes CWSDPMI to crash during paging.
  * Disable paging altogether for now.
  *
  * Non-moving sbrk() (default, specify anyway) is required for nearptr hacks.
@@ -314,6 +314,11 @@ int djgpp_irq_vector(int irq)
     return 0x70 + (irq - 8);
   else
     return 0x08 + irq;
+}
+
+void djgpp_set_irq8_handler(double rate, void *priv, void (*callback)(void *))
+{
+  // FIXME:
 }
 
 #define TIMER_CLOCK  3579545

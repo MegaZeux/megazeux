@@ -52,6 +52,8 @@ void djgpp_irq_restore(struct irq_state *old_state);
 void djgpp_irq_ack(int irq);
 int djgpp_irq_vector(int irq);
 
+void djgpp_set_irq8_handler(double rate, void *priv, void (*callback)(void *));
+
 /* Because multiple sound engines rely on floating point, the x87 FPU
  * state needs to be saved at the beginning of and reloaded at the end
  * of every audio driver callback. Otherwise, these engines will clobber

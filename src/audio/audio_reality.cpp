@@ -303,3 +303,132 @@ const struct audio_player audio_player_reality =
   rad_get_frequency,
   NULL,
 };
+
+
+#ifdef CONFIG_DJGPP
+#include <dos.h>
+#include "../../platform/djgpp/platform_djgpp.h"
+
+static void rad_hwopl_set_volume(struct audio_stream *a_src, unsigned int volume)
+{
+  struct rad_stream *rad_stream = (struct rad_stream *)a_src;
+
+  rad_stream->player->SetMasterVolume(volume * 64 / 255);
+}
+
+static void rad_hwopl_destruct(struct audio_stream *a_src)
+{
+  struct rad_stream *rad_stream = (struct rad_stream *)a_src);
+
+  djgpp_set_irq8_handler(0.0, NULL, NULL);
+
+  /* Reset OPL. */
+  if(rad_stream->player)
+    rad_stream->player->Stop();
+
+  rad_destruct(a_src);
+}
+
+static void rad_hwopl_callback(void *arg, uint16_t reg, uint8_t data)
+{
+  int i;
+
+  outport(audio.opl_port, reg);
+  /* Timing method recommended by Adlib. */
+  for(i = 0; i < 6; i++)
+    inp(audio.opl_port);
+
+  outportb(audio.opl_port + 1, data);
+  /* Timing method recommended by Adlib. */
+  for(i = 0; i < 35; i++)
+    inp(audio.opl_port);
+}
+
+static void rad_hwopl_tick_player(void *arg)
+{
+  struct rad_stream *rad_stream = (struct rad_stream *)arg;
+  RADPlayer *player = rad_stream->player;
+
+  if(player)
+  {
+    if(player->Update() && !rad_stream->s.a.repeat)
+    {
+      /* This is kind of a horrible hack... */
+      rad_stream->player = NULL;
+      player->Stop();
+      delete player;
+    }
+  }
+}
+
+static struct audio_stream *rad_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
+{
+  struct rad_stream *rad_stream = NULL;
+  RADPlayer *player;
+  FastOpal *adlib;
+  uint8_t *data;
+  size_t length;
+  uint32_t rate;
+
+  if(!rad_load(&data, &length, vf, filename))
+    return NULL;
+
+  rad_stream = (struct rad_stream *)calloc(1, sizeof(struct rad_stream));
+  if(!rad_stream)
+  {
+    free(data);
+    return NULL;
+  }
+  rad_stream->s.a.player = &audio_player_reality_hwopl;
+
+  player = new RADPlayer();
+
+  player->Init(data, rad_hwopl_callback, NULL);
+  rate = player->GetHertz();
+
+  rad_stream->player = player;
+  rad_stream->data_length = length;
+  rad_stream->data = data;
+
+  djgpp_set_irq8_handler(rate, rad_stream, rad_hwopl_tick_player);
+
+  initialize_audio_stream((struct audio_stream *)rad_stream, volume, repeat);
+
+  vfclose(vf);
+  return (struct audio_stream *)rad_stream;
+}
+
+static boolean rad_hwopl_test(vfile *vf, const char *filename, boolean is_primary)
+{
+  /* Only one OPL and IRQ8 are available -> reserved for primary stream.
+   * Additionally, the user must explicitly configure MegaZeux for it.
+   */
+  return is_primary && audio.opl_use_hardware ? rad_test(vf, filename, true) : false;
+}
+
+const struct audio_player audio_player_reality_hwopl =
+{
+  "Reality Adlib Tracker (hardware OPL)",
+  rad_hwopl_test,
+
+  rad_hwopl_construct,
+  rad_hwopl_destruct,
+  NULL,
+  rad_hwopl_set_volume,
+  rad_set_repeat,
+  rad_set_order,
+  rad_get_order,
+  rad_set_position,
+  rad_get_position,
+  rad_get_length,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+};
+
+#endif
