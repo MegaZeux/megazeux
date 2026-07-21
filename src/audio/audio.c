@@ -237,7 +237,6 @@ static void clip_buffer_s16(int16_t *dest, int32_t *src, size_t samples)
  * requested frames times the requested channels times the size in bytes
  * of the requested sample type. Destroys any audio streams that end
  * while rendering the output.
- * TODO: the mixer requires exactly 2 output channels currently.
  *
  * Returns the number of frames successfully renderered.
  */

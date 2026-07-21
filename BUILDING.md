@@ -93,8 +93,9 @@ CC=clang CXX=clang++ make
 
 MegaZeux comes with two regression test systems to verify that MegaZeux works
 (for platforms and build environments where executables can be run locally).
-The unit tests located in `unit/` are compiled and executed individually.
-The test worlds located in `testworlds/` are run together via MZXRun.
+The unit tests located in `unit/` are compiled to `mzxunit(.exe)` and then
+run standalone. The test worlds located in `testworlds/` are run via MZXRun.
+Both require data files located in their respective directory trees.
 ```sh
 # Perform the unit tests and then run the test worlds. (-j# supported)
 make test
@@ -131,7 +132,7 @@ MegaZeux's packaging varies from platform to platform.
 
 First, for platforms that don't automatically separate or strip debug info
 (mainly MinGW and DJGPP), separate the debug info. (For MinGW, this also runs
-the locally compiled tool `arch/mingw/pefix` to strip PE timestamps.)
+the locally compiled tool `pefix(.exe)` to strip PE timestamps.)
 ```sh
 make debuglink -j8
 ```
