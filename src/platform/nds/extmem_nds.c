@@ -24,7 +24,7 @@
 
 #include "../../error.h"
 #include "../../extmem.h"
-#include "../../util.h"
+#include "../../platform/log.h"
 
 #include "../dlmalloc.h"
 #include "ram.h"

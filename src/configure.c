@@ -36,6 +36,7 @@
 #include "io/path.h"
 #include "io/vio.h"
 #include "event/event.h"
+#include "platform/log.h"
 
 #ifdef CONFIG_SDL
 #include "platform/sdl/SDLmzx.h"

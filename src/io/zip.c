@@ -33,6 +33,7 @@
 // Including util.h for the macros only...
 
 #include "../util.h"
+#include "../platform/log.h"
 
 #include "memfile.h"
 #include "vio.h"

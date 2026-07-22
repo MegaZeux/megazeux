@@ -29,6 +29,7 @@
 #include "../util.h"
 #include "../world_struct.h"
 #include "../io/vio.h"
+#include "../platform/log.h"
 
 #include <stdio.h>
 #include <string.h>

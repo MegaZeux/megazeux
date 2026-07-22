@@ -34,7 +34,7 @@ MEGAZEUX_BEGIN_DECLS
 #include "bitstream.h"
 #include "zip.h"
 
-#include "../util.h"
+#include "../platform/log.h"
 
 struct LZW_node
 {

@@ -25,6 +25,7 @@
 #include "../io/memfile.h"
 #include "../io/path.h"
 #include "../io/vio.h"
+#include "../platform/log.h"
 
 #include <stdint.h>
 #include <stdlib.h>

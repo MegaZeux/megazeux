@@ -20,10 +20,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../log.h"
 #include "../platform_clipboard.h"
 
 #include "SDLmzx.h"
-#include "../../util.h"
 
 void copy_buffer_to_clipboard(char **buffer, int lines, int total_length)
 {

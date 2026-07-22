@@ -30,10 +30,10 @@
 #include "const.h"
 #include "error.h"
 #include "robot.h"
-#include "util.h"
 #include "world.h"
 #include "world_struct.h"
 #include "io/vio.h"
+#include "platform/log.h"
 
 /* 13 (not NULL terminated in format) */
 #define LEGACY_MOD_FILENAME_MAX 13

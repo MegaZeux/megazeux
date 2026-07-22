@@ -28,10 +28,12 @@
 #include <sys/segments.h>
 #include <sys/movedata.h>
 #undef delay
+
 #include "../render.h"
 #include "../renderers.h"
+
+#include "../../platform/log.h"
 #include "../../platform/djgpp/platform_djgpp.h"
-#include "../../util.h"
 
 // Address: 0x000B8000
 // Limit  : 0x03FFF

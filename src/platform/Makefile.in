@@ -5,6 +5,7 @@
 platform_src  = ${core_src}/platform
 platform_obj  = ${build_base}/${platform_src}
 platform_objs += \
+  ${platform_obj}/log.o \
   ${platform_obj}/platform_time.o
 
 has_platform_base = 0

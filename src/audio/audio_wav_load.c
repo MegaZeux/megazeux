@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <inttypes.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -323,7 +324,7 @@ boolean audio_load_wav(struct wav_info *dest, vfile *vf, const char *filename)
   if(file_size > WARN_FILESIZE)
   {
     trace("This WAV is too big sempai OwO;;;\n");
-    trace("Size of WAV file '%s' is %zu; OGG should be used instead.\n",
+    trace("Size of WAV file '%s' is %" PRId64 "; OGG should be used instead.\n",
      filename, file_size);
   }
 

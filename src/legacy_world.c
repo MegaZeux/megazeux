@@ -40,11 +40,12 @@
 #include "sfx.h"
 #include "sprite.h"
 #include "str.h"
+#include "util.h"
 #include "window.h"
 #include "world.h"
-#include "util.h"
 #include "io/path.h"
 #include "io/vio.h"
+#include "platform/log.h"
 
 #define WORLD_GLOBAL_OFFSET_OFFSET 4230
 #define WORLD_V1_BOARD_NUM_OFFSET 4009

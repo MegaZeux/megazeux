@@ -382,7 +382,7 @@ void audio_play_sample(char *filename, boolean safely, int period)
   char *mas_ext_pos;
   u8 *mas_buffer;
   mm_sound_effect sfx;
-  int freq_desired, freq_real;
+  uint32_t freq_desired, freq_real;
   u32 sample_id, mas_fn_len;
 
   if(!audio_get_music_on())

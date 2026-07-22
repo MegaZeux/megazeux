@@ -36,6 +36,7 @@
 #include "world_struct.h"
 #include "io/memfile.h"
 #include "io/vio.h"
+#include "platform/log.h"
 
 /* This is the largest allowed stack size in MZX 2.84X, in case the maximum
  * stack size ever gets increased for some reason. */

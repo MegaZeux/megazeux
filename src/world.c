@@ -59,6 +59,7 @@
 
 #include "audio/audio.h"
 #include "event/event.h"
+#include "platform/log.h"
 
 #ifdef CONFIG_LOADSAVE_METER
 

@@ -50,6 +50,7 @@
 #include "io/zip.h"
 
 #include "event/event.h"
+#include "platform/log.h"
 
 void create_blank_robot(struct robot *cur_robot)
 {
@@ -3484,7 +3485,7 @@ void fix_robot_stack_offsets(struct robot *cur_robot)
   {
     if(*stack_pos < 0 || *stack_pos >= program_length)
     {
-      debug("Robot has out-of-bounds stack frame %zd: %d (len: %d)\n",
+      debug("Robot has out-of-bounds stack frame %td: %d (len: %d)\n",
        (stack_pos - stack) >> 1, *stack_pos, program_length);
       *stack_pos = 0;
     }
@@ -3499,7 +3500,7 @@ void fix_robot_stack_offsets(struct robot *cur_robot)
     {
       if(*stack_pos > cmd_pos && *stack_pos < cmd_next)
       {
-        debug("Robot has invalid stack frame %zd: %d @ offset %d (len: %d)\n",
+        debug("Robot has invalid stack frame %td: %d @ offset %d (len: %d)\n",
          (stack_pos - stack) >> 1, *stack_pos, cmd_pos, program_length);
         *stack_pos = 0;
       }

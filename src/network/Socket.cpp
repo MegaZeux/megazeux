@@ -21,6 +21,7 @@
 #include "Socket.hpp"
 
 #include "../util.h"
+#include "../platform/log.h"
 #include "../platform/platform_dso.h"
 #include "../platform/platform_thread.h"
 

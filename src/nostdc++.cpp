@@ -24,7 +24,7 @@
  */
 
 #include "compat.h"
-#include "util.h"
+#include "platform/log.h"
 
 #include <stdio.h>
 #include <stdlib.h>

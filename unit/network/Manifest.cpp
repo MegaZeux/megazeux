@@ -22,6 +22,7 @@
 #include "../Unit.hpp"
 
 #include "../../src/util.h"
+#include "../../src/platform/log.h"
 #include "../../src/network/Scoped.hpp"
 #include "../../src/network/Manifest.hpp"
 

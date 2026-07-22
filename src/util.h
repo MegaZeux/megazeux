@@ -48,16 +48,6 @@ MEGAZEUX_BEGIN_DECLS
 
 #define SGN(x) ((x > 0) - (x < 0))
 
-#ifdef CONFIG_STDIO_REDIRECT
-CORE_LIBSPEC extern FILE *mzxout_h;
-CORE_LIBSPEC extern FILE *mzxerr_h;
-#define mzxout (mzxout_h ? mzxout_h : stdout)
-#define mzxerr (mzxerr_h ? mzxerr_h : stderr)
-#else
-#define mzxout stdout
-#define mzxerr stderr
-#endif
-
 enum resource_id
 {
   MZX_EXECUTABLE_DIR = 0,
@@ -103,11 +93,6 @@ CORE_LIBSPEC int mzx_res_init(const char *argv0, boolean editor);
 CORE_LIBSPEC void mzx_res_free(void);
 CORE_LIBSPEC const char *mzx_res_get_by_id(enum resource_id id);
 
-#ifdef CONFIG_STDIO_REDIRECT
-CORE_LIBSPEC boolean redirect_stdio_init(const char *base_path, boolean require_conf);
-CORE_LIBSPEC void redirect_stdio_exit(void);
-#endif
-
 CORE_LIBSPEC void rng_seed_init(void);
 uint64_t rng_get_seed(void);
 void rng_set_seed(uint64_t seed);
@@ -146,96 +131,6 @@ CORE_LIBSPEC char *strsep(char **stringp, const char *delim);
 CORE_LIBSPEC extern long __stack_chk_guard[8];
 CORE_LIBSPEC void __stack_chk_fail(void);
 #endif
-
-#if defined(ANDROID)
-
-#include <android/log.h>
-
-#define info(...)  __android_log_print(ANDROID_LOG_INFO, "MegaZeux", __VA_ARGS__)
-#define warn(...)  __android_log_print(ANDROID_LOG_WARN, "MegaZeux", __VA_ARGS__)
-
-#ifdef DEBUG
-#define debug(...)  __android_log_print(ANDROID_LOG_DEBUG, "MegaZeux", __VA_ARGS__)
-#else
-#define debug(...) do { } while(0)
-#endif
-
-#if defined(DEBUG) && defined(DEBUG_TRACE)
-#define trace(...)  __android_log_print(ANDROID_LOG_VERBOSE, "MegaZeux", __VA_ARGS__)
-#else
-#define trace(...) do { } while(0)
-#endif
-
-#elif defined(CONFIG_DREAMCAST)
-
-#include <kos.h>
-
-#define info(...) \
- do { \
-   dbgio_printf("INFO: " __VA_ARGS__); \
-   dbgio_flush(); \
- } while(0)
-
-#define warn(...) \
- do { \
-   dbgio_printf("WARNING: " __VA_ARGS__); \
-   dbgio_flush(); \
- } while(0)
-
-#ifdef DEBUG
-#define debug(...) \
- do { \
-   dbgio_printf("DEBUG: " __VA_ARGS__); \
-   dbgio_flush(); \
- } while(0)
-#else
-#define debug(...) do { } while(0)
-#endif
-
-#if defined(DEBUG) && defined(DEBUG_TRACE)
-#define trace(...) \
-  do { \
-    dbgio_printf("TRACE: " __VA_ARGS__); \
-    dbgio_flush(); \
-  } while(0)
-#else
-#define trace(...) do { } while(0)
-#endif
-
-#else /* ANDROID */
-
-#define info(...) \
- do { \
-   fprintf(mzxout, "INFO: " __VA_ARGS__); \
-   fflush(mzxout); \
- } while(0)
-
-#define warn(...) \
- do { \
-   fprintf(mzxerr, "WARNING: " __VA_ARGS__); \
-   fflush(mzxerr); \
- } while(0)
-
-#ifdef DEBUG
-#define debug(...) \
- do { \
-   fprintf(mzxerr, "DEBUG: " __VA_ARGS__); \
-   fflush(mzxerr); \
- } while(0)
-#else
-#define debug(...) do { } while(0)
-#endif
-#if defined(DEBUG) && defined(DEBUG_TRACE)
-#define trace(...) \
- do { \
-    fprintf(mzxerr, "TRACE: " __VA_ARGS__); \
-    fflush(mzxerr); \
- } while(0)
-#else
-#define trace(...) do { } while(0)
-#endif
-
-#endif /* ANDROID */
 
 MEGAZEUX_END_DECLS
 

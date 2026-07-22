@@ -28,6 +28,7 @@
 #endif
 
 #include "../util.h"
+#include "../platform/log.h"
 #include "path.h"
 #include "vio.h"
 
@@ -1326,7 +1327,7 @@ static ssize_t path_navigate_internal(char *path, size_t path_len, const char *t
       }
       if(!S_ISDIR(stat_info.st_mode))
       {
-        trace("--PATH-- path_navigate_internal: not dir (%d)\n", stat_info.st_mode);
+        trace("--PATH-- path_navigate_internal: not dir (%d)\n", (int)stat_info.st_mode);
         return -1;
       }
       if(vaccess(buffer, R_OK|X_OK) < 0)
