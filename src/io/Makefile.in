@@ -15,6 +15,8 @@ io_objs += \
 
 # Not included in the main executables, but used by utils.
 io_utils_objs += \
+  ${io_obj}/image_file.o          \
+  ${io_obj}/image_gif.o           \
   ${io_obj}/vio_no_vfs.o          \
 
 -include ${io_objs:.o=.d}

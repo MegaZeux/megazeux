@@ -28,8 +28,8 @@
 #include <limits.h>
 #include "../config.h"
 
-#include "image_file.h"
 #include "utils_alloc.h"
+#include "../io/image_file.h"
 
 #ifndef VERSION_DATE
 #define VERSION_DATE

@@ -21,10 +21,10 @@
 
 #include <zlib.h>
 
-#include "../../src/utils/image_file.c"
-#include "../../src/utils/image_gif.c"
+#include "../../src/io/image_file.c"
+#include "../../src/io/image_gif.c"
 
-#define DATA_BASEDIR "unit/utils/image_file/"
+#define DATA_BASEDIR "unit/io/image_file/"
 
 struct image_file_const
 {

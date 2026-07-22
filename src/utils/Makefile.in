@@ -17,7 +17,7 @@ UTILS_ZLIB_LDFLAGS ?= ${ZLIB_LDFLAGS}
 UTILS_LIBPNG_LDFLAGS ?= ${LIBPNG_LDFLAGS}
 
 zip_objs  := ${io_obj}/path.o ${io_obj}/vio_no_vfs.o ${io_obj}/zip.o ${io_obj}/zip_stream.o
-img_objs  := ${utils_obj}/image_file.o ${utils_obj}/image_gif.o
+img_objs  := ${io_obj}/image_file.o ${io_obj}/image_gif.o
 img_flags :=
 
 ifneq (${LIBPNG},)
@@ -32,8 +32,6 @@ utils_objs += \
   ${utils_obj}/hlp2html.o \
   ${utils_obj}/hlp2txt.o \
   ${utils_obj}/txt2hlp.o \
-  ${utils_obj}/image_file.o \
-  ${utils_obj}/image_gif.o \
   ${utils_obj}/smzxconv.o \
   ${utils_obj}/png2smzx.o \
   ${utils_obj}/y4m2smzx.o \
