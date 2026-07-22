@@ -20,6 +20,7 @@
 #include "image_common.h"
 #include "image_file.h"
 #include "image_gif.h"
+#include "image_png.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -235,112 +236,57 @@ void image_free(struct image_file *dest)
 }
 
 
-#ifdef CONFIG_PNG
-
 /**
  * PNG loader.
  */
 
-#include <setjmp.h>
-#include <png.h>
-
-#if PNG_LIBPNG_VER < 10504
-#define png_set_scale_16(p) png_set_strip_16(p)
-#endif
-
-static void png_read_fn(png_struct *png, png_byte *dest, size_t count)
+static struct png_rgba *png_read_alloc_fn(size_t width, size_t height, void *priv)
 {
-  imageinfo *s = (imageinfo *)png_get_io_ptr(png);
-  if(s->readfn(dest, count, s->in) < count)
-    png_error(png, "eof");
+  imageinfo *s = (imageinfo *)priv;
+
+  enum image_error ret = image_init(width, height, s->out);
+  if(ret)
+  {
+    debug("alloc failed: %s\n", image_error_string(ret));
+    return NULL;
+  }
+  return (struct png_rgba *)s->out->data;
+}
+
+static enum image_error convert_png_error(enum png_error err)
+{
+  switch(err)
+  {
+    case PNG_OK:              return IMAGE_OK;
+    case PNG_ERROR_IO:        return IMAGE_ERROR_IO;
+    case PNG_ERROR_MEM:       return IMAGE_ERROR_MEM;
+    case PNG_ERROR_INIT:      return IMAGE_ERROR_PNG_INIT;
+    case PNG_ERROR_INVALID:   return IMAGE_ERROR_PNG_FAILED;
+    case PNG_ERROR_NOT_A_PNG: break; /* Unreachable */
+  }
+  return IMAGE_ERROR_UNKNOWN;
 }
 
 static enum image_error load_png(imageinfo *s)
 {
-  struct image_file *dest = s->out;
-  png_struct *png = NULL;
-  png_info *info = NULL;
-  png_byte ** volatile row_ptrs = NULL;
-  png_uint_32 w;
-  png_uint_32 h;
-  png_uint_32 i;
-  png_uint_32 j;
-  int bit_depth;
-  int color_type;
-  enum image_error ret;
+  enum png_error ret;
 
   debug("Image type: PNG\n");
-  dest->data = NULL;
-
-  png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if(!png)
-    return IMAGE_ERROR_PNG_INIT;
-  info = png_create_info_struct(png);
-  if(!info)
-  {
-    ret = IMAGE_ERROR_PNG_INIT;
-    goto error;
-  }
-
-  if(setjmp(png_jmpbuf(png)))
-  {
-    ret = IMAGE_ERROR_PNG_FAILED;
-    goto error;
-  }
-
-  png_set_read_fn(png, s, png_read_fn);
-  png_set_sig_bytes(png, 8);
-
-  png_read_info(png, info);
-  png_get_IHDR(png, info, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
-
-  ret = image_init(w, h, dest);
-  if(ret)
-    goto error;
-
-  row_ptrs = (png_byte **)malloc(sizeof(png_byte *) * h);
-  if(!row_ptrs)
-  {
-    ret = IMAGE_ERROR_MEM;
-    goto error;
-  }
-
-  for(i = 0, j = 0; i < h; i++, j += w)
-    row_ptrs[i] = (png_byte *)(dest->data + j);
-
-  /* This SHOULD convert everything to RGBA32.
-   * See the far too complicated table in libpng-manual.txt for more info. */
-  if(bit_depth == 16)
-    png_set_scale_16(png);
-  if(color_type & PNG_COLOR_MASK_PALETTE)
-    png_set_palette_to_rgb(png);
-  if(!(color_type & PNG_COLOR_MASK_COLOR))
-    png_set_gray_to_rgb(png);
-#if PNG_LIBPNG_VER >= 10207
-  if(!(color_type & PNG_COLOR_MASK_ALPHA))
-    png_set_add_alpha(png, 0xff, PNG_FILLER_AFTER);
+#ifndef IMAGE_FILE_LIBPNG
+  debug("WARNING: image_file compiled without PNG support!\n");
 #endif
-  if(png_get_valid(png, info, PNG_INFO_tRNS))
-    png_set_tRNS_to_alpha(png);
+  s->out->data = NULL;
 
-  png_read_image(png, row_ptrs);
-  png_read_end(png, NULL);
-  png_destroy_read_struct(&png, &info, NULL);
-
-  free(row_ptrs);
-  dest->width = w;
-  dest->height = h;
+  ret = png_read(s->in, s->readfn, s, png_read_alloc_fn, true);
+  if(ret)
+  {
+    enum image_error r = convert_png_error(ret);
+    debug("PNG load failed: %s\n", image_error_string(r));
+    image_free(s->out);
+    return r;
+  }
   return IMAGE_OK;
-
-error:
-  png_destroy_read_struct(&png, info ? &info : NULL, NULL);
-
-  free(dest->data);
-  free(row_ptrs);
-  return ret;
 }
-
-#endif /* CONFIG_PNG */
 
 
 /**
@@ -2713,18 +2659,9 @@ enum image_error load_image_from_stream(void *fp, image_read_function readfn,
   if(!memcmp(magic, "farbfeld", 8))
     return load_farbfeld(&s);
 
-#ifdef CONFIG_PNG
-
-  /* PNG (via libpng). */
-  if(png_sig_cmp(magic, 0, 8) == 0)
-    return load_png(&s);
-
-#else
-
+  /* PNG */
   if(!memcmp(magic, "\x89PNG\r\n\x1A\n", 8))
-    debug("MegaZeux utils were compiled without PNG support--is this a PNG?\n");
-
-#endif
+    return load_png(&s);
 
   sz = 8 + readfn(magic + 8, 10, fp);
   if(sz == 18)

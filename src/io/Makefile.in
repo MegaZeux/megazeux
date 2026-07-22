@@ -17,7 +17,13 @@ io_objs += \
 io_utils_objs += \
   ${io_obj}/image_file.o          \
   ${io_obj}/image_gif.o           \
+  ${io_obj}/image_png.o           \
   ${io_obj}/vio_no_vfs.o          \
+
+ifeq (${LIBPNG},1)
+core_flags += $(LIBPNG_CFLAGS) -DIMAGE_FILE_LIBPNG
+core_ldflags += $(LIBPNG_LDFLAGS)
+endif
 
 -include ${io_objs:.o=.d}
 ${io_objs}: $(filter-out $(wildcard ${io_obj}), ${io_obj})

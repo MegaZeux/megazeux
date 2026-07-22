@@ -23,6 +23,7 @@
 
 #include "../../src/io/image_file.c"
 #include "../../src/io/image_gif.c"
+#include "../../src/io/image_png.c"
 
 #define DATA_BASEDIR "unit/io/image_file/"
 
@@ -197,7 +198,7 @@ static void load_and_compare_image(const struct image_file_const &base,
 
 UNITTEST(PNG)
 {
-#ifndef CONFIG_PNG
+#ifndef IMAGE_FILE_LIBPNG
   SKIP();
 #else
 

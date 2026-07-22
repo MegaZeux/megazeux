@@ -115,7 +115,7 @@ unit_ldflags += ${SDL_LDFLAGS} ${ZLIB_LDFLAGS}
 
 # Required for image_file test.
 ifneq (${LIBPNG},)
-unit_cflags  += ${LIBPNG_CFLAGS}
+unit_cflags  += ${LIBPNG_CFLAGS} -DIMAGE_FILE_LIBPNG
 unit_ldflags += ${LIBPNG_LDFLAGS}
 endif
 
