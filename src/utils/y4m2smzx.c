@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 
-#include "image_file.h"
 #include "smzxconv.h"
 #include "y4m.h"
 
@@ -30,6 +29,7 @@
 #endif
 #include "../graphics.h"
 #include "../util.h"
+#include "../io/image_file.h"
 #include "../io/memfile.h"
 #include "../platform/platform_thread.h"
 

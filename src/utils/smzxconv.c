@@ -18,8 +18,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "image_file.h"
 #include "smzxconv.h"
+#include "../io/image_file.h"
 
 typedef struct {
 	int r;

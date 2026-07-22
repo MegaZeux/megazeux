@@ -22,9 +22,9 @@
 
 #include "../compat.h"
 
-#include "image_file.h"
 #include "smzxconv.h"
 #include "utils_alloc.h"
+#include "../io/image_file.h"
 
 #ifdef CONFIG_PLEDGE_UTILS
 #include <unistd.h>

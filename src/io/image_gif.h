@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MEGAZEUX_UTILS_IMAGE_GIF_H
-#define MEGAZEUX_UTILS_IMAGE_GIF_H
+#ifndef MEGAZEUX_IO_IMAGE_GIF_H
+#define MEGAZEUX_IO_IMAGE_GIF_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -271,4 +271,4 @@ enum gif_error gif_composite(struct gif_rgba **pixels, const struct gif_info *gi
 }
 #endif
 
-#endif /* MEGAZEUX_UTILS_IMAGE_GIF_H */
+#endif /* MEGAZEUX_IO_IMAGE_GIF_H */

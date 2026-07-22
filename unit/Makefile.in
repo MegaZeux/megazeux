@@ -16,8 +16,6 @@ unit_src_io     := ${unit_src}/io
 unit_obj_io     := ${build_base}/${unit_src_io}
 unit_src_network:= ${unit_src}/network
 unit_obj_network:= ${build_base}/${unit_src_network}
-unit_src_utils  := ${unit_src}/utils
-unit_obj_utils  := ${build_base}/${unit_src_utils}
 
 build_dirs += ${unit_obj} ${unit_obj_audio} ${unit_obj_editor}
 build_dirs += ${unit_obj_io} ${unit_obj_network} ${unit_obj_utils}
@@ -32,6 +30,7 @@ unit_objs := \
   ${unit_obj}/render.o                 \
   ${unit_obj}/memcasecmp.o             \
   ${unit_obj_io}/bitstream.o           \
+  ${unit_obj_io}/image_file.o          \
   ${unit_obj_io}/memfile.o             \
   ${unit_obj_io}/path.o                \
   ${unit_obj_io}/vfs.o                 \
@@ -41,7 +40,6 @@ unit_objs := \
   ${unit_obj_audio}/mixer.o            \
   ${unit_obj_editor}/stringsearch.o    \
   ${unit_obj_network}/sha256.o         \
-  ${unit_obj_utils}/image_file.o       \
 
 ifeq (${PLATFORM},mingw)
 unit_objs += \
