@@ -28,7 +28,7 @@
 #include "path.h"
 #include "vio.h"
 
-#include "../util.h"
+#include "../platform/log.h"
 
 #if defined(CONFIG_3DS)
 // Enable hacks to reduce the number of filesystem operations on platforms
@@ -365,8 +365,7 @@ static int case5(char *path, size_t buffer_len, char *string, boolean check_sfn)
       {
         if(!strcasecmp(string_sfn, newpath))
         {
-          trace("%s:%d: truncated LFN '%s' to '%s'\n",
-           __FILE__, __LINE__, string, newpath);
+          trace("truncated LFN '%s' to '%s'\n", string, newpath);
           memcpy(string, newpath, strlen(newpath) + 1);
           ret = FSAFE_SUCCESS;
           break;
@@ -386,8 +385,8 @@ static int case5(char *path, size_t buffer_len, char *string, boolean check_sfn)
           // result and thus it is not possible to guarantee a correct match.
           if(has_sfn_match)
           {
-            trace("%s:%d: ambiguous match for SFN '%s' to '%s', aborting.\n",
-             __FILE__, __LINE__, string_sfn, newpath);
+            trace("ambiguous match for SFN '%s' to '%s', aborting.\n",
+             string_sfn, newpath);
             memcpy(string, string_sfn, strlen(string_sfn) + 1);
             ret = -FSAFE_BRUTE_FORCE_SFN_AMBIGUOUS;
             break;
@@ -397,8 +396,8 @@ static int case5(char *path, size_t buffer_len, char *string, boolean check_sfn)
           // Make sure the SFN expansion won't overflow the buffer.
           if(newpath_len + dirlen + 1 > buffer_len)
           {
-            trace("%s:%d: expansion for SFN '%s' to '%s' would overflow buffer,"
-             " aborting.\n", __FILE__, __LINE__, string_sfn, newpath);
+            trace("expansion for SFN '%s' to '%s' would overflow buffer,"
+             " aborting.\n", string_sfn, newpath);
             ret = -FSAFE_BRUTE_FORCE_SFN_OVERFLOW;
             break;
           }
@@ -407,8 +406,7 @@ static int case5(char *path, size_t buffer_len, char *string, boolean check_sfn)
             // Overwrite the old path with the expanded match, then continue
             // searching the directory for duplicate matches or an exact match.
             memcpy(string, newpath, newpath_len + 1);
-            trace("%s:%d: expanded SFN '%s' to '%s'\n",
-             __FILE__, __LINE__, string_sfn, newpath);
+            trace("expanded SFN '%s' to '%s'\n", string_sfn, newpath);
             has_sfn_match = true;
             ret = FSAFE_SUCCESS;
           }
@@ -482,8 +480,7 @@ static int match(char *path, size_t buffer_len)
               // try brute force
               if(case5(path, buffer_len, token, true) < 0)
               {
-                trace("%s:%d: file matches for %s failed.\n",
-                 __FILE__, __LINE__, path);
+                trace("file matches for %s failed.\n", path);
                 return -FSAFE_MATCH_FAILED;
               }
           }
@@ -517,8 +514,7 @@ static int match(char *path, size_t buffer_len)
             // try brute force
             if(case5(path, buffer_len, token, false) < 0)
             {
-              trace("%s:%d: directory matches for %s failed.\n",
-               __FILE__, __LINE__, path);
+              trace("directory matches for %s failed.\n", path);
               return -FSAFE_MATCH_FAILED;
             }
         }
@@ -626,13 +622,12 @@ int fsafetranslate(const char *path, char *newpath, size_t buffer_len)
 #ifdef ENABLE_DOS_COMPAT_TRANSLATIONS
   if(ret == -FSAFE_SUCCESS || ret == -FSAFE_MATCHED_DIRECTORY)
   {
-    trace("%s:%d: translated %s to %s%s.\n", __FILE__, __LINE__,
-     path, newpath, (ret == -FSAFE_MATCHED_DIRECTORY) ? "/" : "");
+    trace("translated %s to %s%s.\n", path, newpath,
+     (ret == -FSAFE_MATCHED_DIRECTORY) ? "/" : "");
   }
   else
   {
-    trace("%s:%d: failed to translate %s (err %d).\n",
-     __FILE__, __LINE__, path, ret);
+    trace("failed to translate %s (err %d).\n", path, ret);
   }
 #endif
 

@@ -59,7 +59,7 @@ CORE_LIBSPEC boolean board_extram_usage(struct board *board, size_t *compressed,
 #else /* !CONFIG_EXTRAM */
 
 #ifdef DEBUG
-#include "util.h"
+#include "platform/log.h"
 #endif
 
 static inline void real_store_board_to_extram(struct board *board,

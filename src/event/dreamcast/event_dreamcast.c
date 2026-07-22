@@ -121,16 +121,19 @@ static uint32_t last_ltrig, last_rtrig;
 boolean dc_update_input(void)
 {
   struct buffered_status *status = store_status();
-  maple_device_t *maple_pad, *maple_kbd;
+  maple_device_t *maple_pad;
+  //maple_device_t *maple_kbd;
   cont_state_t *pad;
-  uint32_t down, held, up;
+  uint32_t down;
+  //uint32_t held;
+  uint32_t up;
   boolean retval = false;
 
   maple_pad = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
   if(maple_pad && (pad = (cont_state_t *) maple_dev_status(maple_pad)))
   {
     down = (pad->buttons ^ last_buttons) & pad->buttons;
-    held = (pad->buttons & last_buttons);
+    //held = (pad->buttons & last_buttons);
     up = (pad->buttons ^ last_buttons) & last_buttons;
 
     retval |= check_hat(status, down, up, CONT_DPAD_UP, JOYHAT_UP);

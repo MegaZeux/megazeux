@@ -22,7 +22,7 @@
 #include "../audio_players.h"
 #include "../audio_struct.h"
 
-#include "../../util.h"
+#include "../../platform/log.h"
 #include "../../platform/sdl/SDLmzx.h"
 
 #include <stdlib.h>

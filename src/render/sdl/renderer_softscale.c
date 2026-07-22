@@ -31,6 +31,7 @@
 #include "render_sdl.h"
 
 #include "../../util.h"
+#include "../../platform/log.h"
 
 struct softscale_render_data
 {

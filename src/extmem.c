@@ -22,6 +22,7 @@
 #include "robot.h"
 #include "util.h"
 #include "world_struct.h"
+#include "platform/log.h"
 #include "platform/platform_endian.h"
 
 #include <limits.h>
@@ -696,7 +697,9 @@ static uint32_t extram_checksum(const void *src, size_t len)
 
 #if defined(__GNUC__) && defined(__arm__)
 
-/* Fast 32-bit aligned ARM copy. */
+/* Fast 32-bit aligned ARM copy.
+ * TODO: compilation will fail unless optimizations are enabled. */
+__attribute__((optimize("-O3")))
 static void extram_copy32(uint32_t * RESTRICT d32, const uint32_t *s32, size_t len32)
 {
   /* Code for handling the tail was inspired by musl.

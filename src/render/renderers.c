@@ -19,7 +19,7 @@
  */
 
 #include "renderers.h"
-#include "../util.h"
+#include "../platform/log.h"
 
 const struct renderer * const renderers_available[] =
 {

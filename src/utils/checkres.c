@@ -98,12 +98,12 @@
 #include "../io/memfile.h"
 #include "../io/vio.h"
 #include "../io/zip.h"
+#include "../platform/log.h"
 
 // Contains some CORE_LIBSPEC functions, which should be fine if the object
 // is included in linking due to the CORE_LIBSPEC define above. Right now,
-// checkres needs fsafeopen.o and util.o.
+// checkres needs fsafeopen.o.
 #include "../io/fsafeopen.h"
-#include "../util.h"
 #include "../world.h"
 
 #include "utils_alloc.h"

@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 
 #include "../util.h"
+#include "../platform/log.h"
 #include "memfile.h"
 #include "path.h"
 #include "vio.h"

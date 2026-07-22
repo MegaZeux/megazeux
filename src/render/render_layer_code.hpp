@@ -30,6 +30,7 @@
 
 #include "../graphics.h"
 #include "../util.h"
+#include "../platform/log.h"
 #include "../platform/platform_attribute.h"
 #include "../platform/platform_endian.h"
 

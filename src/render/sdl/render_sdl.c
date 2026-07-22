@@ -24,6 +24,7 @@
 
 #include "../../util.h"
 #include "../../event/event.h"
+#include "../../platform/log.h"
 
 #include <limits.h>
 #include <stdlib.h>

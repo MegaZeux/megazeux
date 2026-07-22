@@ -25,6 +25,7 @@
 #include "../const.h"
 #include "../util.h"
 #include "../io/vio.h"
+#include "../platform/log.h"
 
 #include <ctype.h>
 #include <limits.h>

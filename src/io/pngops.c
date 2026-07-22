@@ -21,6 +21,7 @@
 #include "pngops.h"
 #include "vio.h"
 #include "../util.h"
+#include "../platform/log.h"
 
 #include <stdint.h>
 #include <stdio.h>

@@ -30,6 +30,7 @@
 #include "io/fsafeopen.h"
 #include "io/memfile.h"
 #include "io/vio.h"
+#include "platform/log.h"
 
 #define IMM_U16            (1 << 0)
 #define IMM_S16            (1 << 0)

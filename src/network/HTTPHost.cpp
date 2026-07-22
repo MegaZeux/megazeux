@@ -29,6 +29,7 @@
 #include "Scoped.hpp"
 #include "../util.h"
 #include "../io/vio.h"
+#include "../platform/log.h"
 
 #ifdef IS_CXX_11
 #include <type_traits>
