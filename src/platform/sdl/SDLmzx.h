@@ -181,6 +181,11 @@ static inline void *SDL_GetWindowProperty_HWND(SDL_Window *window)
 /**
  * SDL_event.h
  */
+#if SDL_VERSION_ATLEAST(2,0,12)
+#define TFINGER_WINDOW_ID(tfinger)      ((tfinger.windowID))
+#else
+#define TFINGER_WINDOW_ID(tfinger)      0
+#endif
 #if !SDL_VERSION_ATLEAST(3,0,0)
 #define SDL_EVENT_FINGER_DOWN           SDL_FINGERDOWN
 #define SDL_EVENT_FINGER_MOTION         SDL_FINGERMOTION
@@ -523,6 +528,9 @@ static inline int sdl_linked_version(void)
 /**
  * SDL_video.h
  */
+#if !SDL_VERSION_ATLEAST(2,0,5)
+#define SDL_SetWindowResizable(w,b) do {} while(0)
+#endif
 #if !SDL_VERSION_ATLEAST(2,0,16)
 #define SDL_SetWindowMouseGrab(w,b) SDL_SetWindowGrab(w,b)
 #endif

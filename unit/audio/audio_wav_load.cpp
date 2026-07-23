@@ -220,7 +220,12 @@ UNITTEST(Float)
 
 UNITTEST(ULaw)
 {
-#ifndef CONFIG_SDL
+  /* SDL 2.0.10 added the μLaw and aLaw decoders in a crash fix patch... */
+#ifdef CONFIG_SDL
+#if !SDL_VERSION_ATLEAST(2,0,10)
+  SKIP();
+#endif
+#else
   SKIP();
 #endif
 
@@ -247,7 +252,11 @@ UNITTEST(ULaw)
 
 UNITTEST(ALaw)
 {
-#ifndef CONFIG_SDL
+#ifdef CONFIG_SDL
+#if !SDL_VERSION_ATLEAST(2,0,10)
+  SKIP();
+#endif
+#else
   SKIP();
 #endif
 
