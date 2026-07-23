@@ -21,8 +21,8 @@
 
 #ifdef IMAGE_FILE_LIBPNG
 
-#include <setjmp.h>
 #include <png.h>
+#include <setjmp.h>
 
 #if PNG_LIBPNG_VER < 10504
 #define png_set_scale_16(p) png_set_strip_16(p)

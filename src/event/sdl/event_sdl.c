@@ -1262,7 +1262,8 @@ static boolean process_event(SDL_Event *event)
       trace(
         "--EVENT_SDL-- SDL_EVENT_FINGER_MOTION: id:%ld w:%u "
         "x:%.2f y:%.2f dx:%.2f dy:%.2f p:%.2f\n",
-        (long)TFINGER_TOUCH_ID(event->tfinger), event->tfinger.windowID,
+        (long)TFINGER_TOUCH_ID(event->tfinger),
+        TFINGER_WINDOW_ID(event->tfinger),
         event->tfinger.x, event->tfinger.y,
         event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure
       );
@@ -1274,7 +1275,8 @@ static boolean process_event(SDL_Event *event)
       trace(
         "--EVENT_SDL-- SDL_EVENT_FINGER_DOWN: id:%ld w:%u "
         "x:%.2f y:%.2f dx:%.2f dy:%.2f p:%.2f\n",
-        (long)TFINGER_TOUCH_ID(event->tfinger), event->tfinger.windowID,
+        (long)TFINGER_TOUCH_ID(event->tfinger),
+        TFINGER_WINDOW_ID(event->tfinger),
         event->tfinger.x, event->tfinger.y,
         event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure
       );
@@ -1305,7 +1307,8 @@ static boolean process_event(SDL_Event *event)
       trace(
         "--EVENT_SDL-- SDL_EVENT_FINGER_UP: id:%ld w:%u "
         "x:%.2f y:%.2f dx:%.2f dy:%.2f p:%.2f\n",
-        (long)TFINGER_TOUCH_ID(event->tfinger), event->tfinger.windowID,
+        (long)TFINGER_TOUCH_ID(event->tfinger),
+        TFINGER_WINDOW_ID(event->tfinger),
         event->tfinger.x, event->tfinger.y,
         event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure
       );
