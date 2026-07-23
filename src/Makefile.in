@@ -136,12 +136,8 @@ include src/render/Makefile.in
 #
 # Library flags
 # See src/audio/Makefile.in for audio-specific libraries.
+# See src/io/Makefile.in for libpng.
 #
-
-ifeq (${LIBPNG},1)
-core_flags += $(LIBPNG_CFLAGS)
-core_ldflags += $(LIBPNG_LDFLAGS)
-endif
 
 ifneq (${BUILD_SDL},)
 core_flags   += $(SDL_CFLAGS)

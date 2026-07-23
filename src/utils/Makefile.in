@@ -10,14 +10,14 @@ build_dirs += ${utils_obj}
 
 # Some core objects are required for file format purposes.
 # Define UTILS_LIBSPEC so these properly link.
-utils_cflags := ${LIBPNG_CFLAGS} ${PTHREAD_CFLAGS} -DUTILS_LIBSPEC=
+utils_cflags := ${PTHREAD_CFLAGS} -DUTILS_LIBSPEC=
 
 # Hack for static linking the utilities on macOS.
 UTILS_ZLIB_LDFLAGS ?= ${ZLIB_LDFLAGS}
 UTILS_LIBPNG_LDFLAGS ?= ${LIBPNG_LDFLAGS}
 
 zip_objs  := ${io_obj}/path.o ${io_obj}/vio_no_vfs.o ${io_obj}/zip.o ${io_obj}/zip_stream.o
-img_objs  := ${io_obj}/image_file.o ${io_obj}/image_gif.o
+img_objs  := ${io_obj}/image_file.o ${io_obj}/image_gif.o ${io_obj}/image_png.o
 img_flags :=
 
 ifneq (${LIBPNG},)
