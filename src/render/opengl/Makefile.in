@@ -32,9 +32,14 @@ render_opengl_objs += ${render_opengl_obj}/renderer_glsl.o
 render_layer_software = 1
 endif
 
+# Ancient GNU Make complains about -include if there are no objects.
+ifneq (${render_opengl_objs},)
+
 -include ${render_opengl_objs:.o=.d}
 ${render_opengl_objs}: \
  $(filter-out $(wildcard ${render_opengl_obj}), ${render_opengl_obj})
 
 build_dirs   += ${render_opengl_obj}
 render_objs  += ${render_opengl_objs}
+
+endif

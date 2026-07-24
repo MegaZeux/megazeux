@@ -30,6 +30,7 @@
 
 #include "utils_alloc.h"
 #include "../io/image_file.h"
+#include "../platform/platform_attribute.h"
 
 #ifndef VERSION_DATE
 #define VERSION_DATE
@@ -181,6 +182,7 @@ static void Help(void)
   fprintf(stderr, USAGE_EXAMPLES);
 }
 
+static void Error(const char *string, ...) ATTRIBUTE_PRINTF(1,2);
 static void Error(const char *string, ...)
 {
   va_list vaList;

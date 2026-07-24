@@ -111,13 +111,16 @@ LD_PRELOAD="$preload" \
   no_titlescreen=1 \
   &
 
-cd "$dir"
-
 # Attempt to detect a hang (e.g. an error occurred).
 # Note: running mzxrun in a subshell breaks this.
 mzxrun_pid=$!
 psopt=""
 i="0"
+
+# shellcheck disable=SC2064 # Warning misses the entire point of this usage.
+trap "kill -9 $mzxrun_pid; exit 1" INT
+
+cd "$dir"
 
 # BusyBox ps may not support -e; mzxrun might not appear WITHOUT -e in a chroot.
 # -A is equivalent to -e in POSIX, but NetBSD uses -e for something else.
@@ -130,6 +133,8 @@ if [ "$(uname -s 2>/dev/null)" = "Haiku" ]; then psopt='-o Id Team'; fi
 sleep 1
 [ "$quiet" = "yes" ] || printf "."
 
+# shellcheck disable=SC2009 # Not available/relevant on all targets.
+# shellcheck disable=SC2086 # Word splitting is deliberate here...
 while ps $psopt | grep -q "[ \t]*$mzxrun_pid .*[m]zxrun"
 do
 	sleep 1
