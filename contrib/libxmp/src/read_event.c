@@ -1342,7 +1342,15 @@ static int read_event_it(struct context_data *ctx, const struct xmp_event *e, in
 		xc->note = note;
 	}
 	if (note >= 0 || toneporta_offset) {
-		libxmp_virt_voicepos(ctx, chn, xc->offset.val);
+		int off = 0;
+		/* Offset >length starts at 0 (it_high_offset_memory.it) or at
+		 * sample end for old FX (it_high_offset_memory_oldfx.it). */
+		if (TEST(OFFSET) && (HAS_QUIRK(QUIRK_ITOLDFX) ||
+		    (IS_VALID_SAMPLE(xc->smp) &&
+		     xc->offset.val < mod->xxs[xc->smp].len))) {
+			off = xc->offset.val;
+		}
+		libxmp_virt_voicepos(ctx, chn, off);
 	}
 
 	if (use_ins_vol && !TEST(NEW_VOL)) {
@@ -1567,10 +1575,10 @@ static int read_event_smix(struct context_data *ctx, const struct xmp_event *e, 
 	RESET_NOTE(NOTE_END);
 
 	if (ins >= mod->ins && ins < mod->ins + smix->ins) {
-		sub = &xxi->sub[0];
-		if (sub == NULL) {
+		if (xxi->sub == NULL) {
 			return 0;
 		}
+		sub = &xxi->sub[0];
 
 		note = xc->key + sub->xpo;
 		smp = sub->sid;

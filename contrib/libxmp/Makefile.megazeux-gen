@@ -52,6 +52,8 @@ install := \
 	${dest_src}/filetype.c \
 	${dest_src}/filter.c \
 	${dest_src}/flow.c \
+	${dest_src}/flt_extras.c \
+	${dest_src}/flt_extras.h \
 	${dest_src}/format.c \
 	${dest_src}/format.h \
 	${dest_src}/hio.c \
