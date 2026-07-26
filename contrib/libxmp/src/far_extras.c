@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2025 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,9 @@
 #include "far_extras.h"
 
 #define FAR_GUS_CHANNELS	17
-#define FAR_OLD_TEMPO_SHIFT	2 /* Power of multiplier for old tempo mode. */
+#define FAR_OLD_TEMPO_MULT	(1 << 2) /* Number of real ticks for each FAR
+					  * "tick" in old tempo mode. In the
+					  * real replayer, this is 8. */
 
 /**
  * The time factor needed to directly use FAR tempos is a little unintuitive.
@@ -110,7 +112,6 @@ int libxmp_far_translate_tempo(int mode, int fine_change, int coarse,
 		speed = 0;
 		while (divisor > 0xffff) {
 			divisor >>= 1;
-			tempo <<= 1;
 			speed++;
 		}
 		if (speed >= 2)
@@ -120,14 +121,16 @@ int libxmp_far_translate_tempo(int mode, int fine_change, int coarse,
 		 * remaining count before decrementing it but after handling
 		 * each tick, i.e. a count of "3" executes 4 ticks. */
 		speed++;
-		bpm = tempo;
+		/* TODO: non-integer BPMs: use PIT Hz here, make time factor 4.0? */
+		bpm = 1197255u / divisor;
 	} else {
 		/* "Old" FAR tempo
 		 * This runs into the XMP_MIN_BPM limit, but nothing uses it anyway.
 		 * Old tempo mode in the original FAR replayer has 32 ticks,
 		 * but ignores all except every 8th. */
-		speed = 4 << FAR_OLD_TEMPO_SHIFT;
-		bpm = (far_tempos[coarse] + *fine * 2) << FAR_OLD_TEMPO_SHIFT;
+		/* TODO: this is also is affected by bad divisor math. */
+		speed = 4 * FAR_OLD_TEMPO_MULT;
+		bpm = (far_tempos[coarse] + *fine * 2) * FAR_OLD_TEMPO_MULT;
 	}
 
 	if (bpm < XMP_MIN_BPM)
@@ -172,13 +175,13 @@ static int libxmp_far_retrigger_delay(struct far_module_extras *me, int param)
 		return ((delay >> 2) + 1) >> 1;
 	} else {
 		/* Effects divide by 2, timer increments by 2 (round up).
-		 * Old tempo mode handles every 8th tick (<< FAR_OLD_TEMPO_SHIFT).
+		 * Old tempo mode handles every 8th tick (* FAR_OLD_TEMPO_MULT).
 		 * Delay values >4 result in no retrigger. */
-		delay = (((delay >> 1) + 1) >> 1) << FAR_OLD_TEMPO_SHIFT;
-		if (delay >= 16)
+		delay = (((delay >> 1) + 1) >> 1) * FAR_OLD_TEMPO_MULT;
+		if (delay >= (4 * FAR_OLD_TEMPO_MULT))
 			return -1;
-		if (delay < (1 << FAR_OLD_TEMPO_SHIFT))
-			return (1 << FAR_OLD_TEMPO_SHIFT);
+		if (delay < FAR_OLD_TEMPO_MULT)
+			return FAR_OLD_TEMPO_MULT;
 		return delay;
 	}
 }
@@ -356,7 +359,7 @@ void libxmp_far_extras_process_fx(struct context_data *ctx, struct channel_data 
 	 */
 	case FX_FAR_DELAY:		/* FAR note offset */
 		if (note) {
-			delay = me->tempo_mode ? fxp : fxp << FAR_OLD_TEMPO_SHIFT;
+			delay = me->tempo_mode ? fxp : fxp * FAR_OLD_TEMPO_MULT;
 			SET(RETRIG);
 			xc->retrig.val = delay ? delay : 1;
 			xc->retrig.count = delay + 1;

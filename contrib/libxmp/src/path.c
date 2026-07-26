@@ -1,5 +1,5 @@
 /* Extended Module Player
- * Copyright (C) 1996-2025 Claudio Matsuoka and Hipolito Carraro Jr
+ * Copyright (C) 1996-2026 Claudio Matsuoka and Hipolito Carraro Jr
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -182,6 +182,9 @@ int libxmp_path_join(struct libxmp_path *p, const char *prefix_path,
 	if (prefix_path == NULL || suffix_path == NULL) {
 		return -1;
 	}
+
+	if (prefix_path[0] == '\0')
+		return libxmp_path_set(p, suffix_path);
 
 	ret = snprintf(NULL, 0, "%s/%s", prefix_path, suffix_path);
 	if (ret < 0 || fix_size(p, (size_t)ret + 1u) < 0) {

@@ -22,8 +22,7 @@ libxmp_cflags := \
 #
 # Disable some warnings libxmp currently ignores for now.
 #
-libxmp_cflags += \
- -Wno-missing-prototypes -Wno-unused-macros -Wno-sign-compare \
+libxmp_cflags += -Wno-unused-macros -Wno-sign-compare
 
 ifeq (${HAS_W_NO_UNUSED_BUT_SET_VARIABLE},1)
 libxmp_cflags += -Wno-unused-but-set-variable
@@ -38,6 +37,7 @@ SRC_OBJS = \
   filetype.o      \
   filter.o        \
   flow.o          \
+  flt_extras.o    \
   format.o        \
   hio.o           \
   hmn_extras.o    \
