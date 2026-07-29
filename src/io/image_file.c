@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2021-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2021-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -240,7 +240,7 @@ void image_free(struct image_file *dest)
  * PNG loader.
  */
 
-static struct png_rgba *png_read_alloc_fn(size_t width, size_t height, void *priv)
+static struct png_rgba *png_read_alloc_fn(uint32_t width, uint32_t height, void *priv)
 {
   imageinfo *s = (imageinfo *)priv;
 
@@ -2660,7 +2660,7 @@ enum image_error load_image_from_stream(void *fp, image_read_function readfn,
     return load_farbfeld(&s);
 
   /* PNG */
-  if(!memcmp(magic, "\x89PNG\r\n\x1A\n", 8))
+  if(!memcmp(magic, PNG_SIGNATURE_STRING, 8))
     return load_png(&s);
 
   sz = 8 + readfn(magic + 8, 10, fp);

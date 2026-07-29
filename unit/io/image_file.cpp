@@ -19,8 +19,10 @@
 
 #include "../Unit.hpp"
 
+#include <vector>
 #include <zlib.h>
 
+#include "../../src/io/memfile.h"
 #include "../../src/io/image_file.c"
 #include "../../src/io/image_gif.c"
 #include "../../src/io/image_png.c"
@@ -198,6 +200,13 @@ static void load_and_compare_image(const struct image_file_const &base,
 
 UNITTEST(PNG)
 {
+  /* struct rgba_color and struct png_rgba must be 100% interchangeable. */
+  static_assert(sizeof(struct rgba_color) == sizeof(struct png_rgba), "size");
+  static_assert(offsetof(struct rgba_color, r) == offsetof(struct png_rgba, r), "r offset");
+  static_assert(offsetof(struct rgba_color, g) == offsetof(struct png_rgba, g), "g offset");
+  static_assert(offsetof(struct rgba_color, b) == offsetof(struct png_rgba, b), "b offset");
+  static_assert(offsetof(struct rgba_color, a) == offsetof(struct png_rgba, a), "a offset");
+
 #ifndef IMAGE_FILE_LIBPNG
   SKIP();
 #else
@@ -261,7 +270,148 @@ UNITTEST(PNG)
       load_and_compare_image<compare_rgba>(base_rgba_img, filename);
   }
 
-#endif /* CONFIG_PNG */
+#endif /* IMAGE_FILE_LIBPNG */
+}
+
+
+#ifdef IMAGE_FILE_LIBPNG
+static size_t png_memfile_read_fn(void *dest, size_t count, void *handle)
+{
+  struct memfile *mf = reinterpret_cast<struct memfile *>(handle);
+  return mfread(dest, 1, count, mf);
+}
+#endif
+
+static size_t png_memfile_write_fn(const void *src, size_t count, void *handle)
+{
+  struct memfile *mf = reinterpret_cast<struct memfile *>(handle);
+  return mfwrite(src, 1, count, mf);
+}
+
+struct png_write_row_priv
+{
+  const struct png_rgba *pos;
+  const struct png_rgba *end;
+};
+
+static const struct png_rgba *png_write_row_fn(uint32_t width, void *priv)
+{
+  struct png_write_row_priv *wp = reinterpret_cast<struct png_write_row_priv *>(priv);
+  const struct png_rgba *pos = wp->pos;
+
+  if(pos >= wp->end)
+    return NULL;
+
+  wp->pos += width;
+  return pos;
+}
+
+/* There is no unified image writing interface, but image_png.c supports
+ * writing 24-bit RGB and 32-bit RGBA images separately. */
+UNITTEST(PNGWriter)
+{
+  struct memfile mf;
+  struct png_write_row_priv wp;
+
+#ifdef IMAGE_FILE_LIBPNG
+  struct image_file img{};
+  enum image_error iret;
+#endif
+  enum png_error ret;
+
+  std::vector<uint8_t> writebuf(8192);
+  mfopen_wr(writebuf.data(), writebuf.size(), &mf);
+
+  wp.pos = reinterpret_cast<const struct png_rgba *>(base_rgba_img.data);
+  wp.end = wp.pos + (base_rgba_img.width * base_rgba_img.height);
+
+  SECTION(WriteRGB24)
+  {
+    ret = png_write(base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGB24,
+     &mf, png_memfile_write_fn, &wp, png_write_row_fn);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    mfseek(&mf, 0, SEEK_SET);
+
+    /* FIXME: simple zlib-only parse to test for pixel data */
+
+#ifdef IMAGE_FILE_LIBPNG
+    mfseek(&mf, 0, SEEK_SET);
+
+    iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
+    ASSERTEQ(iret, IMAGE_OK, "");
+
+    compare_image<compare_rgb>(base_rgba_img, img, "<mem, image_file>");
+    image_free(&img);
+#endif
+  }
+
+  SECTION(WriteRGBA32)
+  {
+    ret = png_write(base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGBA32,
+     &mf, png_memfile_write_fn, &wp, png_write_row_fn);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    mfseek(&mf, 0, SEEK_SET);
+
+    /* FIXME: simple zlib-only parse to test for pixel data */
+
+#ifdef IMAGE_FILE_LIBPNG
+    mfseek(&mf, 0, SEEK_SET);
+
+    iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
+    ASSERTEQ(iret, IMAGE_OK, "");
+
+    compare_image<compare_rgba>(base_rgba_img, img, "<mem, image_file>");
+    image_free(&img);
+#endif
+  }
+
+  SECTION(FallbackWriteRGB24)
+  {
+    SKIP();
+    ret = png_write_fallback(
+     base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGB24,
+     &mf, png_memfile_write_fn, &wp, png_write_row_fn);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    mfseek(&mf, 0, SEEK_SET);
+
+    /* FIXME: simple zlib-only parse to test for pixel data */
+
+#ifdef IMAGE_FILE_LIBPNG
+    mfseek(&mf, 0, SEEK_SET);
+
+    iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
+    ASSERTEQ(iret, IMAGE_OK, "");
+
+    compare_image<compare_rgb>(base_rgba_img, img, "<mem, image_file>");
+    image_free(&img);
+#endif
+  }
+
+  SECTION(FallbackWriteRGBA32)
+  {
+    SKIP();
+    ret = png_write_fallback(
+     base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGBA32,
+     &mf, png_memfile_write_fn, &wp, png_write_row_fn);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    mfseek(&mf, 0, SEEK_SET);
+
+    /* FIXME: simple zlib-only parse to test for pixel data */
+
+#ifdef IMAGE_FILE_LIBPNG
+    mfseek(&mf, 0, SEEK_SET);
+
+    iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
+    ASSERTEQ(iret, IMAGE_OK, "");
+
+    compare_image<compare_rgba>(base_rgba_img, img, "<mem, image_file>");
+    image_free(&img);
+#endif
+  }
 }
 
 
