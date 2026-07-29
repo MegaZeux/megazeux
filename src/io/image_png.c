@@ -19,6 +19,13 @@
 
 #include "image_png.h"
 
+/* Fallbacks may be enabled even if libpng is enabled for e.g. unit tests. */
+enum png_error png_write_fallback(
+ uint32_t width, uint32_t height, enum png_write_fmt fmt,
+ void *handle, png_write_function writefn,
+ void *priv, png_write_row_function writerowfn);
+
+
 #ifdef IMAGE_FILE_LIBPNG
 
 #include <png.h>
@@ -41,8 +48,8 @@ static void png_read_fn(png_struct *png, png_byte *dest, size_t count)
     png_error(png, "eof");
 }
 
-enum png_error png_read(void *handle, const png_read_function readfn,
- void *priv, const png_read_alloc_function allocfn, png_bool skip_signature)
+enum png_error png_read(void *handle, png_read_function readfn,
+ void *priv, png_read_alloc_function allocfn, png_bool skip_signature)
 {
   struct png_rgba *pixels;
   png_struct *png = NULL;
@@ -122,10 +129,7 @@ enum png_error png_read(void *handle, const png_read_function readfn,
 
   png_read_image(png, row_ptrs);
   png_read_end(png, NULL);
-  png_destroy_read_struct(&png, &info, NULL);
-
-  free(row_ptrs);
-  return PNG_OK;
+  ret = PNG_OK;
 
 error:
   png_destroy_read_struct(&png, info ? &info : NULL, NULL);
@@ -133,16 +137,125 @@ error:
   return ret;
 }
 
-/* FIXME: writer */
+struct png_writer
+{
+  void *handle;
+  png_write_function writefn;
+};
+
+static void png_write_fn(png_struct *png, png_byte *src, size_t count)
+{
+  struct png_writer *wr = (struct png_writer *)png_get_io_ptr(png);
+  if(wr->writefn(src, count, wr->handle) < count)
+    png_error(png, "eof");
+}
+
+enum png_error png_write(
+ uint32_t width, uint32_t height, enum png_write_fmt fmt,
+ void *handle, png_write_function writefn,
+ void *priv, png_write_row_function writerowfn)
+{
+  png_struct *png = NULL;
+  png_info *info = NULL;
+  png_bool set_filler = 0;
+  uint32_t i;
+  enum png_error ret;
+
+  struct png_writer wr = { handle, writefn };
+
+  png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  if(!png)
+    return PNG_ERROR_INIT;
+
+  info = png_create_info_struct(png);
+  if(!info)
+  {
+    ret = PNG_ERROR_INIT;
+    goto error;
+  }
+
+  if(setjmp(png_jmpbuf(png)))
+  {
+    ret = PNG_ERROR_INVALID;
+    goto error;
+  }
+
+  png_set_write_fn(png, &wr, png_write_fn, NULL);
+
+  switch(fmt)
+  {
+    case PNG_WRITE_RGB24:
+      png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB,
+       PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+      set_filler = 1;
+      break;
+
+    case PNG_WRITE_RGBA32:
+      png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA,
+       PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+      break;
+
+    default:
+      ret = PNG_ERROR_INIT;
+      goto error;
+  }
+
+  png_write_info(png, info);
+
+  /* Needs to be called after writing the header for some reason... */
+  if(set_filler)
+    png_set_filler(png, 0, PNG_FILLER_AFTER);
+
+  for(i = 0; i < height; i++)
+  {
+    const struct png_rgba *row = writerowfn(width, priv);
+    if(!row)
+    {
+      ret = PNG_ERROR_INVALID;
+      goto error;
+    }
+    png_write_row(png, (const png_byte *)row);
+  }
+
+  png_write_end(png, info);
+  ret = PNG_OK;
+
+error:
+  if(info)
+    png_destroy_info_struct(png, &info);
+
+  png_destroy_write_struct(&png, NULL);
+  return ret;
+}
 
 #else /* !IMAGE_FILE_LIBPNG */
 
-enum png_error png_read(void *handle, const png_read_function readfn,
- void *priv, const png_read_alloc_function allocfn, png_bool skip_signature)
+enum png_error png_read(void *handle, png_read_function readfn,
+ void *priv, png_read_alloc_function allocfn, png_bool skip_signature)
 {
   return PNG_ERROR_INIT;
 }
 
-/* FIXME: fallback writer */
+enum png_error png_write(
+ uint32_t width, uint32_t height, enum png_write_fmt fmt,
+ void *handle, png_write_function writefn,
+ void *priv, png_write_row_function writerowfn)
+{
+  return png_write_fallback(width, height, fmt, handle, writefn, priv, writerowfn);
+}
 
 #endif /* !IMAGE_FILE_LIBPNG */
+
+
+#if defined(MZX_UNIT_TESTS) || !defined(IMAGE_FILE_LIBPNG)
+
+enum png_error png_write_fallback(
+ uint32_t width, uint32_t height, enum png_write_fmt fmt,
+ void *handle, png_write_function writefn,
+ void *priv, png_write_row_function writerowfn)
+{
+  // FIXME:
+  return PNG_ERROR_INIT;
+}
+
+#endif
