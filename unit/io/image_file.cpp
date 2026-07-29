@@ -341,7 +341,7 @@ UNITTEST(PNGWriter)
     iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
     ASSERTEQ(iret, IMAGE_OK, "");
 
-    compare_image<compare_rgb>(base_rgba_img, img, "<mem, image_file>");
+    compare_image<compare_rgb>(base_rgba_img, img, "<mem>");
     image_free(&img);
 #endif
   }
@@ -362,14 +362,13 @@ UNITTEST(PNGWriter)
     iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
     ASSERTEQ(iret, IMAGE_OK, "");
 
-    compare_image<compare_rgba>(base_rgba_img, img, "<mem, image_file>");
+    compare_image<compare_rgba>(base_rgba_img, img, "<mem>");
     image_free(&img);
 #endif
   }
 
   SECTION(FallbackWriteRGB24)
   {
-    SKIP();
     ret = png_write_fallback(
      base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGB24,
      &mf, png_memfile_write_fn, &wp, png_write_row_fn);
@@ -385,14 +384,13 @@ UNITTEST(PNGWriter)
     iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
     ASSERTEQ(iret, IMAGE_OK, "");
 
-    compare_image<compare_rgb>(base_rgba_img, img, "<mem, image_file>");
+    compare_image<compare_rgb>(base_rgba_img, img, "<mem>");
     image_free(&img);
 #endif
   }
 
   SECTION(FallbackWriteRGBA32)
   {
-    SKIP();
     ret = png_write_fallback(
      base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGBA32,
      &mf, png_memfile_write_fn, &wp, png_write_row_fn);
@@ -408,7 +406,7 @@ UNITTEST(PNGWriter)
     iret = load_image_from_stream(&mf, png_memfile_read_fn, &img, nullptr);
     ASSERTEQ(iret, IMAGE_OK, "");
 
-    compare_image<compare_rgba>(base_rgba_img, img, "<mem, image_file>");
+    compare_image<compare_rgba>(base_rgba_img, img, "<mem>");
     image_free(&img);
 #endif
   }

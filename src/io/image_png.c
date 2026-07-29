@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "image_common.h"
 #include "image_png.h"
 
 /* Fallbacks may be enabled even if libpng is enabled for e.g. unit tests. */
@@ -249,13 +250,159 @@ enum png_error png_write(
 
 #if defined(MZX_UNIT_TESTS) || !defined(IMAGE_FILE_LIBPNG)
 
+/* Much more limited fallback PNG writer for builds without libpng.
+ * This has fewer features than libpng but, since MegaZeux already relies
+ * on zlib, it doesn't increase binary size by much more than a BMP writer.
+ * Unlike a BMP writer, it allows large board/vlayer images to be compressed.
+ *
+ * Note that this function can not seek back into the stream, so the output
+ * data must be split into potentially multiple IDAT chunks.
+ */
+#include <zlib.h>
+
+#define MAGIC_BE(buf, str) do { \
+  (buf)[0] = (str)[0]; \
+  (buf)[1] = (str)[1]; \
+  (buf)[2] = (str)[2]; \
+  (buf)[3] = (str)[3]; \
+} while(0)
+
+#define PUT32_BE(buf, val) do { \
+  (buf)[0] = (val) >> 24; \
+  (buf)[1] = (val) >> 16; \
+  (buf)[2] = (val) >> 8; \
+  (buf)[3] = (val); \
+} while(0)
+
+#define DEFLATE_RESET() do { \
+  z.next_out = tmp2 + 8; \
+  z.avail_out = sizeof(tmp2) - 12; \
+} while(0)
+
+#define DEFLATE_FLUSH() do { \
+  size_t sz = sizeof(tmp2) - 12 - z.avail_out; \
+  PUT32_BE(tmp2, sz); \
+  MAGIC_BE(tmp2 + 4, "IDAT"); \
+  crc = crc32(0, tmp2 + 4, sz + 4); \
+  PUT32_BE(tmp2 + 8 + sz, crc); \
+  if(writefn(tmp2, sz + 12, handle) < sz + 12) \
+    goto err; \
+  DEFLATE_RESET(); \
+} while(0)
+
+#define DEFLATE_OUT(p) do { \
+  ret = deflate(&z, p); \
+  if(z.avail_out == 0 || ret == Z_STREAM_END) \
+    DEFLATE_FLUSH(); \
+  if(ret < 0 && ret != Z_BUF_ERROR) \
+    goto err; \
+} while(0)
+
 enum png_error png_write_fallback(
  uint32_t width, uint32_t height, enum png_write_fmt fmt,
  void *handle, png_write_function writefn,
  void *priv, png_write_row_function writerowfn)
 {
-  // FIXME:
-  return PNG_ERROR_INIT;
+#define BUFFER_PIXEL_BYTES 768u * 4u
+  uint8_t tmp[BUFFER_PIXEL_BYTES + 1];
+  uint8_t tmp2[BUFFER_PIXEL_BYTES + 12];
+  uint32_t crc;
+  uint32_t x, y, i;
+  uint32_t pixel_pitch;
+  size_t buffer_max;
+  int png_fmt;
+  int ret;
+  z_stream z;
+
+  switch(fmt)
+  {
+    case PNG_WRITE_RGB24:
+      pixel_pitch = 3;
+      png_fmt = 2; /* RGB */
+      break;
+    case PNG_WRITE_RGBA32:
+      pixel_pitch = 4;
+      png_fmt = 6; /* RGB + Alpha */
+      break;
+    default:
+      return PNG_ERROR_INIT;
+  }
+  buffer_max = BUFFER_PIXEL_BYTES / pixel_pitch;
+
+  memset(&z, 0, sizeof(z));
+  if(deflateInit2(&z, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 15, 8, Z_FILTERED) != Z_OK)
+    if(deflateInit2(&z, Z_BEST_SPEED, Z_DEFLATED, 9, 1, Z_RLE) != Z_OK)
+      return PNG_ERROR_INIT;
+
+  writefn("\x89PNG\r\n\x1a\n", 8, handle);
+  PUT32_BE(tmp, 13);
+  MAGIC_BE(tmp + 4, "IHDR");
+  PUT32_BE(tmp + 8, width);
+  PUT32_BE(tmp + 12, height);
+  tmp[16] = 8;        // 8 bits per component
+  tmp[17] = png_fmt;  // color type
+  tmp[18] = 0;        // deflate
+  tmp[19] = 0;        // filter 0
+  tmp[20] = 0;        // no interlace
+  crc = crc32(0, tmp + 4, 17);
+  PUT32_BE(tmp + 21, crc);
+  writefn(tmp, 25, handle);
+
+  DEFLATE_RESET();
+
+  for(y = 0; y < height; y++)
+  {
+    const uint8_t *row = (const uint8_t *)writerowfn(width, priv);
+    uint8_t *pos = tmp + pixel_pitch + 1;
+    if(!row)
+      goto err;
+
+    tmp[0] = 1; // left filter
+    for(i = 0; i < pixel_pitch; i++)
+      tmp[i + 1] = row[i];
+
+    for(x = 1; x < width;)
+    {
+      size_t num = IMAGE_MIN(width - x, buffer_max);
+      x += num;
+      // Prefilter: since it's always left filter RGB(A), delta with the
+      // same component of the previous pixel (the value 4 bytes ago).
+      while(num)
+      {
+        for(i = 0; i < pixel_pitch; i++)
+          pos[i] = row[i + 4] - row[i];
+        pos += pixel_pitch;
+        row += 4;
+        num--;
+      }
+
+      z.next_in = tmp;
+      z.avail_in = pos - tmp;
+      do
+      {
+        DEFLATE_OUT(Z_NO_FLUSH);
+      } while(z.avail_in != 0);
+      pos = tmp;
+    }
+  }
+  do
+  {
+    DEFLATE_OUT(Z_FINISH);
+  } while(ret != Z_STREAM_END);
+  deflateEnd(&z);
+
+  memset(tmp, 0, 4);
+  writefn(tmp, 4, handle);
+  MAGIC_BE(tmp, "IEND");
+  crc = crc32(0, tmp, 4);
+  PUT32_BE(tmp + 4, crc);
+  writefn(tmp, 8, handle);
+
+  return PNG_OK;
+
+err:
+  deflateEnd(&z);
+  return PNG_ERROR_INVALID;
 }
 
 #endif

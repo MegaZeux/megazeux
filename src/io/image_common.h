@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2022 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2022-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,9 +20,22 @@
 #ifndef MEGAZEUX_IO_IMAGE_COMMON_H
 #define MEGAZEUX_IO_IMAGE_COMMON_H
 
+/* Force dependency tracking even though this doesn't use core MZX headers. */
+#ifndef MEGAZEUX_IO_STANDALONE
+#include "../compat.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef unsigned char image_bool;
+
+enum image_bool_values
+{
+  IMAGE_FALSE,
+  IMAGE_TRUE
+};
 
 #if defined(_MSC_VER) && _MSC_VER < 1400
 static void imagedbg(...) {}

@@ -40,6 +40,7 @@
 /* TODO: hack for MegaZeux fopen_unsafe */
 #undef fopen
 
+#ifdef MEGAZEUX_IO_STANDALONE
 /* Internal compat for MegaZeux boolean type. */
 typedef image_bool boolean;
 #ifndef __cplusplus
@@ -47,6 +48,7 @@ typedef image_bool boolean;
 #undef false
 #define true IMAGE_TRUE
 #define false IMAGE_FALSE
+#endif
 #endif
 
 // These constraints are determined by the maximum size of a board/vlayer/MZM,
