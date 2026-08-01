@@ -1,0 +1,37 @@
+##
+# icons Makefile fragment
+##
+
+.PHONY: icons_clean icons_rebuild
+
+.SUFFIXES: .rc
+
+icons_src = contrib/icons
+icons_obj = ${build_base}/${icons_src}
+build_dirs += ${icons_obj}
+
+icons = ${icons_obj}/icons.o
+
+icons_objs = ${icons_obj}/icon.o
+
+${icons_obj}/%.o: ${icons_src}/%.rc
+	$(if ${V},,@echo "  WINDRES " $<)
+	${WINDRES} -i $< -o $@
+
+ifeq (${EMBED_ICONS},1)
+${icons}: ${icons_obj} ${icons_objs}
+	$(if ${V},,@echo "  CP      " ${icons_objs} ${icons})
+	${CP} ${icons_objs} ${icons}
+else
+${icons}:
+	@echo "--> Embedding of icon branding disabled."
+endif
+
+${icons_objs}: $(filter-out $(wildcard ${icons_obj}), ${icons_obj})
+
+icons_clean:
+	$(if ${V},,@echo "  RM      " ${icons_obj})
+	${RM} -r ${icons_obj}
+
+icons_rebuild:
+	make -f contrib/icons/Makefile all
