@@ -27,16 +27,11 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "image_common.h"
+
 /* Read up to `num` bytes from `handle` into the buffer pointed to by `dest`.
  * Returns the number of bytes actually read from `handle`. */
 typedef size_t (*image_read_function)(void *dest, size_t num, void *handle);
-typedef unsigned char image_bool;
-
-enum image_bool_values
-{
-  IMAGE_FALSE,
-  IMAGE_TRUE
-};
 
 enum image_error
 {

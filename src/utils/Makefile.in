@@ -21,8 +21,9 @@ img_objs  := ${io_obj}/image_file.o ${io_obj}/image_gif.o ${io_obj}/image_png.o
 img_flags :=
 
 ifneq (${LIBPNG},)
-img_flags += ${UTILS_LIBPNG_LDFLAGS} ${UTILS_ZLIB_LDFLAGS} -lm
+img_flags += ${UTILS_LIBPNG_LDFLAGS}
 endif
+img_flags += ${UTILS_ZLIB_LDFLAGS} -lm
 
 # For dependencies only, do not build off of this list.
 utils_objs += \

@@ -39,10 +39,10 @@ enum png_error
   PNG_ERROR_NOT_A_PNG
 };
 
-enum png_write_fmt
+enum png_pixel_fmt
 {
-  PNG_WRITE_RGB24,
-  PNG_WRITE_RGBA32
+  PNG_PIXEL_RGB24,
+  PNG_PIXEL_RGBA32
 };
 
 struct png_rgba
@@ -83,7 +83,7 @@ enum png_error png_read(void *handle, png_read_function readfn,
  void *priv, png_read_alloc_function allocfn, png_bool skip_signature);
 
 /**
- * Write an RGBA32 PNG image to file.
+ * Write a PNG image to file.
  *
  * @param width       total width of the PNG to write. The memory pointed to
  *                    by the write row callback return value should contain
@@ -101,7 +101,7 @@ enum png_error png_read(void *handle, png_read_function readfn,
  * @return            PNG_OK on success, otherwise a relevant png_error value.
  */
 enum png_error png_write(
- uint32_t width, uint32_t height, enum png_write_fmt fmt,
+ uint32_t width, uint32_t height, enum png_pixel_fmt fmt,
  void *handle, png_write_function writefn,
  void *priv, png_write_row_function writerowfn);
 
