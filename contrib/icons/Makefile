@@ -1,16 +1,17 @@
 ##
-# icons Makefile fragment
+# icon generation Makefile
+#
+# Usage: (g)make -f contrib/icons/Makefile
+#
+# This Makefile requires ImageMagick 7.0 or newer (not GraphicsMagick)
+# and usually should only be run if the base .svg files are modified.
 ##
 
-.PHONY: icons_clean icons_rebuild
-
-.SUFFIXES: .rc
+all:
+.PHONY: all
 
 icons_src = contrib/icons
-icons_obj = ${build_base}/${icons_src}
-build_dirs += ${icons_obj}
-
-icons_gen = contrib/icons/generated
+icons_gen = ${icons_src}/generated
 icons_windows = ${icons_gen}
 icons_nds = ${icons_gen}
 icons_wii = ${icons_gen}
@@ -67,38 +68,17 @@ icons_pngs = \
 	${icons_android}/mipmap-xxhdpi/ic_launcher.png \
 	${icons_android}/mipmap-xxxhdpi/ic_launcher.png \
 
-icons = ${icons_obj}/icons.o
-
-icons_objs = ${icons_obj}/icon.o
-
-${icons_obj}/%.o: ${icons_src}/%.rc
-	$(if ${V},,@echo "  WINDRES " $<)
-	${WINDRES} -i $< -o $@
-
-ifeq (${EMBED_ICONS},1)
-${icons}: ${icons_obj} ${icons_objs}
-	$(if ${V},,@echo "  CP      " ${icons_objs} ${icons})
-	${CP} ${icons_objs} ${icons}
-else
-${icons}:
-	@echo "--> Embedding of icon branding disabled."
-endif
-
-${icons_objs}: $(filter-out $(wildcard ${icons_obj}), ${icons_obj})
-
-icons_clean:
-	$(if ${V},,@echo "  RM      " ${icons_obj})
-	${RM} -r ${icons_obj}
-
 #
 # Rebuild raster icons from SVG.
 #
-icons_rebuild: ${icons_pngs}
+all: ${icons_pngs}
 
-${icons_pngs}: contrib/icons/Makefile.in
+${icons_pngs}: contrib/icons/Makefile
 
+CP ?= cp
 MAGICK ?= magick
 ifneq ($V,1)
+CP := @${CP}
 MAGICK := @${MAGICK}
 endif
 MAGICK += -define png:compression-level=9
