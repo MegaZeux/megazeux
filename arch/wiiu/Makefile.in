@@ -15,8 +15,13 @@ endif
 EXTRA_LICENSES += ${LICENSE_MPL2} ${LICENSE_NEWLIB}
 
 #
-# Switch target rules
+# Wii U target rules
 #
+
+APP_NAME  := MegaZeux
+APP_SHORTNAME := MegaZeux
+APP_AUTHOR := MegaZeux Developers
+APP_ICON   := contrib/icons/generated/icon_128.png
 
 include $(DEVKITPRO)/wut/share/wut_rules
 
@@ -59,15 +64,15 @@ ARCH_LDFLAGS  += ${EXTRA_LIBS} ${MACHDEP} ${RPXSPECS}
 # Only relevant search result: https://devkitpro.org/viewtopic.php?f=42&t=9552
 ARCH_CXXFLAGS += -fno-rtti -fno-exceptions
 
-package: mzx mzxrun.rpx megazeux.rpx
+package: mzx mzxrun.rpx mzxrun.wuhb megazeux.rpx megazeux.wuhb
 
 clean:
-	${RM} -f mzxrun.rpx mzxrun.elf megazeux.rpx megazeux.elf
+	${RM} -f mzxrun.wuhb mzxrun.rpx mzxrun.elf megazeux.wuhb megazeux.rpx megazeux.elf
 
 build := build/${SUBPLATFORM}/wiiu/apps/megazeux
 build: package ${build}
 	${CP} arch/wiiu/pad.config ${build}
-	${CP} megazeux.rpx ${build}
+	${CP} megazeux.rpx megazeux.wuhb ${build}
 	${CP} contrib/icons/generated/icon_wiiu.png ${build}/icon.png
 	@sed "s/%VERSION%/${VERSION}/g;s/%DATE%/`date -u +%Y%m%d%H%M`/g" \
 	    arch/wiiu/meta.xml > ${build}/meta.xml
