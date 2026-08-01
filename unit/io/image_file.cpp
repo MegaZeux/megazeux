@@ -274,18 +274,28 @@ UNITTEST(PNG)
 }
 
 
-#ifdef IMAGE_FILE_LIBPNG
 static size_t png_memfile_read_fn(void *dest, size_t count, void *handle)
 {
   struct memfile *mf = reinterpret_cast<struct memfile *>(handle);
   return mfread(dest, 1, count, mf);
 }
-#endif
 
 static size_t png_memfile_write_fn(const void *src, size_t count, void *handle)
 {
   struct memfile *mf = reinterpret_cast<struct memfile *>(handle);
   return mfwrite(src, 1, count, mf);
+}
+
+static struct png_rgba *unit_png_read_alloc_fn(uint32_t w, uint32_t h, void *priv)
+{
+  struct image_file *img = reinterpret_cast<struct image_file *>(priv);
+  if(w > 32767u * 8u || h > 32767u * 14u)
+    return NULL;
+
+  img->data = (struct rgba_color *)calloc(w * h, sizeof(struct png_rgba));
+  img->width = w;
+  img->height = h;
+  return (struct png_rgba *)img->data;
 }
 
 struct png_write_row_priv
@@ -313,8 +323,8 @@ UNITTEST(PNGWriter)
   struct memfile mf;
   struct png_write_row_priv wp;
 
-#ifdef IMAGE_FILE_LIBPNG
   struct image_file img{};
+#ifdef IMAGE_FILE_LIBPNG
   enum image_error iret;
 #endif
   enum png_error ret;
@@ -327,13 +337,18 @@ UNITTEST(PNGWriter)
 
   SECTION(WriteRGB24)
   {
-    ret = png_write(base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGB24,
+    ret = png_write(base_rgba_img.width, base_rgba_img.height, PNG_PIXEL_RGB24,
      &mf, png_memfile_write_fn, &wp, png_write_row_fn);
     ASSERTEQ(ret, PNG_OK, "");
 
     mfseek(&mf, 0, SEEK_SET);
 
-    /* FIXME: simple zlib-only parse to test for pixel data */
+    ret = png_read_fallback(&mf, png_memfile_read_fn,
+     &img, unit_png_read_alloc_fn, false);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    compare_image<compare_rgb>(base_rgba_img, img, "<mem>");
+    image_free(&img);
 
 #ifdef IMAGE_FILE_LIBPNG
     mfseek(&mf, 0, SEEK_SET);
@@ -348,13 +363,18 @@ UNITTEST(PNGWriter)
 
   SECTION(WriteRGBA32)
   {
-    ret = png_write(base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGBA32,
+    ret = png_write(base_rgba_img.width, base_rgba_img.height, PNG_PIXEL_RGBA32,
      &mf, png_memfile_write_fn, &wp, png_write_row_fn);
     ASSERTEQ(ret, PNG_OK, "");
 
     mfseek(&mf, 0, SEEK_SET);
 
-    /* FIXME: simple zlib-only parse to test for pixel data */
+    ret = png_read_fallback(&mf, png_memfile_read_fn,
+     &img, unit_png_read_alloc_fn, false);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    compare_image<compare_rgba>(base_rgba_img, img, "<mem>");
+    image_free(&img);
 
 #ifdef IMAGE_FILE_LIBPNG
     mfseek(&mf, 0, SEEK_SET);
@@ -370,13 +390,18 @@ UNITTEST(PNGWriter)
   SECTION(FallbackWriteRGB24)
   {
     ret = png_write_fallback(
-     base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGB24,
+     base_rgba_img.width, base_rgba_img.height, PNG_PIXEL_RGB24,
      &mf, png_memfile_write_fn, &wp, png_write_row_fn);
     ASSERTEQ(ret, PNG_OK, "");
 
     mfseek(&mf, 0, SEEK_SET);
 
-    /* FIXME: simple zlib-only parse to test for pixel data */
+    ret = png_read_fallback(&mf, png_memfile_read_fn,
+     &img, unit_png_read_alloc_fn, false);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    compare_image<compare_rgb>(base_rgba_img, img, "<mem>");
+    image_free(&img);
 
 #ifdef IMAGE_FILE_LIBPNG
     mfseek(&mf, 0, SEEK_SET);
@@ -392,13 +417,18 @@ UNITTEST(PNGWriter)
   SECTION(FallbackWriteRGBA32)
   {
     ret = png_write_fallback(
-     base_rgba_img.width, base_rgba_img.height, PNG_WRITE_RGBA32,
+     base_rgba_img.width, base_rgba_img.height, PNG_PIXEL_RGBA32,
      &mf, png_memfile_write_fn, &wp, png_write_row_fn);
     ASSERTEQ(ret, PNG_OK, "");
 
     mfseek(&mf, 0, SEEK_SET);
 
-    /* FIXME: simple zlib-only parse to test for pixel data */
+    ret = png_read_fallback(&mf, png_memfile_read_fn,
+     &img, unit_png_read_alloc_fn, false);
+    ASSERTEQ(ret, PNG_OK, "");
+
+    compare_image<compare_rgba>(base_rgba_img, img, "<mem>");
+    image_free(&img);
 
 #ifdef IMAGE_FILE_LIBPNG
     mfseek(&mf, 0, SEEK_SET);
