@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2023-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2023-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -39,7 +39,7 @@
 #ifdef CONFIG_OPENMPT
 #include <libopenmpt/libopenmpt.h>
 #endif
-#ifdef CONFIG_PNG
+#ifdef CONFIG_LIBPNG
 #include <png.h>
 #endif
 #ifdef CONFIG_VORBIS
@@ -56,7 +56,7 @@
 #define MAX_VERSIONS  32
 #define MAX_LICENSE   (1 << 18) /* 256k should be enough for a license... */
 
-#ifdef CONFIG_PNG
+#ifdef CONFIG_LIBPNG
 static char *png_version_string(char version_str[16], png_uint_32 version)
 {
   int v = (int)version;
@@ -175,7 +175,7 @@ static char **about_text(int *num_lines)
   else
     lines[i++] = about_line("zlib: " ZLIB_VERSION);
 
-#ifdef CONFIG_PNG
+#ifdef CONFIG_LIBPNG
   {
     png_uint_32 version_link = png_access_version_number();
     png_uint_32 version_comp = PNG_LIBPNG_VER;

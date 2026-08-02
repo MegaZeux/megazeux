@@ -6,8 +6,8 @@ io_src   = ${core_src}/io
 io_obj   = ${build_base}/${io_src}
 io_objs += \
   ${io_obj}/fsafeopen.o           \
+  ${io_obj}/image_png.o           \
   ${io_obj}/path.o                \
-  ${io_obj}/pngops.o              \
   ${io_obj}/vfs.o                 \
   ${io_obj}/vio.o                 \
   ${io_obj}/zip.o                 \
@@ -17,7 +17,6 @@ io_objs += \
 io_utils_objs += \
   ${io_obj}/image_file.o          \
   ${io_obj}/image_gif.o           \
-  ${io_obj}/image_png.o           \
   ${io_obj}/vio_no_vfs.o          \
 
 ifeq (${LIBPNG},1)

@@ -27,6 +27,8 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "image_common.h"
+
 #define PNG_SIGNATURE_STRING "\x89PNG\r\n\x1A\n"
 
 enum png_error
@@ -53,11 +55,12 @@ struct png_rgba
   uint8_t a; /* alpha component (0 to 255) */
 };
 
-typedef size_t (*png_read_function)(void *dest, size_t num, void *handle);
-typedef size_t (*png_write_function)(const void *src, size_t num, void *handle);
+typedef size_t (*png_read_function)(void * RESTRICT dest, size_t num, void * RESTRICT handle);
+typedef size_t (*png_write_function)(const void *src, size_t num, void * RESTRICT handle);
 typedef unsigned char png_bool;
 
-typedef struct png_rgba *(*png_read_alloc_function)(uint32_t width, uint32_t height, void *priv);
+typedef png_bool (*png_read_alloc_function)(uint32_t width, uint32_t height,
+ struct png_rgba **pixels, size_t *pixels_row_pitch, void *priv);
 typedef const struct png_rgba *(*png_write_row_function)(uint32_t width, void *priv);
 
 /**
@@ -69,12 +72,16 @@ typedef const struct png_rgba *(*png_write_row_function)(uint32_t width, void *p
  * @param allocfn     function to allocate the png_rgba array in memory.
  *                    Upon calling this function, an array of (width x height)
  *                    png_rgba structs should be allocated, and this function
- *                    should return a pointer to the start of this array.
- *                    If the dimensions fail constraints or if allocation fails,
- *                    return NULL instead.
+ *                    should return IMAGE_TRUE, writing a pointer to the start
+ *                    of this array to *pixels and the row pitch in bytes
+ *                    (usually width * 4) to *pixels_row_pitch. If the
+ *                    dimensions fail constraints, or if allocation fails,
+ *                    return IMAGE_FALSE instead.
  *                    This function should store a copy of the pixel array and
  *                    dimensions for the caller via priv, as png_read has no
  *                    separate mechanism to return these values.
+ *                    The caller is responsible for freeing any data allocated
+ *                    by this function whether or not png_read fails.
  * @param skip_sig    if true, assume the first 8 bytes have already been read.
  *                    If false, this function will check the signature.
  * @return            PNG_OK on success, otherwise a relevant png_error value.

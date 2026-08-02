@@ -56,12 +56,15 @@ static void imagenodbg(...) {}
 #endif
 #endif
 
-#undef ARRAY_SIZE
-#undef IMAGE_MAX
-#undef IMAGE_MIN
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(*(a)))
+#ifndef IMAGE_ARRAY_SIZE
+#define IMAGE_ARRAY_SIZE(a) (sizeof(a) / sizeof(*(a)))
+#endif
+#ifndef IMAGE_MAX
 #define IMAGE_MAX(a,b) ((a) > (b) ? (a) : (b))
+#endif
+#ifndef IMAGE_MIN
 #define IMAGE_MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
 
 #ifdef __cplusplus
 }
