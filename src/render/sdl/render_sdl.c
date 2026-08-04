@@ -571,23 +571,30 @@ boolean sdl_set_window_caption(struct graphics_data *graphics,
   return true;
 }
 
-#if defined(CONFIG_PNG) && defined(CONFIG_ICON) && !defined(_WIN32)
-#include "../../io/pngops.h"
+#if defined(CONFIG_ICON) && !defined(_WIN32)
+#include "../../io/image_png.h"
+#include "../../io/vio.h"
 
-static boolean icon_w_h_constraint(png_uint_32 w, png_uint_32 h)
+static size_t icon_read_vfile_fn(void * RESTRICT buffer, size_t count,
+ void * RESTRICT handle)
 {
-  // Icons must be multiples of 16 and square
-  return (w == h) && ((w % 16) == 0) && ((h % 16) == 0);
+  return vfread(buffer, 1, count, (vfile *)handle);
 }
 
-static void *sdl_alloc_rgba_surface(png_uint_32 w, png_uint_32 h,
- png_uint_32 *stride, void **pixels)
+static png_bool icon_alloc_fn(uint32_t width, uint32_t height,
+ struct png_rgba **pixels, size_t *pixels_row_pitch, void *priv)
 {
+  SDL_Surface **dest = (SDL_Surface **)priv;
+  SDL_Surface *s;
+
+  /* Icons must be multiples of 16 and square. */
+  if(width != height || width % 16)
+    return IMAGE_FALSE;
+
 #if SDL_VERSION_ATLEAST(2,0,0)
-  SDL_Surface *s = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
+  s = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
 #else
   Uint32 rmask, gmask, bmask, amask;
-  SDL_Surface *s;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
   rmask = 0xff000000;
@@ -601,22 +608,37 @@ static void *sdl_alloc_rgba_surface(png_uint_32 w, png_uint_32 h,
   amask = 0xff000000;
 #endif
 
-  s = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 32, rmask, gmask, bmask, amask);
+  s = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
 #endif
   if(!s)
-    return NULL;
+    return IMAGE_FALSE;
 
-  *stride = s->pitch;
-  *pixels = s->pixels;
-  return s;
+  *dest = s;
+  *pixels = (struct png_rgba *)s->pixels;
+  *pixels_row_pitch = s->pitch;
+  return IMAGE_TRUE;
 }
 
 static SDL_Surface *png_read_icon(const char *name)
 {
-  return png_read_file(name, NULL, NULL, icon_w_h_constraint,
-   sdl_alloc_rgba_surface);
+  SDL_Surface *s = NULL;
+  enum png_error ret;
+
+  vfile *vf = vfopen_unsafe(name, "rb");
+  if(!vf)
+    return NULL;
+
+  ret = png_read(vf, icon_read_vfile_fn, &s, icon_alloc_fn, false);
+  vfclose(vf);
+
+  if(ret != PNG_OK)
+  {
+    SDL_DestroySurface(s);
+    return NULL;
+  }
+  return s;
 }
-#endif // CONFIG_PNG && CONFIG_ICON && !_WIN32
+#endif // CONFIG_ICON && !_WIN32
 
 boolean sdl_set_window_icon(struct graphics_data *graphics,
  struct video_window *window, const char *icon_path)
@@ -639,7 +661,7 @@ boolean sdl_set_window_icon(struct graphics_data *graphics,
     else
       debug("failed to open embedded icon\n");
   }
-#elif defined(CONFIG_PNG) // !_WIN32
+#else /* !_WIN32 */
   {
     SDL_Surface *icon;
     if(!icon_path)
@@ -667,7 +689,7 @@ boolean sdl_set_window_icon(struct graphics_data *graphics,
     else
       warn("failed to open icon file '%s'\n", icon_path);
   }
-#endif // !_WIN32 && !CONFIG_PNG
+#endif // !_WIN32
 #endif // CONFIG_ICON
   return false;
 }

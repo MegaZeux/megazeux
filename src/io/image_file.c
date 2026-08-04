@@ -242,7 +242,8 @@ void image_free(struct image_file *dest)
  * PNG loader.
  */
 
-static struct png_rgba *png_read_alloc_fn(uint32_t width, uint32_t height, void *priv)
+static png_bool png_read_alloc_fn(uint32_t width, uint32_t height,
+ struct png_rgba **pixels, size_t *pixels_row_pitch, void *priv)
 {
   imageinfo *s = (imageinfo *)priv;
 
@@ -250,9 +251,11 @@ static struct png_rgba *png_read_alloc_fn(uint32_t width, uint32_t height, void 
   if(ret)
   {
     debug("alloc failed: %s\n", image_error_string(ret));
-    return NULL;
+    return IMAGE_FALSE;
   }
-  return (struct png_rgba *)s->out->data;
+  *pixels = (struct png_rgba *)s->out->data;
+  *pixels_row_pitch = width * sizeof(struct png_rgba);
+  return IMAGE_TRUE;
 }
 
 static enum image_error convert_png_error(enum png_error err)
@@ -2254,7 +2257,7 @@ static enum image_error pam_set_tupltype(struct pam_tupl *dest, const char *tupl
   };
 
   size_t i;
-  for(i = 0; i < ARRAY_SIZE(tupltypes); i++)
+  for(i = 0; i < IMAGE_ARRAY_SIZE(tupltypes); i++)
   {
     if(!strcasecmp(tupltypes[i].name, tuplstr))
     {

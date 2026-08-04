@@ -103,7 +103,7 @@ usage() {
 	echo "  --disable-overlay         Disable SDL 1.2 overlay renderers."
 	echo "  --enable-gp2x             Enables half-res software renderer."
 	echo "  --disable-dos-svga        On the DOS platform, disable SVGA software renderer."
-	echo "  --disable-libpng          Disable PNG screendump support."
+	echo "  --disable-libpng          Disable libpng for reading/writing PNG images."
 	echo "  --disable-screenshots     Disable the screenshot hotkey."
 	echo "  --enable-fps              Enable frames-per-second counter."
 	echo
@@ -1263,15 +1263,18 @@ if [ "$SDL" = "false" ] || [ "$LIBPNG" = "false" ] &&
 fi
 
 #
-# Force-disable PNG support on platforms without screenshots, utils, icon enabled.
-# The 3DS port requires PNG for other purposes.
+# MegaZeux has a fallback PNG writer that is much smaller than the equivalent
+# libpng code, and this can be used to write screenshots and board images.
+# If the utils and runtime icon loading are both disabled, libpng support
+# can be omitted.
 #
-if [ "$SCREENSHOTS" = "false" ] &&
-   [ "$UTILS" = "false" ] &&
+# The 3DS port currently requires libpng to load its keyboard texture.
+#
+if [ "$UTILS" = "false" ] &&
    [ "$ICON" = "false" ] &&
    [ "$LIBPNG" = "true" ] &&
    [ "$PLATFORM" != "3ds" ]; then
-	echo "Force-disabling PNG support (screenshots, utils, icon disabled)"
+	echo "Force-disabling libpng (utils, runtime icon loading disabled)"
 	LIBPNG="false"
 fi
 
@@ -1742,14 +1745,14 @@ else
 fi
 
 #
-# Handle PNG support, if enabled
+# Handle libpng, if enabled
 #
 if [ "$LIBPNG" = "true" ]; then
-	echo "PNG support enabled."
-	echo "#define CONFIG_PNG" >> src/config.h
+	echo "libpng enabled."
+	echo "#define CONFIG_LIBPNG" >> src/config.h
 	echo "LIBPNG=1" >> platform.inc
 else
-	echo "PNG support disabled."
+	echo "libpng disabled, using fallback PNG writer (where applicable)."
 fi
 
 #

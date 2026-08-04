@@ -3,7 +3,7 @@
  * Copyright (C) 2004-2006 Gilead Kutnick <exophase@adelphia.net>
  * Copyright (C) 2007 Alistair John Strachan <alistair@devzero.co.uk>
  * Copyright (C) 2017 Dr Lancer-X <drlancer@megazeux.org>
- * Copyright (C) 2017-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2017-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * YUV Renderers:
  *   Copyright (C) 2007 Alan Williams <mralert@gmail.com>
@@ -37,7 +37,7 @@
 #include "error.h"
 #include "graphics.h"
 #include "world.h"
-#include "io/pngops.h"
+#include "io/image_png.h"
 #include "io/vio.h"
 
 #include "event/event.h"
@@ -2578,10 +2578,16 @@ static void screenshot_init_palette(struct graphics_data *graphics,
   }
 }
 
+static size_t png_write_vfile_callback(const void *src, size_t count,
+ void * RESTRICT handle)
+{
+  return vfwrite(src, 1, count, (vfile *)handle);
+}
+
 #endif /* CONFIG_ENABLE_SCREENSHOTS || CONFIG_EDITOR */
 
 #ifdef CONFIG_ENABLE_SCREENSHOTS
-#if 1 // CONFIG_PNG
+#if 1 // PNG export
 
 #define DUMP_FMT_EXT "png"
 
@@ -2607,22 +2613,28 @@ static void dump_screen_real(const uint8_t *pix,
   png_write_image_8bpp(name, 640, 350, pal, count, &priv, dump_screen_callback);
 }
 */
-
-static const uint32_t *dump_screen_callback_32bpp(size_t num_pixels, void *priv)
+static const struct png_rgba *dump_screen_callback_32bpp(uint32_t num_pixels, void *priv)
 {
   struct dump_screen_priv *data = (struct dump_screen_priv *)priv;
   const uint32_t *ret = data->pix32;
   data->pix32 += num_pixels;
-  return ret;
+  return (const struct png_rgba *)ret;
 }
 
 static void dump_screen_real_32bpp(const uint32_t *pix, const char *name)
 {
   struct dump_screen_priv priv = { NULL, pix };
-  png_write_image_32bpp(name, 640, 350, &priv, dump_screen_callback_32bpp);
+  vfile *vf = vfopen_unsafe(name, "wb");
+  if(!vf)
+    return;
+
+  png_write(640, 350, PNG_PIXEL_RGB24,
+   vf, png_write_vfile_callback, &priv, dump_screen_callback_32bpp);
+
+  vfclose(vf);
 }
 
-#else
+#else // !PNG export
 
 #define DUMP_FMT_EXT "bmp"
 
@@ -2726,7 +2738,7 @@ static void dump_screen_real_32bpp(const uint32_t *pix, const char *name)
   vfclose(file);
 }
 
-#endif // CONFIG_PNG
+#endif // !PNG export
 
 #define MAX_NAME_SIZE 20
 
@@ -2799,7 +2811,7 @@ struct dump_layer_priv
 };
 
 /* Render the layer one row at a time as it may be LARGE. */
-static const uint32_t *dump_layer_callback(size_t num_pixels, void *priv)
+static const struct png_rgba *dump_layer_callback(uint32_t num_pixels, void *priv)
 {
   struct dump_layer_priv *data = (struct dump_layer_priv *)priv;
   uint32_t *pos;
@@ -2825,7 +2837,7 @@ static const uint32_t *dump_layer_callback(size_t num_pixels, void *priv)
 
   pos = data->flat_array + (data->pitch >> 2) * data->pos_in_array;
   data->pos_in_array++;
-  return pos;
+  return (struct png_rgba *)pos;
 }
 
 /* Render an arbitrary layer to an image.
@@ -2840,7 +2852,8 @@ boolean dump_layer_to_image(const char *filename,
   struct rgb_color palette[FULL_PAL_SIZE];
   struct dump_layer_priv data;
   uint32_t *flat_array;
-  boolean ret;
+  vfile *vf;
+  enum png_error ret = PNG_ERROR_IO;
 
   if(width_ch >= 32768 || height_ch >= 32768)
     return false;
@@ -2884,12 +2897,18 @@ boolean dump_layer_to_image(const char *filename,
 
   screenshot_init_palette(graphics_copy, palette, NULL);
 
-  ret = png_write_image_32bpp(filename,
-   width_ch * CHAR_W, height_ch * CHAR_H, &data, dump_layer_callback);
+  vf = vfopen_unsafe(filename, "wb");
+  if(vf)
+  {
+    ret = png_write(width_ch * CHAR_W, height_ch * CHAR_H, PNG_PIXEL_RGB24,
+     vf, png_write_vfile_callback, &data, dump_layer_callback);
+
+    vfclose(vf);
+  }
 
   free(graphics_copy);
   free(flat_array);
-  return ret;
+  return (ret == PNG_OK);
 }
 #endif /* CONFIG_EDITOR */
 

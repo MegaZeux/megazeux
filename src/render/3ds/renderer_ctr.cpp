@@ -24,7 +24,8 @@
 
 #include "../../graphics.h"
 #include "../../util.h"
-#include "../../io/pngops.h"
+#include "../../io/image_png.h"
+#include "../../io/vio.h"
 
 #include "../../event/3ds/event_3ds.h"
 #include "../../event/3ds/keyboard.h"
@@ -139,37 +140,88 @@ static u8 bitmask_smzx[4][16] =
     0x00, 0x00, 0x00, 0xf0, 0x0f, 0x0f, 0x0f, 0xff }
 };
 
-// texture PNG dimensions must be powers of two
-static boolean tex_w_h_constraint(png_uint_32 w, png_uint_32 h)
+static size_t ctr_png_read_fn(void * RESTRICT dest, size_t count, void * RESTRICT handle)
 {
-  return w > 0 && h > 0 && ((w & (w - 1)) == 0) && ((h & (h - 1)) == 0);
+  return vfread(dest, 1, count, (vfile *)handle);
 }
 
-static inline int to_texture_size(int v)
+static png_bool ctr_png_alloc_fn(uint32_t width, uint32_t height,
+ struct png_rgba **pixels, size_t *pixel_row_pitch, void *priv)
 {
-  int i;
-  for(i = 8; i <= 65536; i *= 2)
-    if(i >= v)
-      return i;
-  return v;
-}
-
-static void *tex_alloc_png_surface(png_uint_32 w, png_uint_32 h,
-  png_uint_32 *stride, void **pixels)
-{
+  C3D_Tex **dest = (C3D_Tex **)priv;
   C3D_Tex *tex;
 
-  tex = (C3D_Tex *)ccalloc(1, sizeof(C3D_Tex));
-  *stride = w << 2;
+  // texture PNG dimensions must be powers of two
+  if(width < 8 || width > 1024 || height < 8 || height > 1024 ||
+   (width & (width - 1)) || (height & (height - 1)))
+    return IMAGE_FALSE;
 
-  if(!C3D_TexInit(tex, w, h, GPU_RGBA8))
+  tex = (C3D_Tex *)ccalloc(1, sizeof(C3D_Tex));
+
+  if(!C3D_TexInit(tex, width, height, GPU_RGBA8))
   {
     free(tex);
+    return IMAGE_FALSE;
+  }
+
+  *dest = tex;
+  *pixels = (struct png_rgba *)tex->data;
+  *pixel_row_pitch = width * sizeof(struct png_rgba);
+  return IMAGE_TRUE;
+}
+
+C3D_Tex *ctr_load_png(const char *name)
+{
+  C3D_Tex *output = NULL;
+  u32 *data;
+  u32 *dataBuf;
+  u16 width;
+  u16 height;
+  int i;
+  enum png_error ret;
+
+  vfile *vf = vfopen_unsafe(name, "rb");
+  if(!vf)
+    return NULL;
+
+  ret = png_read(vf, ctr_png_read_fn, &output, ctr_png_alloc_fn, false);
+  vfclose(vf);
+  if(ret != PNG_OK)
+  {
+    C3D_TexDelete(output);
+    free(output);
     return NULL;
   }
 
-  *pixels = tex->data;
-  return tex;
+  C3D_TexSetWrap(output, GPU_CLAMP_TO_BORDER, GPU_CLAMP_TO_BORDER);
+  data = (u32 *)output->data;
+  dataBuf = (u32 *)clinearAlloc(output->size, 0x10);
+
+  for(i = 0; i < output->size >> 2; i++)
+    dataBuf[i] = __builtin_bswap32(data[i]);
+
+  width = output->width;
+  height = output->height;
+  C3D_TexDelete(output);
+  C3D_TexInitVRAM(output, width, height, GPU_RGBA8);
+  data = (u32 *)output->data;
+
+  GSPGPU_FlushDataCache(dataBuf, output->size);
+  C3D_SyncDisplayTransfer(
+    dataBuf,
+    GX_BUFFER_DIM(output->width, output->height),
+    data,
+    GX_BUFFER_DIM(output->width, output->height),
+    (GX_TRANSFER_FLIP_VERT(0) |
+     GX_TRANSFER_OUT_TILED(1) |
+     GX_TRANSFER_RAW_COPY(0) |
+     GX_TRANSFER_IN_FORMAT(GPU_RGBA8) |
+     GX_TRANSFER_OUT_FORMAT(GPU_RGBA8) |
+     GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
+  );
+
+  linearFree(dataBuf);
+  return output;
 }
 
 static inline void ctr_set_2d_projection(struct ctr_render_data *render_data,
@@ -224,51 +276,6 @@ static inline void ctr_prepare_playfield(struct ctr_render_data *render_data,
    &render_data->projection);
   C3D_FVUnifSet(GPU_GEOMETRY_SHADER, render_data->shader_playfield.offs_loc,
    (float) xo, (float) yo, z, 0.0f);
-}
-
-C3D_Tex *ctr_load_png(const char *name)
-{
-  C3D_Tex *output;
-  u16 width, height;
-  u32 *data, *dataBuf;
-  int i;
-
-  output = (C3D_Tex *)png_read_file(name, NULL, NULL, tex_w_h_constraint,
-    tex_alloc_png_surface);
-
-  if(output != NULL)
-  {
-    C3D_TexSetWrap(output, GPU_CLAMP_TO_BORDER, GPU_CLAMP_TO_BORDER);
-    data = (u32 *)output->data;
-    dataBuf = (u32 *)clinearAlloc(output->size, 0x10);
-
-    for(i = 0; i < output->size >> 2; i++)
-      dataBuf[i] = __builtin_bswap32(data[i]);
-
-    width = output->width;
-    height = output->height;
-    C3D_TexDelete(output);
-    C3D_TexInitVRAM(output, width, height, GPU_RGBA8);
-    data = (u32 *)output->data;
-
-    GSPGPU_FlushDataCache(dataBuf, output->size);
-    C3D_SyncDisplayTransfer(
-      dataBuf,
-      GX_BUFFER_DIM(output->width, output->height),
-      data,
-      GX_BUFFER_DIM(output->width, output->height),
-      (GX_TRANSFER_FLIP_VERT(0) |
-       GX_TRANSFER_OUT_TILED(1) |
-       GX_TRANSFER_RAW_COPY(0) |
-       GX_TRANSFER_IN_FORMAT(GPU_RGBA8) |
-       GX_TRANSFER_OUT_FORMAT(GPU_RGBA8) |
-       GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO))
-    );
-
-    linearFree(dataBuf);
-  }
-
-  return output;
 }
 
 static int vertex_heap_pos = 0, vertex_heap_len = 0;
@@ -1009,8 +1016,8 @@ static void ctr_render_layer(struct graphics_data *graphics,
     {
       layer->has_background_texture = true;
       layer->background.data = NULL;
-      C3D_TexInit(&(layer->background), to_texture_size(layer->w),
-       to_texture_size(layer->h), GPU_RGBA8);
+      C3D_TexInit(&(layer->background), round_to_power_of_two(layer->w),
+       round_to_power_of_two(layer->h), GPU_RGBA8);
       C3D_TexSetFilter(&(layer->background), GPU_NEAREST, GPU_NEAREST);
     }
     else

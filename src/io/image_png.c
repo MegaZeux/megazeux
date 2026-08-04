@@ -55,14 +55,14 @@ static void png_read_fn(png_struct *png, png_byte *dest, size_t count)
 enum png_error png_read(void *handle, png_read_function readfn,
  void *priv, png_read_alloc_function allocfn, png_bool skip_signature)
 {
-  struct png_rgba *pixels;
+  struct png_rgba *pixels = NULL;
+  size_t pixels_row_pitch = 0;
   png_struct *png = NULL;
   png_info *info = NULL;
   png_byte ** volatile row_ptrs = NULL;
   png_uint_32 w;
   png_uint_32 h;
   png_uint_32 i;
-  png_uint_32 j;
   int bit_depth;
   int color_type;
   enum png_error ret;
@@ -99,8 +99,7 @@ enum png_error png_read(void *handle, png_read_function readfn,
   png_read_info(png, info);
   png_get_IHDR(png, info, &w, &h, &bit_depth, &color_type, NULL, NULL, NULL);
 
-  pixels = allocfn(w, h, priv);
-  if(!pixels)
+  if(!allocfn(w, h, &pixels, &pixels_row_pitch, priv) || !pixels)
   {
     ret = PNG_ERROR_MEM;
     goto error;
@@ -113,8 +112,8 @@ enum png_error png_read(void *handle, png_read_function readfn,
     goto error;
   }
 
-  for(i = 0, j = 0; i < h; i++, j += w)
-    row_ptrs[i] = (png_byte *)(pixels + j);
+  for(i = 0; i < h; i++)
+    row_ptrs[i] = (png_byte *)pixels + i * pixels_row_pitch;
 
   /* This SHOULD convert everything to RGBA32.
    * See the far too complicated table in libpng-manual.txt for more info. */
@@ -410,8 +409,10 @@ enum png_error png_read_fallback(void *handle, png_read_function readfn,
  void *priv, png_read_alloc_function allocfn, png_bool skip_signature)
 {
   uint8_t in_buffer[4096];
-  struct png_rgba *pixels;
-  struct png_rgba *pixels_end;
+  struct png_rgba *dest;
+  uint8_t *dest_u8;
+  uint8_t *dest_u8_end;
+  size_t dest_row_pitch;
   uint8_t *row_buffer = NULL;
   uint8_t *row_prev = NULL;
   uint8_t *row_tmp;
@@ -497,10 +498,15 @@ enum png_error png_read_fallback(void *handle, png_read_function readfn,
   /* Up/etc filters assume pixels at y=-1 are zeroed. */
   memset(row_prev, 0, row_bytes);
 
-  pixels = allocfn(width, height, priv);
-  if(!pixels)
+  if(!allocfn(width, height, &dest, &dest_row_pitch, priv) || !dest)
     goto error;
-  pixels_end = pixels + (size_t)width * height;
+#if SIZE_MAX <= UINT32_MAX
+  if((uint64_t)dest_row_pitch * height > SIZE_MAX)
+    goto error;
+#endif
+
+  dest_u8 = (uint8_t *)dest;
+  dest_u8_end = dest_u8 + dest_row_pitch * height;
 
   ret = PNG_ERROR_INVALID;
 
@@ -512,7 +518,7 @@ enum png_error png_read_fallback(void *handle, png_read_function readfn,
     INIT_CHUNK();
   }
 
-  while(pixels < pixels_end)
+  while(dest_u8 < dest_u8_end)
   {
     INFLATE_SETUP_ROW();
 
@@ -534,10 +540,10 @@ enum png_error png_read_fallback(void *handle, png_read_function readfn,
 
     if(!filter_row(row_buffer, row_prev, width, pixel_pitch))
       goto error;
-    if(!convert_row(pixels, row_buffer, width, pixel_pitch, fmt))
+    if(!convert_row((struct png_rgba *)dest_u8, row_buffer, width, pixel_pitch, fmt))
       goto error;
 
-    pixels += width;
+    dest_u8 += dest_row_pitch;
 
     /* Retain the previous row of pixels for filtering. */
     row_tmp = row_buffer;
