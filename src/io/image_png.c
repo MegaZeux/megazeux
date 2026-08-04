@@ -35,6 +35,15 @@ enum png_error png_write_fallback(
 #include <png.h>
 #include <setjmp.h>
 
+/* Prior to libpng 1.5.16, png_write_row takes a non-const pointer despite
+ * it never modifying the row data. In some very old libpng versions, the
+ * type png_const_bytep does not even exist (encountered in 1.2.49). */
+#if defined(PNG_LIBPNG_VER) && PNG_LIBPNG_VER >= 10516
+typedef png_const_bytep png_maybeconst_bytep;
+#else
+typedef png_bytep png_maybeconst_bytep;
+#endif
+
 #if PNG_LIBPNG_VER < 10504
 #define png_set_scale_16(p) png_set_strip_16(p)
 #endif
@@ -217,7 +226,7 @@ enum png_error png_write(
       ret = PNG_ERROR_INVALID;
       goto error;
     }
-    png_write_row(png, (const png_byte *)row);
+    png_write_row(png, (png_maybeconst_bytep)row);
   }
 
   png_write_end(png, info);
