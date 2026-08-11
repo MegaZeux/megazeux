@@ -46,7 +46,6 @@
  */
 #if !SDL_VERSION_ATLEAST(2,0,0) || \
  (!SDL_VERSION_ATLEAST(3,0,0) && defined(CONFIG_3DS)) || \
- (!SDL_VERSION_ATLEAST(3,0,0) && defined(CONFIG_PS2)) || \
  (!SDL_VERSION_ATLEAST(2,32,0) && defined(CONFIG_PSP)) || \
  (!SDL_VERSION_ATLEAST(2,0,22) && defined(CONFIG_PSVITA)) || \
  defined(CONFIG_SWITCH)
@@ -1527,6 +1526,7 @@ static boolean process_event(SDL_Event *event)
       break;
     }
 
+    case SDL_EVENT_GAMEPAD_ADDED:
     case SDL_EVENT_JOYSTICK_ADDED:
     {
       // Add a new joystick.
@@ -1541,6 +1541,7 @@ static boolean process_event(SDL_Event *event)
       break;
     }
 
+    case SDL_EVENT_GAMEPAD_REMOVED:
     case SDL_EVENT_JOYSTICK_REMOVED:
     {
       // Close a disconnected joystick.

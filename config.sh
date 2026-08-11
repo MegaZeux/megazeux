@@ -1076,21 +1076,21 @@ case "$PLATFORM" in
 	;;
 	
 "ps2")
-	echo "Enabling PSP-specific hacks."
+	echo "Enabling PS2-specific hacks."
 	echo "#define CONFIG_PS2" >> src/config.h
 	echo "BUILD_PS2=1" >> platform.inc
 
-	echo "Force-disabling modular build on PSP."
+	echo "Force-disabling modular build on PS2."
 	MODULAR="false"
 
-	echo "Force-disabling OpenGL and overlay renderers on PSP."
+	echo "Force-disabling OpenGL and overlay renderers on PS2."
 	GL="false"
 	OVERLAY="false"
 
-	echo "Force-disabling stack protector on PSP."
+	echo "Force-disabling stack protector on PS2."
 	STACK_PROTECTOR="false"
 
-	echo "Force-disabling getaddrinfo, poll, and IPv6 on PSP."
+	echo "Force-disabling getaddrinfo, poll, and IPv6 on PS2."
 	GETADDRINFO="false"
 	POLL="false"
 	IPV6="false"
