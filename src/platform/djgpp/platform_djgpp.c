@@ -159,13 +159,13 @@ static void djgpp_enable_dma16(uint8_t port, uint8_t mode, int offset, int bytes
   switch(port & 3)
   {
     case 1:
-      outportb(0x8B, (offset >> 17));
+      outportb(0x8B, (offset >> 16));
       break;
     case 2:
-      outportb(0x89, (offset >> 17));
+      outportb(0x89, (offset >> 16));
       break;
     case 3:
-      outportb(0x8A, (offset >> 17));
+      outportb(0x8A, (offset >> 16));
       break;
   }
   outportb(0xD4, (port & 3));
