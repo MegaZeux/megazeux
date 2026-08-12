@@ -26,15 +26,9 @@
 #include "../event.h"
 #include "../../graphics.h"
 #include "../../platform/platform.h"
+#include "../../platform/djgpp/interrupt.h"
 
 extern struct input_status input;
-
-// Defined in interrupt.S
-extern int kbd_handler;
-extern __dpmi_paddr kbd_old_handler;
-extern volatile uint8_t kbd_buffer[256];
-extern volatile uint8_t kbd_read;
-extern volatile uint8_t kbd_write;
 
 static enum
 {
@@ -43,7 +37,6 @@ static enum
   KBD_PRESSED
 } kbd_statmap[0x80] = {0};
 static uint16_t kbd_unicode[0x80] = {0};
-static boolean kbd_init = false;
 
 static int read_kbd(void)
 {
@@ -419,19 +412,6 @@ static boolean process_key(int key)
   return ret;
 }
 
-// Defined in interrupt.S
-extern void mouse_handler(__dpmi_regs *reg);
-extern _go32_dpmi_registers mouse_regs;
-extern volatile struct mouse_event
-{
-  uint16_t cond;
-  uint16_t button;
-  int16_t dx;
-  int16_t dy;
-} mouse_buffer[256];
-extern volatile uint8_t mouse_read;
-extern volatile uint8_t mouse_write;
-
 static struct mouse_event mouse_last = { 0, 0, 0, 0 };
 static boolean mouse_init = false;
 
@@ -531,9 +511,6 @@ void __wait_event(void)
   boolean ret;
   int key;
 
-  if(!kbd_init && !mouse_init)
-    return;
-
   while((key = read_kbd()) == -1 && !(ret = read_mouse(&mev)));
   if(key != -1)
     process_key(key);
@@ -572,16 +549,6 @@ boolean platform_is_screen_keyboard_active(void)
   return false;
 }
 
-static void init_kbd(void)
-{
-  __dpmi_paddr handler;
-  __dpmi_get_protected_mode_interrupt_vector(0x09, &kbd_old_handler);
-  handler.offset32 = (unsigned long)&kbd_handler;
-  handler.selector = _my_cs();
-  if(!__dpmi_set_protected_mode_interrupt_vector(0x09, &handler))
-    kbd_init = true;
-}
-
 static void init_mouse(void)
 {
   __dpmi_regs reg;
@@ -607,6 +574,5 @@ static void init_mouse(void)
 
 void platform_init_event(void)
 {
-  init_kbd();
   init_mouse();
 }

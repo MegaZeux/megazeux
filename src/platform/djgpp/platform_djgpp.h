@@ -28,6 +28,8 @@ MEGAZEUX_BEGIN_DECLS
 #include <stdint.h>
 #include <dpmi.h>
 
+#define IRQ_VECTOR(x) (((x) >= 0x08) ? (0x70 + (x) - 0x08) : (0x08 + (x)))
+
 #define DMA_BOUNDARY  0x10000 /* For djgpp_malloc_boundary */
 
 #define DMA_AUTOINIT  0x10
@@ -50,9 +52,13 @@ void djgpp_disable_dma(uint8_t port);
 void djgpp_irq_enable(int irq, struct irq_state *old_state);
 void djgpp_irq_restore(struct irq_state *old_state);
 void djgpp_irq_ack(int irq);
-int djgpp_irq_vector(int irq);
+void djgpp_irq8_ack(void);
+boolean djgpp_reset_irq0_handler(void);
+boolean djgpp_reset_irq8_handler(void);
+boolean djgpp_set_irq0_handler(uint16_t rate_hz, const int *irq_handler);
+boolean djgpp_set_irq8_handler(uint16_t rate_hz, void (*callback)(void));
 
-void djgpp_set_irq8_handler(double rate, void *priv, void (*callback)(void *));
+int djgpp_get_lpt_base_port(int lpt);
 
 /* Because multiple sound engines rely on floating point, the x87 FPU
  * state needs to be saved at the beginning of and reloaded at the end

@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2010 Alan Williams <mralert@gmail.com>
  * Copyright (C) 2019 Adrian Siekierka <kontakt@asie.pl>
- * Copyright (C) 2024 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2024-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -299,9 +299,9 @@ static boolean init_audio_driver_sb(struct config_info *conf)
     sb_cfg.buffer_block = 0;
 
     // configure irq
-    irq_vector = djgpp_irq_vector(sb_cfg.irq);
+    irq_vector = IRQ_VECTOR(sb_cfg.irq);
     _go32_dpmi_get_protected_mode_interrupt_vector(irq_vector, &sb_cfg.old_irq_handler);
-    new_irq_handler.pm_offset = (int) audio_sb_interrupt;
+    new_irq_handler.pm_offset = (unsigned long)audio_sb_interrupt;
     new_irq_handler.pm_selector = _go32_my_cs();
     _go32_dpmi_chain_protected_mode_interrupt_vector(irq_vector, &new_irq_handler);
 
@@ -383,7 +383,7 @@ static void quit_audio_driver_sb(void)
   // Deinitialize audio
   if(sb_cfg.port != 0)
   {
-    unsigned irq_vector = djgpp_irq_vector(sb_cfg.irq);
+    unsigned irq_vector = IRQ_VECTOR(sb_cfg.irq);
 
     audio_sb_dsp_write(SB_DSP_SPEAKER_OFF);
 
@@ -421,6 +421,7 @@ const struct audio_driver audio_driver_sb =
 {
   "Sound Blaster 16, Pro 2, Pro, 2, or DSP 2.0",
   "sb",
+  true,
 
   NULL,
   &audio_player_pcs,

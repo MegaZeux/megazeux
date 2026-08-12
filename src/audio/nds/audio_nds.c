@@ -545,6 +545,7 @@ const struct audio_driver audio_driver_nds =
 {
   "NDS Audio",
   "nds",
+  true,
 
   NULL, /* &audio_player_nds_maxmod, &audio_player_nds_maxmod_sam, &audio_player_nds_maxmod_wav */
   NULL,

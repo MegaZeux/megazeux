@@ -104,6 +104,7 @@ const struct audio_driver audio_driver_3ds =
 {
   "3DS Audio",
   "3ds",
+  true,
 
   NULL,
   &audio_player_pcs,

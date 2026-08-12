@@ -23,18 +23,21 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <stdlib.h>
+#include <math.h>
 #include <pc.h>
 #include <dos.h>
 #include <dpmi.h>
 #include <go32.h>
 #include <crt0.h>
 #include <sys/exceptn.h>
+#include <sys/farptr.h>
 #include <sys/nearptr.h>
 #include <sys/segments.h>
 #undef delay
 #include "../../util.h"
 #include "../platform.h"
 #include "platform_djgpp.h"
+#include "interrupt.h"
 
 /* TODO: Most of the audio callback code can't currently be locked or moved
  * outside of the callback, which causes CWSDPMI to crash during paging.
@@ -43,6 +46,12 @@
  * Non-moving sbrk() (default, specify anyway) is required for nearptr hacks.
  */
 int _crt0_startup_flags = _CRT0_FLAG_LOCK_MEMORY | _CRT0_FLAG_NONMOVE_SBRK;
+
+static __dpmi_paddr rtc_old_handler;
+static _go32_dpmi_seginfo rtc_handler;
+static int rtc_old_register_a;
+static int rtc_old_register_b;
+static boolean have_rtc_interrupt;
 
 static int djgpp_nearptr_cnt = 0;
 
@@ -66,6 +75,180 @@ static boolean djgpp_pop_enable_nearptr(void)
   return true;
 }
 
+static void pit_set_divider(uint16_t div)
+{
+  outportb(0x43, 0x34);
+  outportb(0x40, div & 0xFF);
+  outportb(0x40, div >> 8);
+  current_div = div;
+}
+
+static boolean pit_set_handler(uint16_t divider, __dpmi_paddr *handler)
+{
+  disable();
+
+  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(0), handler))
+  {
+    enable();
+    warn("Failed to hook timer interrupt.");
+    return false;
+  }
+
+  pit_set_divider(divider);
+  enable();
+  return true;
+}
+
+static void pit_save_handler(void)
+{
+  __dpmi_get_protected_mode_interrupt_vector(IRQ_VECTOR(0), &timer_old_handler);
+}
+
+static void pit_restore_handler(void)
+{
+  disable();
+
+  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(0), &timer_old_handler))
+    warn("Failed to unhook timer interrupt.");
+
+  pit_set_divider((uint16_t)PIT_DEFAULT_DIVIDER);
+  enable();
+}
+
+static boolean kbd_set_handler(__dpmi_paddr *handler)
+{
+  disable();
+
+  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(1), handler))
+  {
+    enable();
+    warn("Failed to hook keyboard interrupt.");
+    return false;
+  }
+
+  enable();
+  return true;
+}
+
+static void kbd_save_handler(void)
+{
+  __dpmi_get_protected_mode_interrupt_vector(IRQ_VECTOR(1), &kbd_old_handler);
+}
+
+static void kbd_restore_handler(void)
+{
+  disable();
+
+  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(1), &kbd_old_handler))
+    warn("Failed to unhook keyboard interrupt.");
+
+  enable();
+}
+
+/* Enable non-maskable interrupts */
+static void nmi_enable(void)
+{
+  outportb(0x70, inportb(0x70) & 0x7f);
+  inportb(0x71);
+}
+
+/* Disable non-maskable interrupts */
+static void nmi_disable(void)
+{
+  outportb(0x70, inportb(0x70) | 0x80);
+  inportb(0x71);
+}
+
+static void rtc_save_handler(void)
+{
+  __dpmi_get_protected_mode_interrupt_vector(IRQ_VECTOR(8), &rtc_old_handler);
+  have_rtc_interrupt = false;
+
+  disable();
+  outportb(0x70, 0x8A);
+  rtc_old_register_a = inportb(0x71);
+  outportb(0x70, 0x8B);
+  rtc_old_register_b = inportb(0x71);
+  nmi_enable();
+  enable();
+}
+
+static void rtc_restore_handler(void)
+{
+  disable();
+  nmi_disable();
+
+  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(8), &rtc_old_handler))
+    warn("Failed to unhook RTC interrupt.");
+
+  outportb(0x70, 0x8A);
+  outportb(0x71, rtc_old_register_a);
+  outportb(0x70, 0x8B);
+  outportb(0x71, rtc_old_register_b);
+
+  nmi_enable();
+  enable();
+
+  if(have_rtc_interrupt)
+  {
+    _go32_dpmi_free_iret_wrapper(&rtc_handler);
+    have_rtc_interrupt = false;
+  }
+}
+
+static boolean rtc_set_handler(int divider, _go32_dpmi_seginfo *handler)
+{
+  int prev_a, prev_b;
+
+  /* Dividers <2 cause hardware issues, see OSDev Wiki. */
+  divider = CLAMP(divider, 2, 15);
+
+  /* If present, release and free the old wrapper. */
+  if(have_rtc_interrupt)
+    rtc_restore_handler();
+
+  if(_go32_dpmi_allocate_iret_wrapper(handler))
+  {
+    warn("Failed to wrap RTC interrupt.");
+    return false;
+  }
+
+  disable();
+  nmi_disable();
+
+  if(_go32_dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(8), handler))
+  {
+    nmi_enable();
+    enable();
+    _go32_dpmi_free_iret_wrapper(handler);
+    warn("Failed to hook RTC interrupt.");
+    return false;
+  }
+
+  /* Set divider */
+  outportb(0x70, 0x8A);
+  prev_a = inportb(0x71);
+  outportb(0x70, 0x8A);
+  outportb(0x71, (prev_a & 0xf0) | divider);
+
+  /* Enable interrupt */
+  outportb(0x70, 0x8B);
+  prev_b = inportb(0x71);
+  outportb(0x70, 0x8B);
+  outportb(0x71, prev_b | 0x40);
+
+  /* ack prior interrupt */
+  outportb(0x70, 0x8C);
+  inportb(0x71);
+
+  nmi_enable();
+  enable();
+
+  rtc_handler = *handler;
+  have_rtc_interrupt = true;
+  return true;
+}
+
 /**
  * Allocate a buffer in DOS memory. If boundary_bytes is larger than or equal
  * to len_bytes, this function will guarantee the returned segment contains
@@ -78,6 +261,7 @@ static boolean djgpp_pop_enable_nearptr(void)
  * @param boundary_bytes  size of boundary to constrain the allocation within.
  *                        For DMA, this should be 65536. If this value is less
  *                        than 0 or smaller than len_bytes, this call will fail.
+ * @param selector        Pointer to write allocation selector to on success.
  * @return                a segment pointing to an allocated region of
  *                        len_bytes on success, otherwise -1.
  */
@@ -308,37 +492,77 @@ void djgpp_irq_ack(int irq)
   outportb(0x20, 0x20);
 }
 
-int djgpp_irq_vector(int irq)
+void djgpp_irq8_ack(void)
 {
-  if(irq >= 8)
-    return 0x70 + (irq - 8);
-  else
-    return 0x08 + irq;
+  /* Separate from the PIC ack, the RTC needs this register to be read
+   * before it will send further IRQ8 interrupts: */
+  outportb(0x70, 0x0C);
+  inportb(0x71);
 }
 
-void djgpp_set_irq8_handler(double rate, void *priv, void (*callback)(void *))
+boolean djgpp_reset_irq0_handler(void)
 {
-  // FIXME:
+  __dpmi_paddr handler;
+  handler.offset32 = (unsigned long)&timer_handler;
+  handler.selector = _my_cs();
+
+  return pit_set_handler(TIMER_DIVIDER, &handler);
 }
 
-#define TIMER_CLOCK  3579545
-#define TIMER_LENGTH 8
-#define TIMER_COUNT  (TIMER_LENGTH * TIMER_CLOCK / 3000)
-#define TIMER_NORMAL 65536
+boolean djgpp_reset_irq8_handler(void)
+{
+  rtc_restore_handler();
+  return true;
+}
 
-// Defined in interrupt.S
-extern int int_lock_start, int_lock_end;
-extern unsigned short int_ds;
+boolean djgpp_set_irq0_handler(uint16_t rate_hz, const int *irq_handler)
+{
+  __dpmi_paddr handler;
+  handler.offset32 = (unsigned long)irq_handler;
+  handler.selector = _my_cs();
 
-extern int timer_handler;
-extern __dpmi_paddr timer_old_handler;
-extern volatile uint32_t timer_ticks;
-extern volatile uint32_t timer_offset;
-extern uint32_t timer_length;
-extern uint32_t timer_count;
-extern uint32_t timer_normal;
+  rate_hz = rate_hz ? rate_hz : 1;
+  return pit_set_handler(PIT_DIVIDER(rate_hz), &handler);
+}
 
-extern __dpmi_paddr kbd_old_handler;
+/* TODO: this code assumes the callback memory is already locked. */
+boolean djgpp_set_irq8_handler(uint16_t rate_hz, void (*callback)(void))
+{
+  _go32_dpmi_seginfo handler;
+  int divider;
+
+  /* IRQ8 Hz = RTC_BASE_CLOCK >> (divider - 1)
+   * To get the closest divider, floor(log2(Base / Hz)) and add 1. */
+  rate_hz = rate_hz ? rate_hz : 1;
+  divider = (int)(log((double)RTC_BASE_CLOCK / (double)rate_hz) / M_LN2) + 1;
+
+  handler.pm_offset = (unsigned long)callback;
+  handler.pm_selector = _go32_my_cs();
+
+  return rtc_set_handler(divider, &handler);
+}
+
+/**
+ * Get the LPT base port for LPT1-3. Extended LPTs must have their base port
+ * manually specified elsewhere.
+ *
+ * @param lpt   LPT to get the base port for. If this isn't in the range of
+ *              1 to 3, or if this LPT has no base port, this call will fail.
+ * @return      the base port of this LPT on success, otherwise -1.
+ */
+int djgpp_get_lpt_base_port(int lpt)
+{
+  int port;
+
+  if(lpt < 1 || lpt > 3)
+    return -1;
+
+  /* LPT base ports are stored sequentially in BIOS memory starting at 0x408.
+   * This memory is not mapped in protected mode. */
+  port = _farpeekw(_dos_ds, 0x408 + (lpt - 1) * 2);
+  return port ? port : -1;
+}
+
 
 static boolean yieldable;
 
@@ -355,13 +579,6 @@ void delay(uint32_t ms)
 uint64_t get_ticks(void)
 {
   return timer_ticks;
-}
-
-static void set_timer(uint32_t count)
-{
-  outportb(0x43, 0x34);
-  outportb(0x40, count & 0xFF);
-  outportb(0x40, count >> 8);
 }
 
 static void fix_timezone(void)
@@ -413,25 +630,31 @@ boolean platform_init(void)
     return false;
   }
 
-  timer_length = TIMER_LENGTH;
-  timer_count = TIMER_COUNT;
-  timer_normal = TIMER_NORMAL;
-  __dpmi_get_protected_mode_interrupt_vector(0x08, &timer_old_handler);
+  //timer_prev_div = PIT_DEFAULT_DIVIDER;
 
   handler.offset32 = (unsigned long)&timer_handler;
   handler.selector = _my_cs();
 
-  disable();
-  if(__dpmi_set_protected_mode_interrupt_vector(0x08, &handler))
+  pit_save_handler();
+  if(!pit_set_handler(TIMER_DIVIDER, &handler))
+    return false;
+
+  handler.offset32 = (unsigned long)&kbd_handler;
+  handler.selector = _my_cs();
+
+  kbd_save_handler();
+  if(!kbd_set_handler(&handler))
   {
-    enable();
-    warn("Failed to hook timer interrupt.");
+    pit_restore_handler();
     return false;
   }
-  set_timer(timer_count);
-  enable();
 
-  __dpmi_get_protected_mode_interrupt_vector(0x09, &kbd_old_handler);
+  /* RTC interrupt is optional, only used for audio callbacks in some drivers.
+   * The base frequency can't be set without causing the CMOS clock to lose
+   * track of time, so there are only a small number of usable frequencies. */
+  have_rtc_interrupt = false;
+  rtc_save_handler();
+
   fix_timezone();
   return true;
 }
@@ -440,19 +663,17 @@ void platform_quit(void)
 {
   __dpmi_regs reg;
 
-  // TODO: Add deinit function for event system
-  // Unhook keyboard interrupt
-  if(__dpmi_set_protected_mode_interrupt_vector(0x09, &kbd_old_handler))
-    warn("Failed to unhook keyboard interrupt.");
   // Reset mouse driver
   reg.x.ax = 0;
   __dpmi_int(0x33, &reg);
 
-  disable();
-  if(__dpmi_set_protected_mode_interrupt_vector(0x08, &timer_old_handler))
-    warn("Failed to unhook timer interrupt.");
-  set_timer(timer_normal);
-  enable();
+  if(have_rtc_interrupt)
+  {
+    rtc_restore_handler();
+    have_rtc_interrupt = false;
+  }
+  kbd_restore_handler();
+  pit_restore_handler();
 
   while(djgpp_pop_enable_nearptr())
     ;

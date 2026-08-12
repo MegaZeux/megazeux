@@ -99,6 +99,7 @@ const struct audio_driver audio_driver_dreamcast =
 {
   "Dreamcast Audio",
   "dreamcast",
+  true,
 
   NULL,
   &audio_player_pcs,

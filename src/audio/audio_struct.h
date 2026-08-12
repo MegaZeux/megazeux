@@ -75,6 +75,11 @@ struct audio_driver
 {
   const char *name;
   const char *ident;
+  /* If true, this driver can be initialized automatically on startup.
+   * If false, only initialize if explicitly requested by the user.
+   * This should be false only for devices that can have bad side effects
+   * where assumed to exist when they actually do not, e.g. LPT DACs. */
+  boolean allow_auto_init;
 
   /* Driver-specific audio players. Put general players in audio_players.c. */
   const struct audio_player * const * const driver_players;

@@ -305,7 +305,7 @@ const struct audio_player audio_player_reality =
 };
 
 
-#ifdef CONFIG_DJGPP
+#if 0
 #include <dos.h>
 #include "../../platform/djgpp/platform_djgpp.h"
 
@@ -320,7 +320,7 @@ static void rad_hwopl_destruct(struct audio_stream *a_src)
 {
   struct rad_stream *rad_stream = (struct rad_stream *)a_src);
 
-  djgpp_set_irq8_handler(0.0, NULL, NULL);
+  djgpp_set_irq0_handler(0.0, NULL, NULL);
 
   /* Reset OPL. */
   if(rad_stream->player)
@@ -391,7 +391,7 @@ static struct audio_stream *rad_construct(vfile *vf, const char *filename,
   rad_stream->data_length = length;
   rad_stream->data = data;
 
-  djgpp_set_irq8_handler(rate, rad_stream, rad_hwopl_tick_player);
+  djgpp_set_irq0_handler(rate, rad_stream, rad_hwopl_tick_player);
 
   initialize_audio_stream((struct audio_stream *)rad_stream, volume, repeat);
 
@@ -401,7 +401,7 @@ static struct audio_stream *rad_construct(vfile *vf, const char *filename,
 
 static boolean rad_hwopl_test(vfile *vf, const char *filename, boolean is_primary)
 {
-  /* Only one OPL and IRQ8 are available -> reserved for primary stream.
+  /* Only one OPL and IRQ0 are available -> reserved for primary stream.
    * Additionally, the user must explicitly configure MegaZeux for it.
    */
   return is_primary && audio.opl_use_hardware ? rad_test(vf, filename, true) : false;
