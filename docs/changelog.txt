@@ -11,6 +11,7 @@ GIT - MZX 2.93e
 
 USERS
 
++ DOS: fixed 16-bit DMA for the Sound Blaster 16.
 + NDS: fixed PC speaker playback of rests (e.g. game over SFX).
 + Unix/Darwin: installed utilities are now prefixed with
   "megazeux-" so they can be installed to PATH. Package
