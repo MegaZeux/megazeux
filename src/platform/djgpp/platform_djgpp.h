@@ -27,6 +27,8 @@ MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
+#define DMA_BOUNDARY  0x10000 /* For djgpp_malloc_boundary */
+
 #define DMA_AUTOINIT  0x10
 #define DMA_READ      0x44
 #define DMA_WRITE     0x48

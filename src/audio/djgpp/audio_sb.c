@@ -234,9 +234,6 @@ static boolean init_audio_driver_sb(struct config_info *conf)
     unsigned irq_vector;
     boolean is_16_bit = false;
 
-    if(frames > 4096) // TODO: seems arbitrary
-      frames = 4096;
-
     rate = CLAMP(rate, 5000, 44100);
 
     if(SB_VERSION_ATLEAST(sb_cfg, SB_VERSION_SB16))
@@ -277,9 +274,11 @@ static boolean init_audio_driver_sb(struct config_info *conf)
     sb_cfg.buffer_size = sb_cfg.buffer_frames * sb_cfg.buffer_channels *
      (is_16_bit ? sizeof(int16_t) : sizeof(uint8_t));
 
-    // allocate memory, without crossing 64K boundary, and clean it
-    sb_cfg.buffer_segment = djgpp_malloc_boundary(sb_cfg.buffer_size * BUFFER_BLOCKS,
-     65536, &sb_cfg.buffer_selector);
+    sb_cfg.buffer_segment = djgpp_malloc_boundary(
+     sb_cfg.buffer_size * BUFFER_BLOCKS, DMA_BOUNDARY, &sb_cfg.buffer_selector);
+    if(sb_cfg.buffer_segment < 0)
+      goto err;
+
     if(sb_cfg.nearptr_buffer_enabled)
     {
       sb_cfg.nearptr_buffer_mapping.address = sb_cfg.buffer_segment << 4;
@@ -300,7 +299,7 @@ static boolean init_audio_driver_sb(struct config_info *conf)
     {
       sb_cfg.buffer = (uint8_t *)cmalloc(sb_cfg.buffer_size * BUFFER_BLOCKS);
       if(!sb_cfg.buffer)
-        goto err;
+        goto err2;
     }
 
     audio_sb_clear_buffer();
@@ -384,6 +383,8 @@ static boolean init_audio_driver_sb(struct config_info *conf)
   }
   return true;
 
+err2:
+  __dpmi_free_dos_memory(sb_cfg.buffer_selector);
 err:
   sb_cfg.port = 0;
   return false;

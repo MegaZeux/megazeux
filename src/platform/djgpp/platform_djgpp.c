@@ -136,13 +136,40 @@ const char *djgpp_display_adapter_name(int adapter)
   return disp_adapter_names[adapter];
 }
 
+/**
+ * Allocate a buffer in DOS memory. If boundary_bytes is larger than or equal
+ * to len_bytes, this function will guarantee the returned segment contains
+ * at least len_bytes constrained within a boundary of size boundary_bytes.
+ * This is done by allocating twice as much memory as is required and shifting
+ * the returned segment to the start of the next boundary (if needed).
+ *
+ * @param len_bytes       size of allocation. If this value is less than 0 or
+ *                        too large to fit in DOS memory, this call will fail.
+ * @param boundary_bytes  size of boundary to constrain the allocation within.
+ *                        For DMA, this should be 65536. If this value is less
+ *                        than 0 or smaller than len_bytes, this call will fail.
+ * @return                a segment pointing to an allocated region of
+ *                        len_bytes on success, otherwise -1.
+ */
 int djgpp_malloc_boundary(int len_bytes, int boundary_bytes, int *selector)
 {
-  int len_segment = (len_bytes + 15) >> 4;
-  int boundary_mask = ~((boundary_bytes - 1) >> 4);
-  int segment = __dpmi_allocate_dos_memory((len_bytes + 7) >> 3, selector);
-  if(((segment + len_segment - 1) & boundary_mask) != (segment & boundary_mask))
-    segment += len_segment;
+  int len_paragraphs;
+  int boundary_mask;
+  int segment;
+
+  if(len_bytes < 0 || boundary_bytes < len_bytes || len_bytes > (1 << 19))
+    return -1;
+
+  len_paragraphs = (len_bytes + 15) >> 4;
+  boundary_mask = ~((boundary_bytes - 1) >> 4);
+
+  segment = __dpmi_allocate_dos_memory(len_paragraphs << 1, selector);
+  if(segment < 0)
+    return -1;
+
+  if(((segment + len_paragraphs - 1) & boundary_mask) != (segment & boundary_mask))
+    segment = (segment + len_paragraphs) & boundary_mask;
+
   return segment;
 }
 
