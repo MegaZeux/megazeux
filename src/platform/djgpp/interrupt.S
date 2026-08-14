@@ -141,7 +141,6 @@ _lpt_mono_handler:
 	pushl	%ds
 	pushl	%esi
 	push	%dx
-	pushf
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
 	mov	_lpt_left_port, %dx
@@ -152,7 +151,6 @@ _lpt_mono_handler:
 	jae	2f			/* if(pos >= end) goto 2; */
 1:
 	movl	%esi, _dos_audio_buffer_pos
-	popf
 	pop	%dx
 	popl	%esi
 	jmp	_timer_handler_var	/* goto timer_handler_var; */
@@ -167,7 +165,6 @@ _lpt_stereo1_handler:
 	pushl	%ds
 	pushl	%esi
 	push	%dx
-	pushf
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
 	mov	_lpt_left_port, %dx
@@ -194,7 +191,6 @@ _lpt_stereo2_handler:
 	pushl	%ds
 	pushl	%esi
 	push	%dx
-	pushf
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
 	cld
@@ -217,7 +213,6 @@ _lpt_dss_handler:
 	pushl	%edi
 	push	%cx
 	push	%dx
-	pushf
 	movw	%cs:_int_ds, %ds
 	movb	$16, %cl
 	movl	_dos_audio_buffer_pos, %esi
@@ -251,7 +246,6 @@ _lpt_dss_handler:
 	loop	1b			/* if((--cx) > 0) goto loop; */
 3:
 	movl	%esi, _dos_audio_buffer_pos
-	popf
 	pop	%dx
 	pop	%cx
 	popl	%edi

@@ -106,7 +106,7 @@ static uint16_t lpt_get_rate(int requested_rate)
   static const uint16_t supported_rates[] =
   {
     LPT_8K_HZ, LPT_10K_HZ, LPT_11K_HZ, LPT_15K_HZ, LPT_17K_HZ, LPT_22K_HZ,
-    LPT_26K_HZ, LPT_28K_HZ, LPT_32K_HZ, LPT_38K_HZ, LPT_44K_HZ,
+    LPT_26K_HZ, LPT_28K_HZ, LPT_32K_HZ, LPT_38K_HZ, LPT_44K_HZ, LPT_48K_HZ,
   };
   size_t i;
 
