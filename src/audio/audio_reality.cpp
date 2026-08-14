@@ -66,16 +66,11 @@ public:
   }
 };
 
-struct rad_stream_cls
-{
-  FastOpal adlib;
-  RADPlayer player;
-};
-
 struct rad_stream
 {
   struct sampled_stream s;
-  struct rad_stream_cls *cls;
+  RADPlayer *player;
+  FastOpal *adlib;
   uint8_t *data;
   size_t data_length;
   uint32_t sample_update_timer;
@@ -95,14 +90,14 @@ static boolean rad_mix_data(struct audio_stream *a_src, int32_t * RESTRICT buffe
 
   for(i = 0; i < read_wanted; i += 4)
   {
-    rad_stream->cls->adlib.Sample(read_buffer, read_buffer + 1);
+    rad_stream->adlib->Sample(read_buffer, read_buffer + 1);
     read_buffer += 2;
 
     rad_stream->sample_update_timer++;
     if(rad_stream->sample_update_timer >= rad_stream->sample_update_max)
     {
       // Play the next line of the RAD.
-      boolean repeated = rad_stream->cls->player.Update();
+      boolean repeated = rad_stream->player->Update();
       rad_stream->sample_update_timer = 0;
 
       if(repeated && !a_src->repeat)
@@ -118,7 +113,7 @@ static void rad_set_volume(struct audio_stream *a_src, unsigned int volume)
 {
   //struct rad_stream *rad_stream = (struct rad_stream *)a_src;
 
-  //rad_stream->cls->player.SetMasterVolume(volume * 64 / 255);
+  //rad_stream->player->SetMasterVolume(volume * 64 / 255);
 
   // Use sampled_stream volume since the RAD player master volume doesn't
   // take effect fast enough.
@@ -134,7 +129,7 @@ static void rad_set_order(struct audio_stream *a_src, uint32_t order)
 {
   struct rad_stream *rad_stream = (struct rad_stream *)a_src;
 
-  rad_stream->cls->player.SetTunePos(order, 0);
+  rad_stream->player->SetTunePos(order, 0);
 }
 
 static void rad_set_position(struct audio_stream *a_src, uint32_t position)
@@ -143,7 +138,7 @@ static void rad_set_position(struct audio_stream *a_src, uint32_t position)
   uint32_t order = position / ORDER_LINES;
   uint32_t line = position % ORDER_LINES;
 
-  rad_stream->cls->player.SetTunePos(order, line);
+  rad_stream->player->SetTunePos(order, line);
 }
 
 static void rad_set_frequency(struct sampled_stream *s_src, uint32_t frequency)
@@ -155,14 +150,14 @@ static uint32_t rad_get_order(struct audio_stream *a_src)
 {
   struct rad_stream *rad_stream = (struct rad_stream *)a_src;
 
-  return rad_stream->cls->player.GetTunePos();
+  return rad_stream->player->GetTunePos();
 }
 
 static uint32_t rad_get_position(struct audio_stream *a_src)
 {
   struct rad_stream *rad_stream = (struct rad_stream *)a_src;
-  uint32_t order = rad_stream->cls->player.GetTunePos();
-  uint32_t line = rad_stream->cls->player.GetTuneLine();
+  uint32_t order = rad_stream->player->GetTunePos();
+  uint32_t line = rad_stream->player->GetTuneLine();
 
   return order * ORDER_LINES + line;
 }
@@ -170,7 +165,7 @@ static uint32_t rad_get_position(struct audio_stream *a_src)
 static uint32_t rad_get_length(struct audio_stream *a_src)
 {
   struct rad_stream *rad_stream = (struct rad_stream *)a_src;
-  uint32_t length = rad_stream->cls->player.GetTuneEffectiveLength();
+  uint32_t length = rad_stream->player->GetTuneEffectiveLength();
 
   return length * ORDER_LINES;
 }
@@ -184,25 +179,23 @@ static void rad_destruct(struct audio_stream *a_src)
 {
   struct rad_stream *rad_stream = (struct rad_stream *)a_src;
   free(rad_stream->data);
-  delete rad_stream->cls;
+  delete rad_stream->player;
+  delete rad_stream->adlib;
   sampled_destruct(a_src);
 }
 
-static void rad_player_callback(void *arg, uint16_t reg, uint8_t data)
+static void rad_opal_callback(void *arg, uint16_t reg, uint8_t data)
 {
-  struct rad_stream_cls *cls = (struct rad_stream_cls *)arg;
-  cls->adlib.Port(reg, data);
+  FastOpal *adlib = (FastOpal *)arg;
+  adlib->Port(reg, data);
 }
 
-static struct audio_stream *rad_construct(vfile *vf, const char *filename,
- uint32_t frequency, unsigned int volume, boolean repeat)
+static boolean rad_load(uint8_t **dest, size_t *dest_length, vfile *vf,
+ const char *filename)
 {
-  struct rad_stream *rad_stream = NULL;
-  struct rad_stream_cls *cls;
   const char *validate;
-  size_t length;
   uint8_t *data;
-  uint32_t rate;
+  size_t length;
 
   /**
    * NOTE: some legacy RAD files in the Reality public archive have a single
@@ -212,14 +205,14 @@ static struct audio_stream *rad_construct(vfile *vf, const char *filename,
   length = vfilelength(vf, false);
   data = (uint8_t *)malloc(length + 1);
   if(!data)
-    return NULL;
+    return false;
 
   data[length] = 0;
 
-  if(!vfread(data, length, 1, vf))
+  if(vfread(data, 1, length, vf) < length)
   {
     free(data);
-    return NULL;
+    return false;
   }
 
   validate = RADValidate(data, length);
@@ -227,8 +220,26 @@ static struct audio_stream *rad_construct(vfile *vf, const char *filename,
   {
     debug("RAD failed to load module '%s': %s\n", filename, validate);
     free(data);
-    return NULL;
+    return false;
   }
+
+  *dest = data;
+  *dest_length = length;
+  return true;
+}
+
+static struct audio_stream *rad_construct(vfile *vf, const char *filename,
+ uint32_t frequency, unsigned int volume, boolean repeat)
+{
+  struct rad_stream *rad_stream = NULL;
+  RADPlayer *player;
+  FastOpal *adlib;
+  uint8_t *data;
+  size_t length;
+  uint32_t rate;
+
+  if(!rad_load(&data, &length, vf, filename))
+    return NULL;
 
   rad_stream = (struct rad_stream *)calloc(1, sizeof(struct rad_stream));
   if(!rad_stream)
@@ -238,12 +249,14 @@ static struct audio_stream *rad_construct(vfile *vf, const char *filename,
   }
   rad_stream->s.a.player = &audio_player_reality;
 
-  cls = new rad_stream_cls();
+  player = new RADPlayer();
+  adlib = new FastOpal();
 
-  cls->player.Init(data, rad_player_callback, cls);
-  rate = cls->player.GetHertz();
+  player->Init(data, rad_opal_callback, adlib);
+  rate = player->GetHertz();
 
-  rad_stream->cls = cls;
+  rad_stream->player = player;
+  rad_stream->adlib = adlib;
   rad_stream->data_length = length;
   rad_stream->data = data;
   rad_stream->sample_update_timer = 0;
@@ -261,7 +274,7 @@ static struct audio_stream *rad_construct(vfile *vf, const char *filename,
 static boolean rad_test(vfile *vf, const char *filename, boolean is_primary)
 {
   char tmp[16];
-  if(!vfread(tmp, 16, 1, vf))
+  if(vfread(tmp, 1, 16, vf) < 16)
     return false;
 
   return memcmp(tmp, "RAD by REALiTY!!", 16) == 0;
