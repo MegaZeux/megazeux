@@ -3,6 +3,7 @@
  * Copyright (C) 1996 Alexis Janson
  * Copyright (C) 2010 Alan Williams <mralert@gmail.com>
  * Copyright (C) 2019 Adrian Siekierka <kontakt@asie.pl>
+ * Copyright (C) 2024-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -53,6 +54,8 @@ static int rtc_old_register_a;
 static int rtc_old_register_b;
 static boolean have_rtc_interrupt;
 
+static _go32_dpmi_seginfo mouse_callback_info;
+
 static int djgpp_nearptr_cnt = 0;
 
 static boolean djgpp_push_enable_nearptr(void)
@@ -83,22 +86,6 @@ static void pit_set_divider(uint16_t div)
   current_div = div;
 }
 
-static boolean pit_set_handler(uint16_t divider, __dpmi_paddr *handler)
-{
-  disable();
-
-  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(0), handler))
-  {
-    enable();
-    warn("Failed to hook timer interrupt.");
-    return false;
-  }
-
-  pit_set_divider(divider);
-  enable();
-  return true;
-}
-
 static void pit_save_handler(void)
 {
   __dpmi_get_protected_mode_interrupt_vector(IRQ_VECTOR(0), &timer_old_handler);
@@ -115,17 +102,18 @@ static void pit_restore_handler(void)
   enable();
 }
 
-static boolean kbd_set_handler(__dpmi_paddr *handler)
+static boolean pit_set_handler(uint16_t divider, __dpmi_paddr *handler)
 {
   disable();
 
-  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(1), handler))
+  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(0), handler))
   {
     enable();
-    warn("Failed to hook keyboard interrupt.");
+    warn("Failed to hook timer interrupt.");
     return false;
   }
 
+  pit_set_divider(divider);
   enable();
   return true;
 }
@@ -143,6 +131,21 @@ static void kbd_restore_handler(void)
     warn("Failed to unhook keyboard interrupt.");
 
   enable();
+}
+
+static boolean kbd_set_handler(__dpmi_paddr *handler)
+{
+  disable();
+
+  if(__dpmi_set_protected_mode_interrupt_vector(IRQ_VECTOR(1), handler))
+  {
+    enable();
+    warn("Failed to hook keyboard interrupt.");
+    return false;
+  }
+
+  enable();
+  return true;
 }
 
 /* Enable non-maskable interrupts */
@@ -248,6 +251,80 @@ static boolean rtc_set_handler(int divider, _go32_dpmi_seginfo *handler)
   have_rtc_interrupt = true;
   return true;
 }
+
+static boolean mouse_reset_driver(void)
+{
+  __dpmi_regs reg;
+  __dpmi_raddr mouse_vector;
+
+  /* Verify mouse driver is installed (interrupt vector 0x33 exists). */
+  if(__dpmi_get_real_mode_interrupt_vector(MOUSE_INT, &mouse_vector))
+    return false;
+  if(mouse_vector.offset16 == 0 && mouse_vector.segment == 0)
+    return false;
+
+  /* Reset mouse driver
+   *
+   * Returns:
+   *
+   * ax 0x0000: hardware/driver not installed
+   *    0xffff: hardware/driver installed
+   * bx 0x0000: unknown button count
+   *    0x0002: two buttons
+   *    0x0003: Mouse Systems/Logitech 3 button mouse
+   *    0xffff: two buttons
+   */
+  reg.x.ax = 0;
+  __dpmi_int(MOUSE_INT, &reg);
+
+  return reg.x.ax == 0xffff ? true : false;
+}
+
+static boolean mouse_init_driver(void)
+{
+  __dpmi_regs reg;
+
+  if(!mouse_reset_driver())
+    return false;
+
+  memset(&mouse_callback_info, 0, sizeof(mouse_callback_info));
+
+  mouse_callback_info.pm_offset = (unsigned long)mouse_handler;
+  if(_go32_dpmi_allocate_real_mode_callback_retf(&mouse_callback_info, &mouse_regs))
+    return false;
+
+  /* Define interrupt subroutine parameters
+   *
+   * cx:    call mask (0: move 1:left press 2:left release 3: right press
+   *                   4: right release 5: middle press 6: middle release
+   *                   7+: undefined)
+   * es:dx: real mode callback address
+   *
+   * No documented return values.
+   *
+   * Callback registers:
+   * ax:    condition mask (same bits as call mask)
+   * bx:    button state
+   * cx:    cursor column
+   * dx:    cursor row
+   * si:    horizontal mickey count
+   * di:    vertical mickey count
+   */
+  reg.x.ax = 0x000C;
+  reg.x.cx = 0x007F;
+  reg.x.dx = mouse_callback_info.rm_offset;
+  reg.x.es = mouse_callback_info.rm_segment;
+  __dpmi_int(MOUSE_INT, &reg);
+
+  return true;
+}
+
+static void mouse_quit_driver(void)
+{
+  mouse_reset_driver();
+  _go32_dpmi_free_real_mode_callback(&mouse_callback_info);
+}
+
 
 /**
  * Allocate a buffer in DOS memory. If boundary_bytes is larger than or equal
@@ -649,6 +726,9 @@ boolean platform_init(void)
     return false;
   }
 
+  if(!mouse_init_driver())
+    warn("Failed to initialize mouse driver.");
+
   /* RTC interrupt is optional, only used for audio callbacks in some drivers.
    * The base frequency can't be set without causing the CMOS clock to lose
    * track of time, so there are only a small number of usable frequencies. */
@@ -661,11 +741,7 @@ boolean platform_init(void)
 
 void platform_quit(void)
 {
-  __dpmi_regs reg;
-
-  // Reset mouse driver
-  reg.x.ax = 0;
-  __dpmi_int(0x33, &reg);
+  mouse_quit_driver();
 
   if(have_rtc_interrupt)
   {

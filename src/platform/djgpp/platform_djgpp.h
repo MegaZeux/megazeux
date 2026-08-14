@@ -29,6 +29,7 @@ MEGAZEUX_BEGIN_DECLS
 #include <dpmi.h>
 
 #define IRQ_VECTOR(x) (((x) >= 0x08) ? (0x70 + (x) - 0x08) : (0x08 + (x)))
+#define MOUSE_INT     0x33
 
 #define DMA_BOUNDARY  0x10000 /* For djgpp_malloc_boundary */
 

@@ -412,8 +412,8 @@ static boolean process_key(int key)
   return ret;
 }
 
+
 static struct mouse_event mouse_last = { 0, 0, 0, 0 };
-static boolean mouse_init = false;
 
 static boolean read_mouse(struct mouse_event *mev)
 {
@@ -455,7 +455,7 @@ static boolean process_mouse(struct mouse_event *mev)
 
   if(mev->cond & 0x7E)
   {
-    const uint32_t buttons[] =
+    static const uint32_t buttons[] =
     {
       MOUSE_BUTTON_LEFT,
       MOUSE_BUTTON_RIGHT,
@@ -549,30 +549,7 @@ boolean platform_is_screen_keyboard_active(void)
   return false;
 }
 
-static void init_mouse(void)
-{
-  __dpmi_regs reg;
-  _go32_dpmi_seginfo cb;
-
-  reg.x.ax = 0;
-  __dpmi_int(0x33, &reg);
-  if(reg.x.ax != 0xFFFF)
-    return;
-
-  // TODO: Free this callback on quit
-  cb.pm_offset = (unsigned long)mouse_handler;
-  if(_go32_dpmi_allocate_real_mode_callback_retf(&cb, &mouse_regs))
-    return;
-  reg.x.ax = 0x000C;
-  reg.x.cx = 0x007F;
-  reg.x.dx = cb.rm_offset;
-  reg.x.es = cb.rm_segment;
-  __dpmi_int(0x33, &reg);
-
-  mouse_init = true;
-}
-
 void platform_init_event(void)
 {
-  init_mouse();
+  // nop
 }
