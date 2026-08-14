@@ -258,7 +258,7 @@ static boolean mouse_reset_driver(void)
   __dpmi_raddr mouse_vector;
 
   /* Verify mouse driver is installed (interrupt vector 0x33 exists). */
-  if(__dpmi_get_real_mode_interrupt_vector(MOUSE_INT, &mouse_vector))
+  if(__dpmi_get_real_mode_interrupt_vector(MOUSE_VECTOR, &mouse_vector))
     return false;
   if(mouse_vector.offset16 == 0 && mouse_vector.segment == 0)
     return false;
@@ -275,7 +275,7 @@ static boolean mouse_reset_driver(void)
    *    0xffff: two buttons
    */
   reg.x.ax = 0;
-  __dpmi_int(MOUSE_INT, &reg);
+  __dpmi_int(MOUSE_VECTOR, &reg);
 
   return reg.x.ax == 0xffff ? true : false;
 }
@@ -314,7 +314,7 @@ static boolean mouse_init_driver(void)
   reg.x.cx = 0x007F;
   reg.x.dx = mouse_callback_info.rm_offset;
   reg.x.es = mouse_callback_info.rm_segment;
-  __dpmi_int(MOUSE_INT, &reg);
+  __dpmi_int(MOUSE_VECTOR, &reg);
 
   return true;
 }

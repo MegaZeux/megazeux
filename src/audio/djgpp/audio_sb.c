@@ -36,6 +36,7 @@
 #include "../audio_struct.h"
 #include "../../util.h"
 #include "../../platform/djgpp/platform_djgpp.h"
+#include "../../platform/djgpp/interrupt.h"
 
 #define BUFFER_BLOCKS 2
 

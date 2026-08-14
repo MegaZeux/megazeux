@@ -28,6 +28,9 @@
 
 MEGAZEUX_BEGIN_DECLS
 
+#define IRQ_VECTOR(x)         (((x) >= 0x08) ? (0x70 + (x) - 0x08) : (0x08 + (x)))
+#define MOUSE_VECTOR          0x33
+
 #define PIT_BASE_CLOCK        14318180
 #define PIT_BASE_DIVIDER      12
 #define PIT_DIVIDER(x)        (PIT_BASE_CLOCK / ((x) * PIT_BASE_DIVIDER))
