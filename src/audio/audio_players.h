@@ -31,7 +31,6 @@ extern const struct audio_player audio_player_sam;
 extern const struct audio_player audio_player_wav;
 extern const struct audio_player audio_player_vorbis;
 extern const struct audio_player audio_player_reality;
-extern const struct audio_player audio_player_reality_hwopl;
 
 extern const struct audio_player audio_player_xmp;
 extern const struct audio_player audio_player_modplug;
