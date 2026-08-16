@@ -96,7 +96,18 @@ _timer_handler_var:			/* Arriving from LPT interrupts */
 	jmp	_timer_handler_tick	/* goto timer_handler_tick; */
 
 
-/* LPT audio interrupts */
+/* LPT audio interrupts
+ *
+ * TODO: the latching characteristics of Stereo-on-1s are very strange and vary
+ * between designs. No emulator supports the details of them to an adequate
+ * degree, so Stereo-on-1 support really needs hardware testing at some point,
+ * particularly with Triton's '7528-based design.
+ *
+ * Notably, DOSBox latches when the control port strobe pins switch high, as
+ * some of the original designs are purported to have worked (supported here),
+ * but 86Box latches on the data port write, which may be more in line with
+ * how a '7528 design would work (results in flipped channels here).
+ */
 .balign 4
 .global _dos_audio_buffer		/* uint8_t *dos_audio_buffer; */
 _dos_audio_buffer:
@@ -126,11 +137,11 @@ _dos_audio_buffer_frames:
 _dos_audio_channels:
 	.long	0
 
-.global _lpt_left_port			/* int16_t lpt_left_port; */
+.global _lpt_left_port			/* uint16_t lpt_left_port; */
 _lpt_left_port:
 	.word	0
 
-.global _lpt_right_port			/* int16_t lpt_right_port; */
+.global _lpt_right_port			/* uint16_t lpt_right_port; */
 _lpt_right_port:
 	.word	0
 
@@ -167,18 +178,18 @@ _lpt_stereo1_handler:
 	push	%dx
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
-	mov	_lpt_left_port, %dx
+	mov	_lpt_left_port, %dx	/* Data port */
 	cld
 	lodsw				/* ax = *((uint16_t *)pos)++; */
-	outb	%al, %dx		/* write left byte */
-	add	$2, %dx			/* Init off (high), AutoLF on (low), Strobe off (high) */
-	movb	$0x05, %al
+	outb	%al, %dx		/* Write left byte */
+	add	$2, %dx			/* Control port */
+	movb	$0x01, %al		/* Latch left: AutoLF on (low), Strobe off (high) */
 	outb	%al, %dx
-	sub	$2, %dx			/* write right byte */
+	sub	$2, %dx			/* Data port */
 	shr	$8, %ax
-	outb	%al, %dx
-	add	$2, %dx			/* Init off (high), AutoLF off (high), Strobe on (low) */
-	movb	$0x06, %al
+	outb	%al, %dx		/* Write right byte */
+	add	$2, %dx			/* Control port */
+	movb	$0x02, %al		/* Latch right: AutoLF off (high), Strobe on (low) */
 	outb	%al, %dx
 	cmpl	_dos_audio_buffer_end, %esi
 	jae	2b			/* if(pos >= end) goto 2; */

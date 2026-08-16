@@ -118,6 +118,42 @@ static uint16_t lpt_get_rate(int requested_rate)
   return supported_rates[i];
 }
 
+static boolean lpt_read_config(const char *config, boolean is_dual_port)
+{
+  unsigned l = 1;
+  unsigned r = 2;
+  int pos;
+
+  if(sscanf(config, "%x%n", &l, &pos) == 1)
+  {
+    if(l > UINT16_MAX)
+      return false;
+
+    if(is_dual_port)
+    {
+      if(sscanf(config + pos, ",%x", &r) != 1)
+        return false;
+      if(r > UINT16_MAX)
+        return false;
+    }
+  }
+
+  lpt_left_port = (l >= 0xa) ? (uint16_t)l : djgpp_get_lpt_base_port(l);
+  if(lpt_left_port == 0)
+    return false;
+
+  if(is_dual_port)
+  {
+    lpt_right_port = (r >= 0xa) ? (uint16_t)r : djgpp_get_lpt_base_port(r);
+    if(lpt_right_port == 0 || lpt_left_port == lpt_right_port)
+      return false;
+  }
+  else
+    lpt_right_port = 0;
+
+  return true;
+}
+
 static boolean init_audio_driver_lpt(unsigned rate, unsigned frames,
  unsigned channels, const int *irq_handler)
 {
@@ -157,11 +193,8 @@ static boolean init_audio_driver_lpt_mono(struct config_info *conf)
 {
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
   unsigned frames = MIN(conf->audio_buffer_samples, 32768);
-  int lpt_left = 1; // FIXME: conf->audio_lpt_left
 
-  lpt_left_port = djgpp_get_lpt_base_port(lpt_left);
-  lpt_right_port = 0;
-  if(lpt_left_port <= 0)
+  if(!lpt_read_config(conf->audio_driver_config, false))
     return false;
 
   return init_audio_driver_lpt(rate, frames, 1, &lpt_mono_handler);
@@ -172,11 +205,8 @@ static boolean init_audio_driver_lpt_stereo1(struct config_info *conf)
   /* Note: DOSBox Staging claims a maximum rate of 30kHz, which seems wrong. */
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
   unsigned frames = MIN(conf->audio_buffer_samples, 16384);
-  int lpt_left = 1; // FIXME: conf->audio_lpt_left
 
-  lpt_left_port = djgpp_get_lpt_base_port(lpt_left);
-  lpt_right_port = 0;
-  if(lpt_left_port <= 0)
+  if(!lpt_read_config(conf->audio_driver_config, false))
     return false;
 
   return init_audio_driver_lpt(rate, frames, 2, &lpt_stereo1_handler);
@@ -186,12 +216,8 @@ static boolean init_audio_driver_lpt_stereo2(struct config_info *conf)
 {
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
   unsigned frames = MIN(conf->audio_buffer_samples, 16384);
-  int lpt_left = 1; // FIXME: conf->audio_lpt_left
-  int lpt_right = 2; // conf->audio_lpt_right
 
-  lpt_left_port = djgpp_get_lpt_base_port(lpt_left);
-  lpt_right_port = djgpp_get_lpt_base_port(lpt_right);
-  if(lpt_left_port <= 0 || lpt_right_port <= 0 || lpt_left_port == lpt_right_port)
+  if(!lpt_read_config(conf->audio_driver_config, true))
     return false;
 
   return init_audio_driver_lpt(rate, frames, 2, &lpt_stereo2_handler);
@@ -200,11 +226,8 @@ static boolean init_audio_driver_lpt_stereo2(struct config_info *conf)
 static boolean init_audio_driver_lpt_dss(struct config_info *conf)
 {
   unsigned frames = MIN(conf->audio_buffer_samples, 32768);
-  int lpt_left = 1; // FIXME: conf->audio_lpt_left
 
-  lpt_left_port = djgpp_get_lpt_base_port(lpt_left);
-  lpt_right_port = 0;
-  if(lpt_left_port <= 0)
+  if(!lpt_read_config(conf->audio_driver_config, false))
     return false;
 
   return init_audio_driver_lpt(LPT_DSS_HZ, frames, 1, &lpt_dss_handler);

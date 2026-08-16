@@ -49,12 +49,14 @@
 int _crt0_startup_flags = _CRT0_FLAG_LOCK_MEMORY | _CRT0_FLAG_NONMOVE_SBRK;
 
 static __dpmi_paddr rtc_old_handler;
+static struct irq_state rtc_old_state;
 static _go32_dpmi_seginfo rtc_handler;
 static int rtc_old_register_a;
 static int rtc_old_register_b;
 static boolean have_rtc_interrupt;
 
 static _go32_dpmi_seginfo mouse_callback_info;
+static boolean have_mouse_callback;
 
 static int djgpp_nearptr_cnt = 0;
 
@@ -189,6 +191,9 @@ static void rtc_restore_handler(void)
   outportb(0x70, 0x8B);
   outportb(0x71, rtc_old_register_b);
 
+  if(have_rtc_interrupt)
+    djgpp_irq_restore(&rtc_old_state);
+
   nmi_enable();
   enable();
 
@@ -244,6 +249,9 @@ static boolean rtc_set_handler(int divider, _go32_dpmi_seginfo *handler)
   outportb(0x70, 0x8C);
   inportb(0x71);
 
+  /* Unmask interrupt */
+  djgpp_irq_enable(8, &rtc_old_state);
+
   nmi_enable();
   enable();
 
@@ -280,9 +288,23 @@ static boolean mouse_reset_driver(void)
   return reg.x.ax == 0xffff ? true : false;
 }
 
+static void mouse_quit_driver(void)
+{
+  mouse_reset_driver();
+
+  if(have_mouse_callback)
+  {
+    _go32_dpmi_free_real_mode_callback(&mouse_callback_info);
+    have_mouse_callback = false;
+  }
+}
+
 static boolean mouse_init_driver(void)
 {
   __dpmi_regs reg;
+
+  if(have_mouse_callback)
+    mouse_quit_driver();
 
   if(!mouse_reset_driver())
     return false;
@@ -292,6 +314,8 @@ static boolean mouse_init_driver(void)
   mouse_callback_info.pm_offset = (unsigned long)mouse_handler;
   if(_go32_dpmi_allocate_real_mode_callback_retf(&mouse_callback_info, &mouse_regs))
     return false;
+
+  have_mouse_callback = true;
 
   /* Define interrupt subroutine parameters
    *
@@ -317,12 +341,6 @@ static boolean mouse_init_driver(void)
   __dpmi_int(MOUSE_VECTOR, &reg);
 
   return true;
-}
-
-static void mouse_quit_driver(void)
-{
-  mouse_reset_driver();
-  _go32_dpmi_free_real_mode_callback(&mouse_callback_info);
 }
 
 
@@ -625,19 +643,16 @@ boolean djgpp_set_irq8_handler(uint16_t rate_hz, void (*callback)(void))
  *
  * @param lpt   LPT to get the base port for. If this isn't in the range of
  *              1 to 3, or if this LPT has no base port, this call will fail.
- * @return      the base port of this LPT on success, otherwise -1.
+ * @return      the base port of this LPT on success, otherwise 0.
  */
-int djgpp_get_lpt_base_port(int lpt)
+uint16_t djgpp_get_lpt_base_port(int lpt)
 {
-  int port;
-
   if(lpt < 1 || lpt > 3)
-    return -1;
+    return 0;
 
   /* LPT base ports are stored sequentially in BIOS memory starting at 0x408.
    * This memory is not mapped in protected mode. */
-  port = _farpeekw(_dos_ds, 0x408 + (lpt - 1) * 2);
-  return port ? port : -1;
+  return _farpeekw(_dos_ds, 0x408 + (lpt - 1) * 2);
 }
 
 
@@ -727,7 +742,7 @@ boolean platform_init(void)
   }
 
   if(!mouse_init_driver())
-    warn("Failed to initialize mouse driver.");
+    warn("Failed to initialize mouse driver.\n");
 
   /* RTC interrupt is optional, only used for audio callbacks in some drivers.
    * The base frequency can't be set without causing the CMOS clock to lose

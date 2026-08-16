@@ -137,6 +137,7 @@ struct config_info
 
   // Audio options
   char audio_driver[16];
+  char audio_driver_config[32];
   int audio_sample_rate;
   int audio_buffer_samples;
   int audio_output_channels;

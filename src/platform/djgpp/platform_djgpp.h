@@ -56,7 +56,7 @@ boolean djgpp_reset_irq8_handler(void);
 boolean djgpp_set_irq0_handler(uint16_t rate_hz, const int *irq_handler);
 boolean djgpp_set_irq8_handler(uint16_t rate_hz, void (*callback)(void));
 
-int djgpp_get_lpt_base_port(int lpt);
+uint16_t djgpp_get_lpt_base_port(int lpt);
 
 /* Because multiple sound engines rely on floating point, the x87 FPU
  * state needs to be saved at the beginning of and reloaded at the end

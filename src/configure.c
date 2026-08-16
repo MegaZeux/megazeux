@@ -314,6 +314,7 @@ static const struct config_info user_conf_default =
 
   // Audio options
   "",                           // audio_driver
+  "",                           // audio_driver_config
   AUDIO_SAMPLE_RATE,            // audio_sample_rate
   AUDIO_BUFFER_SAMPLES,         // audio_buffer_samples
   AUDIO_OUTPUT_CHANNELS,        // audio_output_channels
@@ -741,6 +742,12 @@ static void config_set_audio_driver(struct config_info *conf,
  const char *name, const char *value, const char *extended_data)
 {
   config_string(conf->audio_driver, value);
+}
+
+static void config_set_audio_driver_config(struct config_info *conf,
+ const char *name, const char *value, const char *extended_data)
+{
+  config_string(conf->audio_driver_config, value);
 }
 
 static void config_set_music(struct config_info *conf,
@@ -1325,6 +1332,7 @@ static const struct config_entry config_options[] =
   { "audio_buffer", config_set_audio_buffer, false },
   { "audio_buffer_samples", config_set_audio_buffer, false },
   { "audio_driver", config_set_audio_driver, false },
+  { "audio_driver_config", config_set_audio_driver_config, false },
   { "audio_opl_port", config_set_audio_opl_port, false },
   { "audio_opl_use_hardware", config_set_audio_opl_use_hardware, false },
   { "audio_output_channels", config_set_audio_channels, false },

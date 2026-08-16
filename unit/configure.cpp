@@ -556,6 +556,11 @@ UNITTEST(Settings)
     TEST_STRING("audio_driver", conf->audio_driver, string_data);
   }
 
+  SECTION(audio_driver_config)
+  {
+    TEST_STRING("audio_driver_config", conf->audio_driver_config, string_data);
+  }
+
   SECTION(audio_sample_rate)
   {
     TEST_INT("audio_sample_rate", conf->audio_sample_rate, 1, INT_MAX);
