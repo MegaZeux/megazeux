@@ -151,18 +151,18 @@ _lpt_mono_handler:
 	pushl	%eax
 	pushl	%ds
 	pushl	%esi
-	push	%dx
+	pushl	%edx
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
 	mov	_lpt_left_port, %dx
-	cld
-	lodsb				/* al = *pos++; */
-	outb	%al, %dx
+	movb	(%esi), %al		/* al = *pos++; */
+	incl	%esi
+	outb	%al, %dx		/* Write sample */
 	cmpl	_dos_audio_buffer_end, %esi
 	jae	2f			/* if(pos >= end) goto 2; */
 1:
 	movl	%esi, _dos_audio_buffer_pos
-	pop	%dx
+	popl	%edx
 	popl	%esi
 	jmp	_timer_handler_var	/* goto timer_handler_var; */
 2:					/* (early predictors assume no jump) */
@@ -175,19 +175,19 @@ _lpt_stereo1_handler:
 	pushl	%eax
 	pushl	%ds
 	pushl	%esi
-	push	%dx
+	pushl	%edx
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
 	mov	_lpt_left_port, %dx	/* Data port */
-	cld
-	lodsw				/* ax = *((uint16_t *)pos)++; */
-	outb	%al, %dx		/* Write left byte */
+	movw	(%esi), %ax		/* ax = *((uint16_t *)pos)++; */
+	addl	$2, %esi
+	outb	%al, %dx		/* Write left sample */
 	add	$2, %dx			/* Control port */
 	movb	$0x01, %al		/* Latch left: AutoLF on (low), Strobe off (high) */
 	outb	%al, %dx
 	sub	$2, %dx			/* Data port */
 	shr	$8, %ax
-	outb	%al, %dx		/* Write right byte */
+	outb	%al, %dx		/* Write right sample */
 	add	$2, %dx			/* Control port */
 	movb	$0x02, %al		/* Latch right: AutoLF off (high), Strobe on (low) */
 	outb	%al, %dx
@@ -201,16 +201,16 @@ _lpt_stereo2_handler:
 	pushl	%eax
 	pushl	%ds
 	pushl	%esi
-	push	%dx
+	pushl	%edx
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
-	cld
-	lodsw				/* ax = *((uint16_t *)pos)++; */
-	mov	_lpt_left_port, %dx	/* write left byte */
-	outb	%al, %dx
-	mov	_lpt_right_port, %dx	/* write right byte */
+	mov	_lpt_left_port, %dx
+	movw	(%esi), %ax		/* ax = *((uint16_t *)pos)++; */
+	addl	$2, %esi
+	outb	%al, %dx		/* Write left sample */
+	mov	_lpt_right_port, %dx
 	shr	$8, %ax
-	outb	%al, %dx
+	outb	%al, %dx		/* Write right sample */
 	cmpl	_dos_audio_buffer_end, %esi
 	jae	2b			/* if(pos >= end) goto 2; */
 	jmp	1b
@@ -230,14 +230,14 @@ _lpt_dss_handler:
 	movl	_dos_audio_buffer_end, %edi
 	mov	_lpt_left_port, %dx
 	inc	%dx			/* Status port */
-	cld
 1:
 	in	%dx, %al		/* if(ACK) goto exit; */
 	test	$0x40, %al
 	jnz	3f
 	dec	%dx			/* Data port */
-	lodsb				/* outb(port, *pos++); */
-	outb	%al, %dx
+	movb	(%esi), %al		/* al = *pos++; */
+	incl	%esi
+	outb	%al, %dx		/* Write sample */
 	cmpl	%edi, %esi
 	jae	4f			/* if(pos >= end) goto 4; */
 2:
@@ -254,7 +254,8 @@ _lpt_dss_handler:
 	push	%ax
 	pop	%ax
 	dec	%dx			/* Status port */
-	loop	1b			/* if((--cx) > 0) goto loop; */
+	dec	%cx			/* if((--cx) > 0) */
+	jnz	1b			/*    goto loop; */
 3:
 	movl	%esi, _dos_audio_buffer_pos
 	pop	%dx
