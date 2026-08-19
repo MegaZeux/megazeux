@@ -43,7 +43,11 @@ MEGAZEUX_BEGIN_DECLS
 #define TIMER_MS              (1000 / TIMER_HZ)
 #define TIMER_DIVIDER         PIT_DIVIDER(TIMER_HZ) /* 2386 */
 
-#define LPT_8K_HZ             8007 /* Divider 149 is near (2386 / 16) */
+#define LPT_4K_HZ             4003  /* Divider 298 is near (2386 / 8) */
+#define LPT_5K_HZ             5013  /* Divider 238 is near (2386 / 10) */
+#define LPT_6K_HZ             5995  /* Divider 199 is near (2386 / 12) */
+#define LPT_7K_HZ             7018  /* Divider 159 is near (2386 / 14) */
+#define LPT_8K_HZ             8007  /* Divider 149 is near (2386 / 16) */
 #define LPT_10K_HZ            10026 /* Divider 119 is near (2386 / 20) */
 #define LPT_11K_HZ            11256 /* Divider 106 is near (2386 / 22.5) */
 #define LPT_15K_HZ            15495 /* Divider 77 is near (2386 / 31) */
@@ -55,7 +59,7 @@ MEGAZEUX_BEGIN_DECLS
 #define LPT_38K_HZ            38489 /* Divider 31 is near (2386 / 77) */
 #define LPT_44K_HZ            44191 /* Divider 27 gets closest to 44100 */
 #define LPT_48K_HZ            47727 /* Divider 25 gets closest to 48000 */
-#define LPT_DSS_HZ            7000 /* DSS outputs a fixed rate */
+#define LPT_DSS_HZ            7000  /* DSS outputs a fixed rate */
 
 extern const int int_lock_start;
 extern const int int_lock_end;

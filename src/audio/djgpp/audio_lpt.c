@@ -90,12 +90,14 @@ static boolean lpt_init_callback(void)
   /* Attempt to guarantee at least 4 buffer fill checks within the time it
    * takes to consume a buffer. */
   int rate = (audio.output_frequency * 4) / audio.buffer_frames;
+  //return true;
 
   return djgpp_set_irq8_handler(rate, lpt_audio_callback);
 }
 
 static void lpt_quit_callback(void)
 {
+  //return;
   djgpp_reset_irq8_handler();
 }
 
@@ -105,7 +107,8 @@ static uint16_t lpt_get_rate(int requested_rate)
 {
   static const uint16_t supported_rates[] =
   {
-    LPT_8K_HZ, LPT_10K_HZ, LPT_11K_HZ, LPT_15K_HZ, LPT_17K_HZ, LPT_22K_HZ,
+    LPT_4K_HZ,  LPT_5K_HZ,  LPT_6K_HZ,  LPT_7K_HZ,  LPT_8K_HZ,
+    LPT_10K_HZ, LPT_11K_HZ, LPT_15K_HZ, LPT_17K_HZ, LPT_22K_HZ,
     LPT_26K_HZ, LPT_28K_HZ, LPT_32K_HZ, LPT_38K_HZ, LPT_44K_HZ, LPT_48K_HZ,
   };
   size_t i;
