@@ -4,6 +4,7 @@
  * Copyright (C) 2007 Alistair John Strachan <alistair@devzero.co.uk>
  * Copyright (C) 2007 Alan Williams <mralert@gmail.com>
  * Copyright (C) 2018, 2019 Adrian Siekierka <kontakt@asie.pl>
+ * Copyright (C) 2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -27,6 +28,7 @@
 #include <go32.h>
 #undef delay
 
+#include "render_djgpp.h"
 #include "../render.h"
 #include "../render_layer.h"
 #include "../renderers.h"
@@ -37,9 +39,13 @@
 struct svga_render_data
 {
   __dpmi_meminfo mapping;
-  uint8_t *ptr, *ptr2;
-  uint16_t line, line2;
-  uint16_t mode, pitch;
+  int mapping_type;
+  uint8_t *ptr;
+  uint8_t *ptr2;
+  uint16_t line;
+  uint16_t line2;
+  uint16_t mode;
+  uint16_t pitch;
   uint8_t display;
   boolean page_flip_ok;
   int update_colors;
@@ -94,6 +100,7 @@ static boolean svga_init_video(struct graphics_data *graphics,
   struct vbe_mode_info vbe;
   int x_offset, y_offset;
   __dpmi_regs reg;
+  uint32_t size;
 
   memset(&render_data, 0, sizeof(struct svga_render_data));
   graphics->render_data = &render_data;
@@ -102,9 +109,6 @@ static boolean svga_init_video(struct graphics_data *graphics,
   graphics->bits_per_pixel = conf->force_bpp;
   if(graphics->bits_per_pixel != 8 && graphics->bits_per_pixel != 16)
     graphics->bits_per_pixel = 16;
-
-  if(!djgpp_push_enable_nearptr())
-    return false;
 
   render_data.display = djgpp_display_adapter_detect();
   if(render_data.display < DISPLAY_ADAPTER_VBE20)
@@ -132,15 +136,21 @@ static boolean svga_init_video(struct graphics_data *graphics,
   }
 
   dosmemget(__tb, sizeof(struct vbe_mode_info), &vbe);
-  render_data.mapping.address = vbe.linear_ptr;
-  render_data.mapping.size = (graphics->resolution_height * vbe.pitch);
-  // TODO: detect if we have enough memory
-  render_data.page_flip_ok = true;
+  djgpp_print_vbe_mode_info(&vbe);
+
+  /* VBE image pages field indicates the total number, minus 1, of complete
+   * frames that will fit into video memory. If it's >=1, at least 2 images
+   * will fit and double buffering can be enabled. */
+  if(vbe.image_pages >= 1)
+    render_data.page_flip_ok = true;
+
+  size = graphics->resolution_height * vbe.pitch;
   if(render_data.page_flip_ok)
-    render_data.mapping.size <<= 1;
-  // round up to 4KB
-  render_data.mapping.size = (render_data.mapping.size + 4095) & (~4095);
-  if(__dpmi_physical_address_mapping(&render_data.mapping) != 0)
+    size <<= 1;
+
+  render_data.ptr = (uint8_t *)djgpp_map_physical_memory(
+   vbe.linear_ptr, size, &render_data.mapping, &render_data.mapping_type);
+  if(!render_data.ptr)
   {
     // set text video mode, leave
     reg.x.ax = 0x0010;
@@ -149,12 +159,12 @@ static boolean svga_init_video(struct graphics_data *graphics,
      render_data.mapping.size, render_data.mapping.address, render_data.mode);
     return false;
   }
+  memset(render_data.ptr, 0, size);
 
-  x_offset = (graphics->resolution_width - 640) / 2;
-  y_offset = (graphics->resolution_height - 350) / 2;
+  x_offset = (graphics->resolution_width - SCREEN_PIX_W) / 2;
+  y_offset = (graphics->resolution_height - SCREEN_PIX_H) / 2;
 
-  render_data.ptr = (uint8_t *)(render_data.mapping.address + __djgpp_conventional_base) +
-   (vbe.pitch * y_offset) + ((vbe.bpp >> 3) * x_offset);
+  render_data.ptr += (vbe.pitch * y_offset) + ((vbe.bpp >> 3) * x_offset);
 
   render_data.pitch = vbe.pitch;
   if(render_data.page_flip_ok)
@@ -164,16 +174,14 @@ static boolean svga_init_video(struct graphics_data *graphics,
     render_data.line2 = graphics->resolution_height;
   }
 
-  memset((uint8_t *)(render_data.mapping.address + __djgpp_conventional_base), 0,
-   vbe.pitch * vbe.height * (render_data.page_flip_ok ? 2 : 1));
   return true;
 }
 
 static void svga_free_video(struct graphics_data *graphics)
 {
   struct svga_render_data *render_data = graphics->render_data;
-  __dpmi_free_physical_address_mapping(&(render_data->mapping));
-  djgpp_pop_enable_nearptr();
+  djgpp_unmap_physical_memory(&render_data->mapping, &render_data->mapping_type);
+  /* FIXME: reset mode too like the EGA renderer */
 }
 
 static boolean svga_create_window(struct graphics_data *graphics,

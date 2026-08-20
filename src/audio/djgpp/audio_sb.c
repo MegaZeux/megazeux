@@ -62,8 +62,9 @@ struct sb_config
   struct irq_state old_irq_state;
   _go32_dpmi_seginfo old_irq_handler;
   // - if nearptr enabled
-  boolean nearptr_buffer_enabled;
-  __dpmi_meminfo nearptr_buffer_mapping;
+  boolean nearptr_enabled;
+  __dpmi_meminfo nearptr_mapping;
+  int nearptr_type;
 };
 
 static struct sb_config sb_cfg;
@@ -73,7 +74,7 @@ static void audio_sb_clear_buffer(void)
   int zero = (sb_cfg.buffer_format == SAMPLE_U8) ? 0x80 : 0;
   memset(sb_cfg.buffer, zero, sb_cfg.buffer_size * BUFFER_BLOCKS);
 
-  if(!sb_cfg.nearptr_buffer_enabled)
+  if(!sb_cfg.nearptr_enabled)
   {
     dosmemput(sb_cfg.buffer, sb_cfg.buffer_size * BUFFER_BLOCKS,
      sb_cfg.buffer_segment << 4);
@@ -87,7 +88,7 @@ static void audio_sb_fill_block(void)
   audio_mixer_render_frames(sb_cfg.buffer + offset,
    sb_cfg.buffer_frames, sb_cfg.buffer_channels, sb_cfg.buffer_format);
 
-  if(!sb_cfg.nearptr_buffer_enabled)
+  if(!sb_cfg.nearptr_enabled)
   {
     dosmemput(sb_cfg.buffer + offset, sb_cfg.buffer_size,
      (sb_cfg.buffer_segment << 4) + offset);
@@ -265,8 +266,6 @@ static boolean init_audio_driver_sb(struct config_info *conf)
       rate = 1000000 / (sb_cfg.buffer_channels * (256 - time_constant));
     }
 
-    sb_cfg.nearptr_buffer_enabled = djgpp_push_enable_nearptr();
-
     if(!audio_mixer_init(rate, frames, sb_cfg.buffer_channels))
       goto err;
 
@@ -279,23 +278,12 @@ static boolean init_audio_driver_sb(struct config_info *conf)
     if(sb_cfg.buffer_segment < 0)
       goto err;
 
-    if(sb_cfg.nearptr_buffer_enabled)
-    {
-      sb_cfg.nearptr_buffer_mapping.address = sb_cfg.buffer_segment << 4;
-      sb_cfg.nearptr_buffer_mapping.size = sb_cfg.buffer_size;
-      if(__dpmi_physical_address_mapping(&sb_cfg.nearptr_buffer_mapping) != 0)
-      {
-        sb_cfg.nearptr_buffer_enabled = false;
-        djgpp_pop_enable_nearptr();
-      }
-      else
-      {
-        sb_cfg.buffer = (uint8_t *)(sb_cfg.nearptr_buffer_mapping.address +
-         __djgpp_conventional_base);
-      }
-    }
+    sb_cfg.buffer = (uint8_t *)djgpp_map_physical_memory(
+     sb_cfg.buffer_segment << 4, sb_cfg.buffer_size,
+     &sb_cfg.nearptr_mapping, &sb_cfg.nearptr_type);
 
-    if(!sb_cfg.nearptr_buffer_enabled)
+    sb_cfg.nearptr_enabled = (sb_cfg.buffer != NULL);
+    if(!sb_cfg.nearptr_enabled)
     {
       sb_cfg.buffer = (uint8_t *)cmalloc(sb_cfg.buffer_size * BUFFER_BLOCKS);
       if(!sb_cfg.buffer)
@@ -420,15 +408,11 @@ static void quit_audio_driver_sb(void)
 
     djgpp_disable_dma(sb_cfg.active_dma);
 
-    if(sb_cfg.nearptr_buffer_enabled)
-    {
-      __dpmi_free_physical_address_mapping(&(sb_cfg.nearptr_buffer_mapping));
-      djgpp_pop_enable_nearptr();
-    }
+    if(sb_cfg.nearptr_enabled)
+      djgpp_unmap_physical_memory(&sb_cfg.nearptr_mapping, &sb_cfg.nearptr_type);
     else
-    {
       free(sb_cfg.buffer);
-    }
+
     __dpmi_free_dos_memory(sb_cfg.buffer_selector);
   }
 }

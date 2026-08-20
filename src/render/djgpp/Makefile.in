@@ -6,6 +6,7 @@ ifeq (${BUILD_DJGPP},1)
 
 render_djgpp_obj  := ${render_obj}/djgpp
 render_djgpp_objs += \
+  ${render_djgpp_obj}/render_djgpp.o \
   ${render_djgpp_obj}/renderer_ega.o \
 
 ifeq (${BUILD_DOS_SVGA},1)
