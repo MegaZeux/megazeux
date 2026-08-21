@@ -285,17 +285,15 @@ jobs:
       - name: Package HTML5 .zip
         run: make archive
 
-  # FIXME: vitasdk hasn't bothered adding SDL3 to the container,
-  # vdpm and git are missing from the container.
   Vita:
     runs-on: ubuntu-latest
     container: vitasdk/vitasdk
     steps:
       - name: Install dependencies
-        run: apk add --no-cache zip
+        run: apt update && apt install -y --no-install-recommends zip
       - uses: actions/checkout@v4
       - name: Configure Vita
-        run: arch/psvita/CONFIG.PSVITA --enable-sdl2 --disable-libpng --disable-lto
+        run: arch/psvita/CONFIG.PSVITA --disable-libpng --disable-lto
       - name: Build Vita
         run: $MZX_MAKE
       - name: Package Vita
