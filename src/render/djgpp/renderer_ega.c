@@ -29,6 +29,7 @@
 #include <sys/movedata.h>
 #undef delay
 
+#include "render_djgpp.h"
 #include "../render.h"
 #include "../renderers.h"
 

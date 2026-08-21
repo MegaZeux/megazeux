@@ -11,6 +11,12 @@ GIT - MZX 2.93e
 
 USERS
 
++ DOS: fixed crashes when starting with the SVGA renderer
+  selected and a Sound Blaster present.
++ DOS: SVGA renderer should now correctly detect when a card
+  doesn't have enough memory to page flip.
++ DOS: fixed nearptr optimizations for Sound Blaster DMA under
+  CWSDPMI, PMODE/DJ, 386MAX/DPMIONE, possibly other DPMI hosts.
 + DOS: fixed 16-bit DMA for the Sound Blaster 16.
 + NDS: fixed PC speaker playback of rests (e.g. game over SFX).
 + Unix/Darwin: installed utilities are now prefixed with

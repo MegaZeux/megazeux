@@ -21,6 +21,7 @@
 
 #define delay delay_dos
 #include <errno.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <pc.h>
 #include <dos.h>
@@ -38,22 +39,24 @@
 /* TODO: Most of the audio callback code can't currently be locked or moved
  * outside of the callback, which causes CWSDMPI to crash during paging.
  * Disable paging altogether for now.
+ *
+ * Non-moving sbrk() (default, specify anyway) is required for nearptr hacks.
  */
-int _crt0_startup_flags = _CRT0_FLAG_LOCK_MEMORY;
+int _crt0_startup_flags = _CRT0_FLAG_LOCK_MEMORY | _CRT0_FLAG_NONMOVE_SBRK;
 
 static int djgpp_nearptr_cnt = 0;
 
-boolean djgpp_push_enable_nearptr(void)
+static boolean djgpp_push_enable_nearptr(void)
 {
-  if(djgpp_nearptr_cnt > 0)
-    return true;
-  if(!__djgpp_nearptr_enable())
-    return false;
+  if(djgpp_nearptr_cnt == 0)
+    if(!__djgpp_nearptr_enable())
+      return false;
+
   djgpp_nearptr_cnt++;
   return true;
 }
 
-boolean djgpp_pop_enable_nearptr(void)
+static boolean djgpp_pop_enable_nearptr(void)
 {
   if(djgpp_nearptr_cnt <= 0)
     return false;
@@ -61,79 +64,6 @@ boolean djgpp_pop_enable_nearptr(void)
     __djgpp_nearptr_disable();
   djgpp_nearptr_cnt--;
   return true;
-}
-
-int djgpp_display_adapter_detect(void)
-{
-  __dpmi_regs reg;
-
-  // VESA SuperVGA BIOS (VBE) - GET SuperVGA INFORMATION
-  // Generally supported by SVGA cards
-  reg.x.ax = 0x4F00;
-  reg.x.di = __tb & 0xF;
-  reg.x.es = (__tb >> 4);
-  __dpmi_int(0x10, &reg);
-
-  if(reg.x.ax == 0x004F)
-  {
-    struct vbe_info vbe;
-    dosmemget(__tb, sizeof(struct vbe_info), &vbe);
-    if(memcmp(vbe.signature, "VESA", 4) == 0)
-    {
-      if(vbe.version >= 0x300)
-        return DISPLAY_ADAPTER_VBE30;
-      else
-
-      if(vbe.version >= 0x200)
-        return DISPLAY_ADAPTER_VBE20;
-
-      return DISPLAY_ADAPTER_SVGA;
-    }
-  }
-
-  // VIDEO - GET DISPLAY COMBINATION CODE (PS,VGA/MCGA)
-  // Generally supported by VGA cards
-  reg.x.ax = 0x1A00;
-  __dpmi_int(0x10, &reg);
-
-  if(reg.h.al == 0x1A)
-  {
-    switch(reg.h.bl) {
-      case 0x04:
-      case 0x05:
-        return DISPLAY_ADAPTER_EGA;
-      case 0x07:
-      case 0x08:
-        return DISPLAY_ADAPTER_VGA;
-      default:
-        return DISPLAY_ADAPTER_UNSUPPORTED;
-    }
-  }
-
-  // VIDEO - ALTERNATE FUNCTION SELECT (PS, EGA, VGA, MCGA) - GET EGA INFO
-  // Generally supported by EGA cards
-  reg.h.ah = 0x12;
-  reg.x.bx = 0xFF10;
-  __dpmi_int(0x10, &reg);
-
-  if(reg.h.bh != 0xFF)
-    return DISPLAY_ADAPTER_EGA;
-
-  return DISPLAY_ADAPTER_UNSUPPORTED;
-}
-
-const char *disp_adapter_names[] =
-{
-  "Unsupported",
-  "EGA",
-  "VGA",
-  "SVGA",
-  "SVGA (VBE 2.0+)"
-};
-
-const char *djgpp_display_adapter_name(int adapter)
-{
-  return disp_adapter_names[adapter];
 }
 
 /**
@@ -171,6 +101,115 @@ int djgpp_malloc_boundary(int len_bytes, int boundary_bytes, int *selector)
     segment = (segment + len_paragraphs) & boundary_mask;
 
   return segment;
+}
+
+/* Method 1: Physical Address Mapping 800h
+ *
+ * Some DPMI clients support directly mapping below 1MiB despite this being
+ * against the specification. CWSDPMI does not support this, but Windows does.
+ * This should always work for addresses over 1MiB, so try it first.
+ */
+static void *map_physical_memory_over_1mb(uint32_t address, size_t len_bytes,
+ __dpmi_meminfo *mi, int *type)
+{
+  mi->address = address;
+  mi->size = len_bytes;
+  if(__dpmi_physical_address_mapping(mi))
+    return NULL;
+
+  debug("--NEARPTR-- %08" PRIx32 "h %zd (physical mapping)\n", address, len_bytes);
+  *type = 1;
+  return (void *)(mi->address + __djgpp_conventional_base);
+}
+
+/* Method 2: Map Device Memory in Memory Block 508h
+ *           Map Conventional Memory in Memory Block 509h
+ *
+ * TODO: this method is non-trivial and has few benefits over methods 1 and 3,
+ * so it hasn't been implemented.
+ */
+//void *map_physical_memory_dpmi_10() {}
+
+/* Method 3: Manually derive nearptr offset.
+ *
+ * Don't bother with the physical address mapping, as
+ * "most DPMI servers map the first Megabyte 1:1 anyway"
+ * and nearptr permits access to the entire address space.
+ * This is confirmed to work with CWSDPMI, PMODE/DJ, and 386MAX/DPMIONE.
+ */
+static void *map_physical_memory_manual(uint32_t address, size_t len_bytes,
+ __dpmi_meminfo *mi, int *type)
+{
+  /* Only support first 1MiB of memory */
+  if(address >= 1024 * 1024 || address + len_bytes > 1024 * 1024)
+    return NULL;
+
+  debug("--NEARPTR-- %08" PRIx32 "h %zd (manual)\n", address, len_bytes);
+  *type = 3;
+  return (void *)(address + __djgpp_conventional_base);
+}
+
+/**
+ * Use to nearptr map an allocation in conventional or device memory e.g.
+ * allocated by djgpp_malloc_boundary or __dpmi_allocate_dos_memory.
+ *
+ * @param address     absolute address of the area to be mapped.
+ * @param len_bytes   length of the area to be mapped, in bytes.
+ * @param mi          __dpmi_meminfo required to unmap this buffer.
+ * @param type        the type of mapping is stored here to allow unmapping.
+ * @return            a pointer usable by the caller addressing the requested
+ *                    area of conventional memory on success, otherwise NULL.
+ */
+void *djgpp_map_physical_memory(uint32_t address, size_t len_bytes,
+ __dpmi_meminfo *mi, int *type)
+{
+  void *ret;
+
+  *type = 0;
+  if((uint64_t)address + len_bytes > UINT32_MAX)
+    return NULL;
+
+  if(!djgpp_push_enable_nearptr())
+    return NULL;
+
+  ret = map_physical_memory_over_1mb(address, len_bytes, mi, type);
+  if(ret)
+    return ret;
+
+  /*
+  ret = map_physical_memory_dpmi_10(address, len_bytes, mi, type);
+  if(ret)
+    return ret;
+  */
+
+  ret = map_physical_memory_manual(address, len_bytes, mi, type);
+  if(ret)
+    return ret;
+
+  djgpp_pop_enable_nearptr();
+  return NULL;
+}
+
+/**
+ * Unmap djgpp_map_physical_memory.
+ *
+ * @param mi          __dpmi_meminfo containing the original mapping info.
+ * @param type        type pointer that was provided to the original mapping.
+ */
+void djgpp_unmap_physical_memory(__dpmi_meminfo *mi, int *type)
+{
+  switch(*type)
+  {
+    case 1:
+      /* This is a DPMI 1.0 function but supported by CWSDPMI and PMODE/DJ */
+      __dpmi_free_physical_address_mapping(mi);
+      /* fall-through */
+
+    case 3:
+      djgpp_pop_enable_nearptr();
+      break;
+  }
+  *type = 0;
 }
 
 static void djgpp_enable_dma16(uint8_t port, uint8_t mode, int offset, int bytes)
@@ -333,9 +372,20 @@ boolean platform_init(void)
   __dpmi_meminfo region;
   __dpmi_paddr handler;
   unsigned long base;
+  int flags;
+  char vendor[128];
 
   // Disable exception on Ctrl-C
   __djgpp_set_ctrl_c(0);
+
+  // Print DPMI vendor and capabilities if supported
+  if(__dpmi_get_capabilities(&flags, vendor) == 0)
+  {
+    info("DPMI vendor: %s %d.%d (%02xh)\n",
+     vendor + 2, vendor[0], vendor[1], flags);
+  }
+  else
+    info("DPMI vendor: unknown\n");
 
   // Check if DPMI yield function is supported
   errno = 0;
