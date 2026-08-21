@@ -3593,8 +3593,12 @@ skip_dir:
           /* If a file was selected from the file list, ignore the filename
            * entry box value, which may be wrong--join the full filename to
            * the (absolute) current directory instead. */
-          struct file_list_entry *e =
-           (struct file_list_entry *)file_list[chosen_file];
+          struct file_list_entry *e;
+
+          if(chosen_file >= num_files || !file_list || !file_list[chosen_file])
+            break;
+
+          e = (struct file_list_entry *)file_list[chosen_file];
 
           if(path_join(ret, MAX_PATH, current_dir_name, e->filename) < 0)
           {
@@ -3720,7 +3724,7 @@ skip_dir:
       // Selected a directory from the list
       case 2:
       {
-        if(dir_list && dir_list[chosen_dir])
+        if(chosen_dir < num_dirs && dir_list && dir_list[chosen_dir])
           if(path_navigate(current_dir_name, MAX_PATH, dir_list[chosen_dir]) < 0)
             error("Directory does not exist or permission denied.",
              ERROR_T_ERROR, ERROR_OPT_OK, 0x0000);
@@ -3761,10 +3765,14 @@ skip_dir:
       // Delete file
       case 4:
       {
-        char *del_name = (char *)cmalloc(MAX_PATH);
+        struct file_list_entry *e;
+        char *del_name;
 
-        struct file_list_entry *e =
-         (struct file_list_entry *)file_list[chosen_file];
+        if(chosen_file >= num_files || !file_list || !file_list[chosen_file])
+          break;
+
+        del_name = (char *)cmalloc(MAX_PATH);
+        e = (struct file_list_entry *)file_list[chosen_file];
 
         if(strcmp(e->filename, PATH_PARENT_DIR) &&
          strcmp(e->filename, PATH_CURRENT_DIR) &&
@@ -3797,12 +3805,18 @@ skip_dir:
       // Rename file
       case 5:
       {
-        char *old_path = cmalloc(MAX_PATH);
-        char *new_path = cmalloc(MAX_PATH);
-        char *new_name = cmalloc(MAX_PATH);
+        struct file_list_entry *e;
+        char *old_path;
+        char *new_path;
+        char *new_name;
 
-        struct file_list_entry *e =
-         (struct file_list_entry *)file_list[chosen_file];
+        if(chosen_file >= num_files || !file_list || !file_list[chosen_file])
+          break;
+
+        old_path = (char *)cmalloc(MAX_PATH);
+        new_path = (char *)cmalloc(MAX_PATH);
+        new_name = (char *)cmalloc(MAX_PATH);
+        e = (struct file_list_entry *)file_list[chosen_file];
 
         snprintf(new_name, MAX_PATH, "%s", e->filename);
 
@@ -3815,7 +3829,6 @@ skip_dir:
             if(vrename(old_path, new_path))
               error("File rename failed.",
                ERROR_T_WARNING, ERROR_OPT_OK, 0x0000);
-
         }
 
         free(old_path);
@@ -3884,7 +3897,6 @@ skip_dir:
               if(vrename(old_path, new_path))
                 error("Directory rename failed.",
                  ERROR_T_WARNING, ERROR_OPT_OK, 0x0000);
-
           }
 
           free(old_path);
