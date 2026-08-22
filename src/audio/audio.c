@@ -66,21 +66,10 @@ static platform_mutex_debug mutex_debug;
  * NOT be disabled in the audio callback, as it can run a long time and
  * interfere with timer/audio driver functions. In other words: do the exact
  * opposite of usual in the audio callback.
- *
- * FIXME: observations so far:
- * - FPE status is always 80a0, corresponding to a precision error (WTF?)
- * - FPE in both drivers is heavily dependent on config options provided.
- *   Providing literally any config option for SB seems to delay setup
- *   enough to avoid ever having one, LPT less consistent
- * - Disabling nested exceptions fixes both drivers?
- * - Removing IRQ8 init from the LPT driver somehow fixes the SB driver.
- * - 560X issues eventually resolved on their own?! 600X not so much
- *
- * Do the LPT ISRs need the audio buffer's selector?
  */
 #ifdef CONFIG_DJGPP
-#define LOCK_AUDIO_THREAD()   //enable();
-#define UNLOCK_AUDIO_THREAD() //disable();
+#define LOCK_AUDIO_THREAD()   enable();
+#define UNLOCK_AUDIO_THREAD() disable();
 #else
 #define LOCK_AUDIO_THREAD()   LOCK()
 #define UNLOCK_AUDIO_THREAD() UNLOCK()

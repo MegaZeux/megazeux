@@ -69,12 +69,12 @@ uint16_t djgpp_get_lpt_base_port(int lpt);
  */
 static inline void djgpp_save_x87(uint8_t fpustate[108])
 {
-  __asm__("fsave %0" : "=m"(fpustate));
+  __asm__("fsave %0" : "=m"(*fpustate));
 }
 static inline void djgpp_restore_x87(const uint8_t fpustate[108])
 {
   __asm__("fwait\n\t"
-          "frstor %0" : : "m"(fpustate));
+          "frstor %0" : : "m"(*fpustate));
 }
 
 MEGAZEUX_END_DECLS

@@ -90,14 +90,12 @@ static boolean lpt_init_callback(void)
   /* Attempt to guarantee at least 4 buffer fill checks within the time it
    * takes to consume a buffer. */
   int rate = (audio.output_frequency * 4) / audio.buffer_frames;
-  //return true;
 
   return djgpp_set_irq8_handler(rate, lpt_audio_callback);
 }
 
 static void lpt_quit_callback(void)
 {
-  //return;
   djgpp_reset_irq8_handler();
 }
 
