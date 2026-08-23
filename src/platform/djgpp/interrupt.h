@@ -59,7 +59,7 @@ MEGAZEUX_BEGIN_DECLS
 #define LPT_38K_HZ            38489 /* Divider 31 is near (2386 / 77) */
 #define LPT_44K_HZ            44191 /* Divider 27 gets closest to 44100 */
 #define LPT_48K_HZ            47727 /* Divider 25 gets closest to 48000 */
-#define LPT_DSS_HZ            7000  /* DSS outputs a fixed rate */
+#define LPT_DSS_HZ            7000  /* For mixer; DSS outputs a fixed rate */
 
 extern const int int_lock_start;
 extern const int int_lock_end;

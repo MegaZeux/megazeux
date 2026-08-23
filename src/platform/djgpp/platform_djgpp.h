@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2010 Alan Williams <mralert@gmail.com>
  * Copyright (C) 2019 Adrian Siekierka <kontakt@asie.pl>
+ * Copyright (C) 2024-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -50,7 +51,7 @@ void djgpp_disable_dma(uint8_t port);
 void djgpp_irq_enable(int irq, struct irq_state *old_state);
 void djgpp_irq_restore(struct irq_state *old_state);
 void djgpp_irq_ack(int irq);
-void djgpp_irq8_ack(void);
+void djgpp_rtc_ack(void);
 boolean djgpp_reset_irq0_handler(void);
 boolean djgpp_reset_irq8_handler(void);
 boolean djgpp_set_irq0_handler(uint16_t rate_hz, const int *irq_handler);

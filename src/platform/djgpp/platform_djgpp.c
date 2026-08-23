@@ -587,7 +587,7 @@ void djgpp_irq_ack(int irq)
   outportb(0x20, 0x20);
 }
 
-void djgpp_irq8_ack(void)
+void djgpp_rtc_ack(void)
 {
   /* Separate from the PIC ack, the RTC needs this register to be read
    * before it will send further IRQ8 interrupts: */

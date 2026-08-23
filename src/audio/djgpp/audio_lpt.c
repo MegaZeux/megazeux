@@ -50,8 +50,8 @@ static void lpt_audio_callback(void)
     djgpp_restore_x87(fpustate);
   }
 
-  djgpp_irq8_ack(); /* ack: RTC */
-  djgpp_irq_ack(8); /* ack: PIC */
+  djgpp_rtc_ack();
+  djgpp_irq_ack(8);
 }
 
 static boolean lpt_init_buffer(unsigned frames, unsigned channels)
@@ -62,10 +62,6 @@ static boolean lpt_init_buffer(unsigned frames, unsigned channels)
   if(!dos_audio_buffer)
     return false;
   memset(dos_audio_buffer, 0x80, size);
-
-  /* FIXME: remove */
-  for(size_t i = 0; i < size; i++)
-    dos_audio_buffer[i] = (uint8_t)(0x80 + (i << 2));
 
   _go32_dpmi_lock_data(dos_audio_buffer, size);
 
@@ -80,7 +76,7 @@ static boolean lpt_init_buffer(unsigned frames, unsigned channels)
 
 static void lpt_free_buffer(void)
 {
-  /* how unlock :( */
+  /* TODO: this is possible, but annoying, to unlock + the benefit is minimal. */
   free(dos_audio_buffer);
   dos_audio_buffer = NULL;
 }
@@ -111,11 +107,10 @@ static uint16_t lpt_get_rate(int requested_rate)
   };
   size_t i;
 
-  for(i = 0; i < ARRAY_SIZE(supported_rates); i++)
-    if(requested_rate <= supported_rates[i])
+  for(i = 0; i < ARRAY_SIZE(supported_rates) - 1; i++)
+    if(requested_rate < ((int)supported_rates[i] + supported_rates[i + 1]) >> 1)
       break;
 
-  i = MIN(i, ARRAY_SIZE(supported_rates) - 1);
   return supported_rates[i];
 }
 
@@ -155,13 +150,13 @@ static boolean lpt_read_config(const char *config, boolean is_dual_port)
   return true;
 }
 
-static boolean init_audio_driver_lpt(unsigned rate, unsigned frames,
- unsigned channels, const int *irq_handler)
+static boolean init_audio_driver_lpt(unsigned mix_rate, unsigned irq_rate,
+ unsigned frames, unsigned channels, const int *irq_handler)
 {
-  if(!audio_mixer_init(rate, frames, channels))
+  if(!audio_mixer_init(mix_rate, frames, channels))
     return false;
   /* Shouldn't happen */
-  if(audio.output_frequency != rate || audio.buffer_channels != channels)
+  if(audio.output_frequency != mix_rate || audio.buffer_channels != channels)
     return false;
 
   if(!lpt_init_buffer(audio.buffer_frames, channels))
@@ -173,12 +168,7 @@ static boolean init_audio_driver_lpt(unsigned rate, unsigned frames,
     return false;
   }
 
-  /* Hack: DSS can run at much lower rates due to its 16 sample buffer.
-   * The DSS handler relies on running at exactly this rate. */
-  if(irq_handler == &lpt_dss_handler)
-    rate = TIMER_HZ;
-
-  if(!djgpp_set_irq0_handler(rate, irq_handler))
+  if(!djgpp_set_irq0_handler(irq_rate, irq_handler))
   {
     lpt_quit_callback();
     lpt_free_buffer();
@@ -186,7 +176,7 @@ static boolean init_audio_driver_lpt(unsigned rate, unsigned frames,
   }
 
   info("LPT audio initialized: %xh/%xh %uFr %uCh %zuHz (%uHz)", lpt_left_port,
-   lpt_right_port, audio.buffer_frames, channels, audio.output_frequency, rate);
+   lpt_right_port, audio.buffer_frames, channels, audio.output_frequency, irq_rate);
   return true;
 }
 
@@ -198,7 +188,7 @@ static boolean init_audio_driver_lpt_mono(struct config_info *conf)
   if(!lpt_read_config(conf->audio_driver_config, false))
     return false;
 
-  return init_audio_driver_lpt(rate, frames, 1, &lpt_mono_handler);
+  return init_audio_driver_lpt(rate, rate, frames, 1, &lpt_mono_handler);
 }
 
 static boolean init_audio_driver_lpt_stereo1(struct config_info *conf)
@@ -210,7 +200,7 @@ static boolean init_audio_driver_lpt_stereo1(struct config_info *conf)
   if(!lpt_read_config(conf->audio_driver_config, false))
     return false;
 
-  return init_audio_driver_lpt(rate, frames, 2, &lpt_stereo1_handler);
+  return init_audio_driver_lpt(rate, rate, frames, 2, &lpt_stereo1_handler);
 }
 
 static boolean init_audio_driver_lpt_stereo2(struct config_info *conf)
@@ -221,7 +211,7 @@ static boolean init_audio_driver_lpt_stereo2(struct config_info *conf)
   if(!lpt_read_config(conf->audio_driver_config, true))
     return false;
 
-  return init_audio_driver_lpt(rate, frames, 2, &lpt_stereo2_handler);
+  return init_audio_driver_lpt(rate, rate, frames, 2, &lpt_stereo2_handler);
 }
 
 static boolean init_audio_driver_lpt_dss(struct config_info *conf)
@@ -231,7 +221,7 @@ static boolean init_audio_driver_lpt_dss(struct config_info *conf)
   if(!lpt_read_config(conf->audio_driver_config, false))
     return false;
 
-  return init_audio_driver_lpt(LPT_DSS_HZ, frames, 1, &lpt_dss_handler);
+  return init_audio_driver_lpt(LPT_DSS_HZ, TIMER_HZ, frames, 1, &lpt_dss_handler);
 }
 
 static void quit_audio_driver_lpt(void)
