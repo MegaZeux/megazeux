@@ -233,7 +233,7 @@ static void quit_audio_driver_lpt(void)
 
 const struct audio_driver audio_driver_lpt_mono =
 {
-  "LPT DAC (Mono on 1)",
+  "LPT DAC (Mono)",
   "lptmono",
   false, /* Must be explicitly requested */
 
@@ -247,7 +247,7 @@ const struct audio_driver audio_driver_lpt_mono =
 
 const struct audio_driver audio_driver_lpt_stereo1 =
 {
-  "LPT DAC (Stereo on 1)",
+  "LPT DAC (Stereo-on-1)",
   "lptstereo1",
   false, /* Must be explicitly requested */
 
@@ -261,7 +261,7 @@ const struct audio_driver audio_driver_lpt_stereo1 =
 
 const struct audio_driver audio_driver_lpt_stereo2 =
 {
-  "LPT DAC (Stereo on 2)",
+  "LPT DAC (Left DAC + Right DAC)",
   "lptstereo2",
   false, /* Must be explicitly requested */
 

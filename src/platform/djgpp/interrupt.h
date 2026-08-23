@@ -86,8 +86,8 @@ extern uint32_t dos_audio_buffer_size;
 extern uint32_t dos_audio_buffer_next; /* != pos buffer -> need callback */
 extern uint32_t dos_audio_buffer_frames;
 extern uint32_t dos_audio_channels;
-extern uint16_t lpt_left_port; /* port for mono/stereo-on-1/stereo-on-2 left LPT */
-extern uint16_t lpt_right_port; /* port for stereo-on-2 right LPT */
+extern uint16_t lpt_left_port; /* port for mono/stereo-on-1/stereo left LPT */
+extern uint16_t lpt_right_port; /* port for stereo right LPT */
 
 /* Keyboard interrupt variables */
 extern const int kbd_handler;
