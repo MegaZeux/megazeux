@@ -87,7 +87,7 @@ _timer_handler_prev:
 _timer_handler_var:			/* Arriving from LPT interrupts */
 	movl	_timer_pos, %eax
 	subl	_current_div, %eax	/* timer_pos -= current_div; */
-	js	1f			/* if(timer_pos < 0) goto timer_handler_tick; */
+	js	1f			/* if(timer_pos < 0) goto 1; */
 	movl	%eax, _timer_pos
 	jmp	_timer_handler_prev	/* goto timer_handler_prev; */
 1:
@@ -104,11 +104,11 @@ _timer_handler_var:			/* Arriving from LPT interrupts */
  * particularly with Triton's '7528-based design.
  *
  * Notably, DOSBox latches when the control port strobe pins switch high, as
- * some of the original designs are purported to have worked (supported here),
- * but 86Box latches on the data port write, which may be more in line with
- * how a '7528 design would work (results in flipped channels here).
+ * how designs based on the '374 are supposed to have worked (supported here).
+ * Some other emulator(s) latch on the data port write only, which doesn't
+ * match any real world design (resulting in flipped channels here).
  */
-.balign 4
+.balign 16
 .global _dos_audio_buffer		/* uint8_t *dos_audio_buffer; */
 _dos_audio_buffer:
 	.long	0
@@ -222,8 +222,8 @@ _lpt_dss_handler:
 	pushl	%ds
 	pushl	%esi
 	pushl	%edi
-	push	%cx
-	push	%dx
+	pushl	%ecx
+	pushl	%edx
 	movw	%cs:_int_ds, %ds
 	movb	$16, %cl
 	movl	_dos_audio_buffer_pos, %esi
@@ -245,21 +245,21 @@ _lpt_dss_handler:
 	add	$2, %dx			/* Control port */
 	movb	$0x0c, %al		/* DSS: Strobe */
 	outb	%al, %dx
-	push	%ax
-	pop	%ax
+	pushl	%eax
+	popl	%eax
 	movb	$0x04, %al		/* DSS: Power up */
 	outb	%al, %dx
-	push	%ax
-	pop	%ax
-	push	%ax
-	pop	%ax
+	pushl	%eax
+	popl	%eax
+	pushl	%eax
+	popl	%eax
 	dec	%dx			/* Status port */
-	dec	%cx			/* if((--cx) > 0) */
+	decb	%cl			/* if((--cl) > 0) */
 	jnz	1b			/*    goto loop; */
 3:
 	movl	%esi, _dos_audio_buffer_pos
-	pop	%dx
-	pop	%cx
+	popl	%edx
+	popl	%ecx
 	popl	%edi
 	popl	%esi
 	jmp	_timer_handler_tick	/* goto timer_handler_tick; */
