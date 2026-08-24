@@ -556,11 +556,6 @@ UNITTEST(Settings)
     TEST_STRING("audio_driver", conf->audio_driver, string_data);
   }
 
-  SECTION(audio_driver_config)
-  {
-    TEST_STRING("audio_driver_config", conf->audio_driver_config, string_data);
-  }
-
   SECTION(audio_sample_rate)
   {
     TEST_INT("audio_sample_rate", conf->audio_sample_rate, 1, INT_MAX);
@@ -656,6 +651,17 @@ UNITTEST(Settings)
   SECTION(audio_opl_port)
   {
     TEST_INT("audio_opl_port", conf->audio_opl_port, 0, 65535);
+  }
+
+  // Audio options (DOS-only)
+  SECTION(audio_driver_config)
+  {
+    TEST_STRING("audio_config_lpt", conf->audio_config_lpt, string_data);
+  }
+
+  SECTION(audio_driver_config)
+  {
+    TEST_STRING("audio_config_sb", conf->audio_config_sb, string_data);
   }
 
   // Event options.

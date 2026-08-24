@@ -137,7 +137,6 @@ struct config_info
 
   // Audio options
   char audio_driver[16];
-  char audio_driver_config[32];
   int audio_sample_rate;
   int audio_buffer_samples;
   int audio_output_channels;
@@ -153,6 +152,10 @@ struct config_info
   boolean audio_pc_speaker_use_hardware;
   boolean audio_opl_use_hardware;
   int audio_opl_port;
+
+  // Audio options (DOS-only)
+  char audio_config_sb[32];
+  char audio_config_lpt[16];
 
   // Event options
   boolean allow_gamepad;

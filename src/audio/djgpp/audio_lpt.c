@@ -187,7 +187,7 @@ static boolean init_audio_driver_lpt_mono(struct config_info *conf)
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
   unsigned frames = MIN(conf->audio_buffer_samples, 32768);
 
-  if(!lpt_read_config(conf->audio_driver_config, false))
+  if(!lpt_read_config(conf->audio_config_lpt, false))
     return false;
 
   return init_audio_driver_lpt(rate, rate, frames, 1, &lpt_mono_handler);
@@ -199,7 +199,7 @@ static boolean init_audio_driver_lpt_stereo1(struct config_info *conf)
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
   unsigned frames = MIN(conf->audio_buffer_samples, 16384);
 
-  if(!lpt_read_config(conf->audio_driver_config, false))
+  if(!lpt_read_config(conf->audio_config_lpt, false))
     return false;
 
   return init_audio_driver_lpt(rate, rate, frames, 2, &lpt_stereo1_handler);
@@ -210,7 +210,7 @@ static boolean init_audio_driver_lpt_stereo2(struct config_info *conf)
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
   unsigned frames = MIN(conf->audio_buffer_samples, 16384);
 
-  if(!lpt_read_config(conf->audio_driver_config, true))
+  if(!lpt_read_config(conf->audio_config_lpt, true))
     return false;
 
   return init_audio_driver_lpt(rate, rate, frames, 2, &lpt_stereo2_handler);
@@ -220,7 +220,7 @@ static boolean init_audio_driver_lpt_dss(struct config_info *conf)
 {
   unsigned frames = MIN(conf->audio_buffer_samples, 32768);
 
-  if(!lpt_read_config(conf->audio_driver_config, false))
+  if(!lpt_read_config(conf->audio_config_lpt, false))
     return false;
 
   return init_audio_driver_lpt(LPT_DSS_HZ, TIMER_HZ, frames, 1, &lpt_dss_handler);

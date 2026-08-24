@@ -294,11 +294,11 @@
 # further configurable via a driver-specific configuration string.
 
 # Sound Blaster 16, Pro 2, Pro, 2.0, DSP 2.0, and compatibles. Configuration
-# string is in the same format as BLASTER, and will override it if provided.
-# The maximum supported sample rate is 22050 or 44100 (depending on the device).
+# is in the same format as BLASTER, and will override it if provided. The
+# maximum supported sample rate is 22050 or 44100 (depending on the device).
 
 # audio_driver = sb
-# audio_driver_config = A220 I7 D1 H5 T6
+# audio_config_sb = A220 I7 D1 H5
 
 # Several LPT DAC drivers are available. MegaZeux will not autodetect LPT DACs
 # or initialize the LPT DAC drivers unless one of them is explicitly requested.
@@ -312,30 +312,30 @@
 # audio_buffer_samples as-needed to get responsive sound. The maximum supported
 # sample rate is currently 48000.
 
-# LPT DAC (mono). Configuration string is an LPT number (1-3) or a
-# hexidecimal base port number for the desired LPT port.
+# LPT DAC (mono). Configuration is an LPT number (1-3) or a hexidecimal
+# base port number for the desired LPT port.
 
 # audio_driver = lptmono
-# audio_driver_config = 1
+# audio_config_lpt = 1
 
-# LPT DAC (Stereo-on-1). Configuration string is an LPT number (1-3) or a
-# hexidecimal port number for the desired LPT port.
+# LPT DAC (Stereo-on-1). Configuration is an LPT number (1-3) or a hexidecimal
+# base port number for the desired LPT port.
 
 # audio_driver = lptstereo1
-# audio_driver_config = 1
+# audio_config_lpt = 1
 
-# LPT DAC (Left DAC + Right DAC). Configuration string is two comma-separated
-# LPT numbers (1-3) or hexidecimal port numbers for the desired LPT ports.
+# LPT DAC (Left DAC + Right DAC). Configuration is two comma-separated LPT
+# numbers (1-3) or hexidecimal base port numbers for the desired LPT ports.
 
 # audio_driver = lptstereo2
-# audio_driver_config = 1,2
+# audio_config_lpt = 1,2
 
-# LPT DAC (DSS). Configuration string is an LPT number (1-3) or a
-# hexidecimal port number for the desired LPT port. This device has a fixed
+# LPT DAC (DSS). Configuration is an LPT number (1-3) or a hexidecimal
+# base port number for the desired LPT port. This device has a fixed
 # sample rate of 7000, so lower the buffer size to something like 128 or 256.
 
 # audio_driver = lptdss
-# audio_driver_config = 1
+# audio_config_lpt = 1
 
 
 ### Game options ###
