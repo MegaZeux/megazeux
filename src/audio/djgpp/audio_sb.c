@@ -296,7 +296,7 @@ static boolean init_audio_driver_sb(struct config_info *conf)
 
     // lock C irq handler
     // (TODO: rewrite handler in ASM?)
-    _go32_dpmi_lock_code(audio_sb_interrupt, 1024);
+    _go32_dpmi_lock_code((void *)audio_sb_interrupt, 1024);
     _go32_dpmi_lock_data(&sb_cfg, sizeof(struct sb_config));
     sb_cfg.buffer_block = 0;
 

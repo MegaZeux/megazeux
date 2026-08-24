@@ -87,6 +87,8 @@ static boolean lpt_init_callback(void)
    * takes to consume a buffer. */
   int rate = (audio.output_frequency * 4) / audio.buffer_frames;
 
+  _go32_dpmi_lock_code((void *)lpt_audio_callback, 4096);
+
   return djgpp_set_irq8_handler(rate, lpt_audio_callback);
 }
 

@@ -620,7 +620,6 @@ boolean djgpp_set_irq0_handler(uint16_t rate_hz, const int *irq_handler)
   return pit_set_handler(PIT_DIVIDER(rate_hz), &handler);
 }
 
-/* TODO: this code assumes the callback memory is already locked. */
 boolean djgpp_set_irq8_handler(uint16_t rate_hz, void (*callback)(void))
 {
   _go32_dpmi_seginfo handler;
