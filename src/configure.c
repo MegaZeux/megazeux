@@ -330,6 +330,10 @@ static const struct config_info user_conf_default =
   false,                        // audio_opl_use_hardware
   0x388,                        // audio_opl_port
 
+  // Audio options (DOS-only)
+  "",                           // audio_config_sb
+  "",                           // audio_config_lpt
+
   // Event options
   true,                         // allow_gamepad
   false,                        // pause_on_unfocus
@@ -797,6 +801,18 @@ static void config_set_audio_opl_port(struct config_info *conf,
   int result;
   if(config_int(&result, value, 0, 65535))
     conf->audio_opl_port = result;
+}
+
+static void config_set_audio_config_lpt(struct config_info *conf,
+ const char *name, const char *value, const char *extended_data)
+{
+  config_string(conf->audio_config_lpt, value);
+}
+
+static void config_set_audio_config_sb(struct config_info *conf,
+ const char *name, const char *value, const char *extended_data)
+{
+  config_string(conf->audio_config_sb, value);
 }
 
 static void config_save_file(struct config_info *conf,
@@ -1324,6 +1340,8 @@ static const struct config_entry config_options[] =
   { "allow_screenshots", config_set_allow_screenshots, false },
   { "audio_buffer", config_set_audio_buffer, false },
   { "audio_buffer_samples", config_set_audio_buffer, false },
+  { "audio_config_lpt", config_set_audio_config_lpt, false },
+  { "audio_config_sb", config_set_audio_config_sb, false },
   { "audio_driver", config_set_audio_driver, false },
   { "audio_opl_port", config_set_audio_opl_port, false },
   { "audio_opl_use_hardware", config_set_audio_opl_use_hardware, false },

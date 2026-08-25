@@ -11,6 +11,8 @@ GIT - MZX 2.93e
 
 USERS
 
++ DOS: added new LPT DAC audio drivers. See config.txt for more
+  information.
 + DOS: fixed crashes when starting with the SVGA renderer
   selected and a Sound Blaster present.
 + DOS: SVGA renderer should now correctly detect when a card
@@ -18,6 +20,7 @@ USERS
 + DOS: fixed nearptr optimizations for Sound Blaster DMA under
   CWSDPMI, PMODE/DJ, 386MAX/DPMIONE, possibly other DPMI hosts.
 + DOS: fixed 16-bit DMA for the Sound Blaster 16.
++ DOS: fixed FPEs caused by incorrect audio FSAVE/FRSTOR usage.
 + NDS: fixed PC speaker playback of rests (e.g. game over SFX).
 + Unix/Darwin: installed utilities are now prefixed with
   "megazeux-" so they can be installed to PATH. Package

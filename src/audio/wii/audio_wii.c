@@ -117,6 +117,7 @@ const struct audio_driver audio_driver_wii =
 {
   "Wii Audio",
   "wii",
+  true,
 
   NULL,
   &audio_player_pcs,

@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2010 Alan Williams <mralert@gmail.com>
  * Copyright (C) 2019 Adrian Siekierka <kontakt@asie.pl>
+ * Copyright (C) 2024-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -50,7 +51,13 @@ void djgpp_disable_dma(uint8_t port);
 void djgpp_irq_enable(int irq, struct irq_state *old_state);
 void djgpp_irq_restore(struct irq_state *old_state);
 void djgpp_irq_ack(int irq);
-int djgpp_irq_vector(int irq);
+void djgpp_rtc_ack(void);
+boolean djgpp_reset_irq0_handler(void);
+boolean djgpp_reset_irq8_handler(void);
+boolean djgpp_set_irq0_handler(uint16_t rate_hz, const int *irq_handler);
+boolean djgpp_set_irq8_handler(uint16_t rate_hz, void (*callback)(void));
+
+uint16_t djgpp_get_lpt_base_port(int lpt);
 
 /* Because multiple sound engines rely on floating point, the x87 FPU
  * state needs to be saved at the beginning of and reloaded at the end
@@ -63,12 +70,12 @@ int djgpp_irq_vector(int irq);
  */
 static inline void djgpp_save_x87(uint8_t fpustate[108])
 {
-  __asm__("fsave %0" : "=m"(fpustate));
+  __asm__("fsave %0" : "=m"(*fpustate));
 }
 static inline void djgpp_restore_x87(const uint8_t fpustate[108])
 {
   __asm__("fwait\n\t"
-          "frstor %0" : : "m"(fpustate));
+          "frstor %0" : : "m"(*fpustate));
 }
 
 MEGAZEUX_END_DECLS

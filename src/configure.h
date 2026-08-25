@@ -153,6 +153,10 @@ struct config_info
   boolean audio_opl_use_hardware;
   int audio_opl_port;
 
+  // Audio options (DOS-only)
+  char audio_config_sb[32];
+  char audio_config_lpt[16];
+
   // Event options
   boolean allow_gamepad;
   boolean pause_on_unfocus;

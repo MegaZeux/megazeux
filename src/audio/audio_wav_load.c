@@ -338,6 +338,7 @@ boolean audio_load_wav(struct wav_info *dest, vfile *vf, const char *filename)
   // Not a SAM, so don't enable this hack.
   dest->enable_sam_frequency_hack = false;
 
+  memset(&fmt, 0, sizeof(fmt));
   while(wav_load_riff_tag(&chunk_tag, &chunk_size, vf))
   {
     switch(chunk_tag)

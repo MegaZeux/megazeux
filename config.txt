@@ -212,6 +212,7 @@
 
 # allow_screenshots = 1
 
+
 ### Audio options ###
 
 # Sampling rate to output audio at. Higher values will sound
@@ -285,6 +286,54 @@
 # Set to -1 for an unlimited number of samples.
 
 # max_simultaneous_samples = -1
+
+
+### Audio options (DOS-only) ###
+
+# On DOS, one of several audio drivers may be selected. These drivers are
+# further configurable via a driver-specific configuration string. If none is
+# specified, MegaZeux will check the BLASTER environment variable.
+
+# Sound Blaster 16, Pro 2, Pro, 2.0, DSP 2.0, and compatibles. Configuration
+# is in the same format as BLASTER, and will override it if provided. The
+# maximum supported sample rate is 22050 or 44100 (depending on the device).
+
+# audio_driver = sb
+# audio_config_sb = A220 I7 D1 H5
+
+# Several LPT DAC drivers are available. MegaZeux will not autodetect LPT DACs
+# or initialize the LPT DAC drivers unless one of them is explicitly requested.
+# These drivers can be computationally expensive on older machines. For best
+# results, start with a low sample rate (4000 to 8000) and test games of
+# varying complexity, then increase the sample rate if they run well. Decrease
+# audio_buffer_samples to improve lower sample rates (usually to 128 or 256).
+# Supported sample rates (approximate): 4000, 5000, 6000, 7000, 8000, 10000,
+# 11000, 15500, 17000, 22500, 26500, 27500, 32000, 38500, 44100, 48000.
+
+# LPT DAC (mono). Configuration is an LPT number (1-3) or a hexadecimal
+# base port number for the desired LPT port.
+
+# audio_driver = lptmono
+# audio_config_lpt = 1
+
+# LPT DAC (Stereo-on-1). Configuration is an LPT number (1-3) or a hexadecimal
+# base port number for the desired LPT port.
+
+# audio_driver = lptstereo1
+# audio_config_lpt = 1
+
+# LPT DAC (Left DAC + Right DAC). Configuration is two comma-separated LPT
+# numbers (1-3) or hexadecimal base port numbers for the desired LPT ports.
+
+# audio_driver = lptstereo2
+# audio_config_lpt = 1,2
+
+# LPT DAC (DSS). Configuration is an LPT number (1-3) or a hexadecimal
+# base port number for the desired LPT port. This device has a fixed
+# sample rate of 7000, so lower audio_buffer_samples to around 128 or 256.
+
+# audio_driver = lptdss
+# audio_config_lpt = 1
 
 
 ### Game options ###
@@ -483,7 +532,7 @@
 # disassemble_extras = 0
 
 # The base numbers should be displayed as. Valid options
-# are 10 and 16 (decimal and hexidecimal). Hex numbers are
+# are 10 and 16 (decimal and hexadecimal). Hex numbers are
 # prefixed with a dollar sign ($).
 
 # disassemble_base = 16

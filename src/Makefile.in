@@ -57,9 +57,10 @@ ${core_obj}/%.o: ${core_src}/%.m
 	$(if ${V},,@echo "  OBJC    " $<)
 	${CC} -MD ${core_cflags} ${core_flags} ${core_spec} -c $< -o $@
 
+# Compile with CC instead of AS for preprocessor
 ${core_obj}/%.o: ${core_src}/%.S
 	$(if ${V},,@echo "  AS      " $<)
-	${AS} $< -o $@
+	${CC} -MD -c $< -o $@
 
 #
 # Lists mandatory C language sources (mangled to object names) required

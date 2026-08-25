@@ -61,6 +61,20 @@ static platform_mutex_debug mutex_debug;
 
 #endif // DEBUG
 
+/* Special: DOS calls the audio callback from a hardware interrupt and
+ * implements mutexes with enable()/disable(). Interrupts very much should
+ * NOT be disabled in the audio callback, as it can run a long time and
+ * interfere with timer/audio driver functions. In other words: do the exact
+ * opposite of usual in the audio callback.
+ */
+#ifdef CONFIG_DJGPP
+#define LOCK_AUDIO_THREAD()   enable();
+#define UNLOCK_AUDIO_THREAD() disable();
+#else
+#define LOCK_AUDIO_THREAD()   LOCK()
+#define UNLOCK_AUDIO_THREAD() UNLOCK()
+#endif
+
 static unsigned int volume_function(int input, int volume_setting)
 {
   /* Adjust volume (0-255) exponentially according to a given setting (0-10).
@@ -247,7 +261,7 @@ size_t audio_mixer_render_frames(void *stream, unsigned frames,
   size_t frames_chn;
   boolean destroy_flag;
 
-  LOCK();
+  LOCK_AUDIO_THREAD();
 
   current_astream = audio.stream_list_base;
 
@@ -305,7 +319,7 @@ size_t audio_mixer_render_frames(void *stream, unsigned frames,
     }
   }
 
-  UNLOCK();
+  UNLOCK_AUDIO_THREAD();
 
   return frames;
 }

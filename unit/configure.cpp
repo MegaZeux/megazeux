@@ -653,6 +653,17 @@ UNITTEST(Settings)
     TEST_INT("audio_opl_port", conf->audio_opl_port, 0, 65535);
   }
 
+  // Audio options (DOS-only)
+  SECTION(audio_driver_config)
+  {
+    TEST_STRING("audio_config_lpt", conf->audio_config_lpt, string_data);
+  }
+
+  SECTION(audio_driver_config)
+  {
+    TEST_STRING("audio_config_sb", conf->audio_config_sb, string_data);
+  }
+
   // Event options.
 
 #ifdef CONFIG_SDL

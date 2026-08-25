@@ -37,6 +37,10 @@ static const struct audio_driver * const available_drivers[] =
 
 #ifdef CONFIG_DJGPP
   &audio_driver_sb,
+  &audio_driver_lpt_mono,
+  &audio_driver_lpt_stereo1,
+  &audio_driver_lpt_stereo2,
+  &audio_driver_lpt_dss,
 #endif
 #ifdef CONFIG_NDS
   &audio_driver_nds,
@@ -73,7 +77,7 @@ const struct audio_driver *audio_init_driver(struct config_info *conf,
       const struct audio_driver *driver = available_drivers[i];
       if(!driver)
         break;
-      if(strcasecmp(driver->name, name))
+      if(strcasecmp(driver->ident, name))
         continue;
 
       name_match = driver;
@@ -89,7 +93,7 @@ const struct audio_driver *audio_init_driver(struct config_info *conf,
     const struct audio_driver *driver = available_drivers[i];
     if(!driver)
       break;
-    if(driver == name_match)
+    if(driver == name_match || !driver->allow_auto_init)
       continue;
 
     if(driver->init_audio_driver(conf))

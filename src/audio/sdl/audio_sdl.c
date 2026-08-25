@@ -132,6 +132,7 @@ const struct audio_driver audio_driver_sdl =
 {
   "SDL Audio",
   "sdl",
+  true,
 
   NULL,
   &audio_player_pcs,
