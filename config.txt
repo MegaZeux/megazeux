@@ -291,8 +291,8 @@
 ### Audio options (DOS-only) ###
 
 # On DOS, one of several audio drivers may be selected. These drivers are
-# further configurable via a driver-specific configuration string. If no driver
-# is specified, MegaZeux check the BLASTER environment variable.
+# further configurable via a driver-specific configuration string. If none is
+# specified, MegaZeux will check the BLASTER environment variable.
 
 # Sound Blaster 16, Pro 2, Pro, 2.0, DSP 2.0, and compatibles. Configuration
 # is in the same format as BLASTER, and will override it if provided. The
