@@ -68,7 +68,7 @@ void audio_sfx_queue_sound(int freq, int duration)
   next_index = (audio.sfx.tail_index + 1) & (AUDIO_SFX_QUEUE_SIZE - 1);
   if(next_index != audio.sfx.head_index)
   {
-    audio.sfx.queue[next_index] = note;
+    audio.sfx.queue[audio.sfx.tail_index] = note;
     audio.sfx.tail_index = next_index;
   }
 
