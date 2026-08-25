@@ -13,6 +13,9 @@ USERS
 
 + DOS: added new LPT DAC audio drivers. See config.txt for more
   information.
++ DOS: Sound Blaster configuration can now be provided from the
+  command line/config.txt with the audio_config_sb option. If
+  used, this option overrides the BLASTER environment variable.
 + DOS: fixed crashes when starting with the SVGA renderer
   selected and a Sound Blaster present.
 + DOS: SVGA renderer should now correctly detect when a card

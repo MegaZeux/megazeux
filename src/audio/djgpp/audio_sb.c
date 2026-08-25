@@ -195,12 +195,22 @@ static void audio_sb_mixer_set_stereo(boolean enable)
 static boolean init_audio_driver_sb(struct config_info *conf)
 {
   _go32_dpmi_seginfo new_irq_handler;
+  const char *sb_env;
+
+  memset(&sb_cfg, 0, sizeof(sb_cfg));
 
   // Try to find a Sound Blaster
-  // TODO: manual configuration
-  char *sb_env = getenv("BLASTER");
+  if(conf->audio_config_sb[0])
+    sb_env = conf->audio_config_sb;
+  else
+    sb_env = getenv("BLASTER");
+
   if(sb_env != NULL)
-    audio_sb_parse_env(&sb_cfg, sb_env);
+  {
+    char tmp[256];
+    if((size_t)snprintf(tmp, sizeof(tmp), "%s", sb_env) < sizeof(tmp))
+      audio_sb_parse_env(&sb_cfg, tmp);
+  }
 
   if(sb_cfg.port == 0)
     goto err;
