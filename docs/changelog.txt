@@ -21,7 +21,6 @@ USERS
 + DOS: SVGA renderer should now correctly detect when a card
   doesn't have enough memory to page flip.
 + DOS: fixed SVGA renderer not restoring old video mode on exit.
-+ DOS: fixed restoring the cursor underline mode on exit.
 + DOS: only set SMZX mode in the EGA renderer if it changed.
 + DOS: added detection for Oak Technology SMZX quirks.
 + DOS: fixed nearptr optimizations for Sound Blaster DMA under
