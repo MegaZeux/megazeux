@@ -152,9 +152,6 @@ static boolean svga_init_video(struct graphics_data *graphics,
    vbe.linear_ptr, size, &render_data.mapping, &render_data.mapping_type);
   if(!render_data.ptr)
   {
-    // set text video mode, leave
-    reg.x.ax = 0x0010;
-    __dpmi_int(0x10, &reg);
     warn("Could not map VESA video memory! (requested %ld bytes at %08lX for mode %04X)\n",
      render_data.mapping.size, render_data.mapping.address, render_data.mode);
     return false;
@@ -181,7 +178,7 @@ static void svga_free_video(struct graphics_data *graphics)
 {
   struct svga_render_data *render_data = graphics->render_data;
   djgpp_unmap_physical_memory(&render_data->mapping, &render_data->mapping_type);
-  /* FIXME: reset mode too like the EGA renderer */
+  /* Screen mode will be cleaned up on exit. */
 }
 
 static boolean svga_create_window(struct graphics_data *graphics,

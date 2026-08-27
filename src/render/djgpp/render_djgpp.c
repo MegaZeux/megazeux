@@ -28,10 +28,13 @@
 #include <go32.h>
 #include <sys/farptr.h>
 
+#include "ega.h"
 #include "render_djgpp.h"
 #include "../../platform/log.h"
 
-enum display_adapter_type djgpp_display_adapter_detect(void)
+static int old_mode;
+
+static enum display_adapter_type display_adapter_detect(void)
 {
   __dpmi_regs reg;
 
@@ -90,6 +93,16 @@ enum display_adapter_type djgpp_display_adapter_detect(void)
   return DISPLAY_ADAPTER_UNSUPPORTED;
 }
 
+enum display_adapter_type djgpp_display_adapter_detect(void)
+{
+  static enum display_adapter_type detected_type = DISPLAY_ADAPTER_MAX;
+
+  if(detected_type >= DISPLAY_ADAPTER_MAX)
+    detected_type = display_adapter_detect();
+
+  return detected_type;
+}
+
 const char *djgpp_display_adapter_name(enum display_adapter_type adapter)
 {
   static const char *disp_adapter_names[] =
@@ -106,6 +119,47 @@ const char *djgpp_display_adapter_name(enum display_adapter_type adapter)
     return "Unknown";
 
   return disp_adapter_names[adapter];
+}
+
+boolean djgpp_display_is_ati(void)
+{
+  char ati_magic[9];
+  dosmemget(0xC0031, 9, ati_magic);
+
+  if(memcmp(ati_magic, "761295520", 9) == 0)
+  {
+    debug("Detected ATI video adapter.\n");
+    return true;
+  }
+  return false;
+}
+
+boolean djgpp_display_is_oak_technology(void)
+{
+  char oak_magic[7];
+  dosmemget(0xC0008, 7, oak_magic);
+
+  if(memcmp(oak_magic, "OAK VGA", 7) == 0)
+  {
+    debug("Detected Oak Technology video adapter.\n");
+    return true;
+  }
+  return false;
+}
+
+void djgpp_display_save_old_mode(void)
+{
+  old_mode = ega_get_mode();
+}
+
+void djgpp_display_restore_old_mode(void)
+{
+  if(djgpp_display_adapter_detect() >= DISPLAY_ADAPTER_VGA)
+    ega_set_16p();
+
+  ega_set_mode(old_mode);
+  ega_blink_on();
+  ega_reset_cursor();
 }
 
 void djgpp_print_vbe_mode_info(const struct vbe_mode_info *vbe)

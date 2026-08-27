@@ -39,6 +39,7 @@
 #include "../platform.h"
 #include "platform_djgpp.h"
 #include "interrupt.h"
+#include "../../render/djgpp/render_djgpp.h" /* djgpp_display_save_old_mode */
 
 /* TODO: Most of the audio callback code can't currently be locked or moved
  * outside of the callback, which causes CWSDPMI to crash during paging.
@@ -749,6 +750,7 @@ boolean platform_init(void)
   have_rtc_interrupt = false;
   rtc_save_handler();
 
+  djgpp_display_save_old_mode();
   fix_timezone();
   return true;
 }
@@ -764,6 +766,8 @@ void platform_quit(void)
   }
   kbd_restore_handler();
   pit_restore_handler();
+
+  djgpp_display_restore_old_mode();
 
   while(djgpp_pop_enable_nearptr())
     ;

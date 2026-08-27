@@ -91,6 +91,10 @@ struct vbe_mode_info
 
 enum display_adapter_type djgpp_display_adapter_detect(void);
 const char *djgpp_display_adapter_name(enum display_adapter_type adapter);
+boolean djgpp_display_is_ati(void);
+boolean djgpp_display_is_oak_technology(void);
+void djgpp_display_save_old_mode(void);
+void djgpp_display_restore_old_mode(void);
 void djgpp_print_vbe_mode_info(const struct vbe_mode_info *vbe);
 
 MEGAZEUX_END_DECLS

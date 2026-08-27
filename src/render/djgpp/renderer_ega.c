@@ -29,6 +29,7 @@
 #include <sys/movedata.h>
 #undef delay
 
+#include "ega.h"
 #include "render_djgpp.h"
 #include "../render.h"
 #include "../renderers.h"
@@ -64,177 +65,23 @@ static const unsigned long ega_vb_page[4] =
   0x3000
 };
 
-#define TEXT_FLAGS_CHR 1
-#define TEXT_FLAGS_VGA 2
+#define EGA_UPDATE_CHARS        (1 << 0)
+#define EGA_IS_VGA              (1 << 1)
+#define EGA_SMZX_LITTLE_ENDIAN  (1 << 2)
+#define EGA_SMZX_SHIFT_HACK     (1 << 3)
 
 struct ega_render_data
 {
   unsigned char page;
-  unsigned char smzx_swap_nibbles;
   unsigned char flags;
-  unsigned char oldmode;
   unsigned short vbsel;
   unsigned char curpages;
-  boolean is_ati_card;
   uint8_t lines;
   uint8_t offset;
   uint32_t x;
   uint32_t y;
+  int smzx_mode;
 };
-
-static void ega_set_14p(void)
-{
-  __dpmi_regs reg;
-  reg.x.ax = 0x1201;
-  reg.h.bl = 0x30;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_set_page(int page)
-{
-  __dpmi_regs reg;
-  reg.x.ax = 0x0500 | page;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_set_smzx(boolean is_ati)
-{
-  // Super MegaZeux mode:
-  // In a nutshell, this sets bit 6 of the VGA Mode Control Register.
-  // Bit 6 controls the pixel width - if 1, the pixel width is doubled,
-  // creating one 8-bit pixel instead of two 4-bit pixels. HOWEVER,
-  // normally, this is only done in Mode 13h.
-  //
-  // nVidia and some Cirrus Logic cards support this; ATI cards
-  // also "support" it, but swap the order of joining the pixels
-  // and require a weird horizontal pixel shift value - see below.
-  outportb(0x3C0, 0x10);
-  outportb(0x3C0, 0x4C);
-
-  if(is_ati)
-  {
-    // set horizontal pixel shift to Undefined (0.5 pixels, in theory)
-    outportb(0x3C0, 0x13);
-    outportb(0x3C0, 0x01);
-  }
-}
-
-static void ega_set_16p(void)
-{
-  __dpmi_regs reg;
-  reg.x.ax = 0x1202;
-  reg.h.bl = 0x30;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_blink_on(void)
-{
-  __dpmi_regs reg;
-  reg.x.ax = 0x1003;
-  reg.h.bl = 0x01;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_blink_off(void)
-{
-  __dpmi_regs reg;
-  reg.x.ax = 0x1003;
-  reg.h.bl = 0x00;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_cursor_off(void)
-{
-  __dpmi_regs reg;
-  reg.x.ax = 0x0103;
-  reg.x.cx = 0x3F00;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_set_cursor_shape(uint8_t lines, uint8_t offset)
-{
-  __dpmi_regs reg;
-  if(!lines)
-  {
-    ega_cursor_off();
-    return;
-  }
-  reg.x.ax = 0x0103;
-  reg.h.ch = offset * 8 / 14;
-  reg.h.cl = (offset + lines) * 8 / 14 - 1;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_set_cursor_pos(int page, uint32_t x, uint32_t y)
-{
-  __dpmi_regs reg;
-  reg.h.ah = 0x02;
-  reg.h.bh = page;
-  reg.h.dh = y;
-  reg.h.dl = x;
-  __dpmi_int(0x10, &reg);
-}
-
-static unsigned char ega_get_mode(void)
-{
-  __dpmi_regs reg;
-
-  reg.h.ah = 0x0F;
-  __dpmi_int(0x10, &reg);
-  return reg.h.al & 0x7F;
-}
-
-static void ega_set_mode(unsigned char mode)
-{
-  __dpmi_regs reg;
-  reg.h.ah = 0x00;
-  reg.h.al = mode;
-  __dpmi_int(0x10, &reg);
-}
-
-static void ega_bank_char(void)
-{
-  outportb(0x03CE, 0x05);
-  outportb(0x03CF, 0x00);
-  outportb(0x03CE, 0x06);
-  outportb(0x03CF, 0x0C);
-  outportb(0x03C4, 0x04);
-  outportb(0x03C5, 0x06);
-  outportb(0x03C4, 0x02);
-  outportb(0x03C5, 0x04);
-  outportb(0x03CE, 0x04);
-  outportb(0x03CF, 0x02);
-}
-
-static void ega_bank_text(void)
-{
-  outportb(0x03CE, 0x05);
-  outportb(0x03CF, 0x10);
-  outportb(0x03CE, 0x06);
-  outportb(0x03CF, 0x0E);
-  outportb(0x03C4, 0x04);
-  outportb(0x03C5, 0x02);
-  outportb(0x03C4, 0x02);
-  outportb(0x03C5, 0x03);
-  outportb(0x03CE, 0x04);
-  outportb(0x03CF, 0x00);
-}
-
-static void ega_vsync(void)
-{
-  while(inportb(0x03DA) & 0x08)
-    ;
-  while(!(inportb(0x03DA) & 0x08))
-    ;
-}
-
-static boolean ega_is_ati_card(void)
-{
-  // TODO: untested.
-  char ati_magic[9];
-  dosmemget(0xC0031, 9, ati_magic);
-  return memcmp("761295520", ati_magic, 9) == 0;
-}
 
 static boolean ega_init_video(struct graphics_data *graphics,
  struct config_info *conf)
@@ -270,13 +117,17 @@ static boolean ega_init_video(struct graphics_data *graphics,
   graphics->bits_per_pixel = 1;
 
   if(display >= DISPLAY_ADAPTER_VGA)
-    render_data->flags = TEXT_FLAGS_VGA;
+    render_data->flags = EGA_IS_VGA;
   else
     render_data->flags = 0;
 
-  render_data->oldmode = ega_get_mode();
-  render_data->is_ati_card = ega_is_ati_card();
-  render_data->smzx_swap_nibbles = render_data->is_ati_card;
+  if(djgpp_display_is_ati())
+    render_data->flags |= EGA_SMZX_LITTLE_ENDIAN | EGA_SMZX_SHIFT_HACK;
+
+  if(djgpp_display_is_oak_technology())
+    render_data->flags |= EGA_SMZX_LITTLE_ENDIAN;
+
+  render_data->smzx_mode = -1;
 
   graphics->render_data = render_data;
   return true;
@@ -285,12 +136,9 @@ static boolean ega_init_video(struct graphics_data *graphics,
 static void ega_free_video(struct graphics_data *graphics)
 {
   struct ega_render_data *render_data = graphics->render_data;
-  if(render_data->flags & TEXT_FLAGS_VGA)
-    ega_set_16p();
-  ega_set_mode(render_data->oldmode);
-  ega_blink_on();
   __dpmi_free_ldt_descriptor(render_data->vbsel);
   free(render_data);
+  /* Screen mode will be cleaned up on exit. */
 }
 
 static boolean ega_set_screen_mode(struct graphics_data *graphics, unsigned mode)
@@ -304,17 +152,25 @@ static boolean ega_set_screen_mode(struct graphics_data *graphics, unsigned mode
   render_data->x = 65535;
   render_data->y = 65535;
 
-  if(render_data->flags & TEXT_FLAGS_VGA)
+  /* Video mode changes can be slow with some displays; only update the mode
+   * when needed. */
+  if(render_data->smzx_mode >= 0 && (unsigned)render_data->smzx_mode == mode)
+    return mode < 3;
+
+  render_data->smzx_mode = mode;
+
+  if(render_data->flags & EGA_IS_VGA)
     ega_set_14p();
 
   ega_set_mode(0x03);
   if(mode > 0)
-    ega_set_smzx(render_data->is_ati_card);
+    ega_set_smzx(!!(render_data->flags & EGA_SMZX_SHIFT_HACK));
+
   ega_blink_off();
   ega_cursor_off();
 
   // If VGA, set the EGA palette to point to first 16 VGA palette entries
-  if(render_data->flags & TEXT_FLAGS_VGA)
+  if(render_data->flags & EGA_IS_VGA)
   {
     ega_vsync();
     for(i = 0; i < 16; i++)
@@ -326,7 +182,7 @@ static boolean ega_set_screen_mode(struct graphics_data *graphics, unsigned mode
     outportb(0x03C0, 0x20);
   }
 
-  render_data->flags |= TEXT_FLAGS_CHR;
+  render_data->flags |= EGA_UPDATE_CHARS;
 
   // Unless someone makes a cursed VGA card specifically for MegaZeux,
   // mode 3 does not exist in hardware and never has.
@@ -343,23 +199,24 @@ static boolean ega_create_window(struct graphics_data *graphics,
   return true;
 }
 
-static void ega_remap_char_range(struct graphics_data *graphics, uint16_t first, uint16_t count)
+static void ega_remap_char_range(struct graphics_data *graphics,
+ uint16_t first, uint16_t count)
 {
   struct ega_render_data *render_data = graphics->render_data;
-  render_data->flags |= TEXT_FLAGS_CHR;
+  render_data->flags |= EGA_UPDATE_CHARS;
 }
 
 static void ega_remap_char(struct graphics_data *graphics, uint16_t chr)
 {
   struct ega_render_data *render_data = graphics->render_data;
-  render_data->flags |= TEXT_FLAGS_CHR;
+  render_data->flags |= EGA_UPDATE_CHARS;
 }
 
 static void ega_remap_charbyte(struct graphics_data *graphics, uint16_t chr,
  uint8_t byte)
 {
   struct ega_render_data *render_data = graphics->render_data;
-  render_data->flags |= TEXT_FLAGS_CHR;
+  render_data->flags |= EGA_UPDATE_CHARS;
 }
 
 static void ega_update_colors(struct graphics_data *graphics,
@@ -368,9 +225,9 @@ static void ega_update_colors(struct graphics_data *graphics,
   struct ega_render_data *render_data = graphics->render_data;
   unsigned int i, j, c, step;
 
-  if(render_data->flags & TEXT_FLAGS_VGA)
+  if(render_data->flags & EGA_IS_VGA)
   {
-    if(graphics->screen_mode && render_data->smzx_swap_nibbles)
+    if(graphics->screen_mode && (render_data->flags & EGA_SMZX_LITTLE_ENDIAN))
     {
       for(i = 0; i < count; i++)
       {
@@ -492,13 +349,13 @@ static void ega_sync_screen(struct graphics_data *graphics,
   unsigned int dest = 0;
   int i;
 
-  if(render_data->flags & TEXT_FLAGS_CHR)
+  if(render_data->flags & EGA_UPDATE_CHARS)
   {
     ega_bank_char();
     for(i = 0; i < 256; i++, src += 14, dest += 32)
       movedata(_my_ds(), (unsigned int)src, render_data->vbsel, dest, 14);
     ega_bank_text();
-    render_data->flags &= ~TEXT_FLAGS_CHR;
+    render_data->flags &= ~EGA_UPDATE_CHARS;
   }
 
   // TODO: Character set page flips.
