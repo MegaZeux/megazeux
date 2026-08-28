@@ -79,7 +79,7 @@ void destruct_audio_stream(struct audio_stream *a_src);
 void initialize_audio_stream(struct audio_stream *a_src,
  unsigned int volume, boolean repeat);
 
-size_t audio_mixer_render_frames(void *stream, unsigned frames,
+size_t audio_mixer_render_frames(void * RESTRICT stream, unsigned frames,
  unsigned channels, unsigned format);
 boolean audio_mixer_init(unsigned rate, unsigned frames, unsigned channels);
 void audio_mixer_free(void);

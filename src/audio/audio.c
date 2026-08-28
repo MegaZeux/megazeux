@@ -207,7 +207,8 @@ void initialize_audio_stream(struct audio_stream *a_src,
   audio_stream_list_destruct(&local);
 }
 
-static void clip_buffer_u8(uint8_t *dest, int32_t *src, size_t samples)
+static void clip_buffer_u8(uint8_t * RESTRICT dest, const int32_t *src,
+ size_t samples)
 {
   int32_t cur_sample;
   size_t i;
@@ -225,7 +226,8 @@ static void clip_buffer_u8(uint8_t *dest, int32_t *src, size_t samples)
   }
 }
 
-static void clip_buffer_s8(int8_t *dest, int32_t *src, size_t samples)
+static void clip_buffer_s8(int8_t * RESTRICT dest, const int32_t *src,
+ size_t samples)
 {
   int32_t cur_sample;
   size_t i;
@@ -243,7 +245,8 @@ static void clip_buffer_s8(int8_t *dest, int32_t *src, size_t samples)
   }
 }
 
-static void clip_buffer_s16(int16_t *dest, int32_t *src, size_t samples)
+static void clip_buffer_s16(int16_t * RESTRICT dest, const int32_t *src,
+ size_t samples)
 {
   int32_t cur_sample;
   size_t i;
@@ -270,7 +273,7 @@ static void clip_buffer_s16(int16_t *dest, int32_t *src, size_t samples)
  *
  * Returns the number of frames successfully renderered.
  */
-size_t audio_mixer_render_frames(void *stream, unsigned frames,
+size_t audio_mixer_render_frames(void * RESTRICT stream, unsigned frames,
  unsigned channels, unsigned format)
 {
   struct audio_stream_list local = { NULL, NULL };
