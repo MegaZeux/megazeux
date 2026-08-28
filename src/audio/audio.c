@@ -91,41 +91,31 @@ static unsigned int volume_function(int input, int volume_setting)
 // hardware mixing is utilized.
 #ifndef CONFIG_NDS
 
-static void audio_stream_insert_list(struct audio_stream **base,
- struct audio_stream **end, struct audio_stream *a_src)
+static void audio_stream_list_insert(struct audio_stream_list *list,
+ struct audio_stream *a_src)
 {
-  if(*base == NULL)
+  if(list->base == NULL)
   {
-    *base = a_src;
+    list->base = a_src;
   }
   else
   {
-    (*end)->next = a_src;
+    list->end->next = a_src;
   }
 
   a_src->next = NULL;
-  a_src->previous = *end;
-  *end = a_src;
+  a_src->previous = list->end;
+  list->end = a_src;
 }
 
-static void audio_stream_remove_from_lists(struct audio_stream *a_src)
+static void audio_stream_list_remove(struct audio_stream_list *list,
+ struct audio_stream *a_src)
 {
-  if(a_src == audio.primary_stream)
-    audio.primary_stream = NULL;
+  if(a_src == list->base)
+    list->base = a_src->next;
 
-  if(a_src == audio.stream_list_base)
-    audio.stream_list_base = a_src->next;
-
-  if(a_src == audio.stream_list_end)
-    audio.stream_list_end = a_src->previous;
-
-#ifdef AUDIO_GARBAGE_COLLECTOR
-  if(a_src == audio.garbage_list_base)
-    audio.garbage_list_base = a_src->next;
-
-  if(a_src == audio.garbage_list_end)
-    audio.garbage_list_end = a_src->previous;
-#endif
+  if(a_src == list->end)
+    list->end = a_src->previous;
 
   if(a_src->next)
     a_src->next->previous = a_src->previous;
@@ -134,44 +124,71 @@ static void audio_stream_remove_from_lists(struct audio_stream *a_src)
     a_src->previous->next = a_src->next;
 }
 
-static void audio_garbage_collect(void)
+static void audio_stream_list_append(struct audio_stream_list *dest,
+ struct audio_stream_list *src)
 {
-#ifdef AUDIO_GARBAGE_COLLECTOR
+  if(dest->base == NULL)
+  {
+    dest->base = src->base;
+    dest->end = src->end;
+  }
+  else
+
+  if(src->base != NULL)
+  {
+    dest->end->next = src->base;
+    src->base->previous = dest->end;
+    dest->end = src->end;
+  }
+
+  src->base = src->end = NULL;
+}
+
+static void audio_stream_list_destruct(struct audio_stream_list *list)
+{
   struct audio_stream *a_src;
   struct audio_stream *next;
 
-  for(a_src = audio.garbage_list_base; a_src; a_src = next)
+  for(a_src = list->base; a_src; a_src = next)
   {
     next = a_src->next;
     a_src->player->destruct(a_src);
   }
-  audio.garbage_list_base = audio.garbage_list_end = NULL;
+  list->base = list->end = NULL;
+}
+
+static void audio_garbage_collect(struct audio_stream_list *dest)
+{
+#ifdef AUDIO_GARBAGE_COLLECTOR
+  audio_stream_list_append(dest, &audio.garbage_list);
 #endif
 }
 
 // DOS audio is handled during an interrupt and can never be allowed to
 // manage memory. This means audio stream cleanup needs to be delayed until
 // the main thread creates a new stream or explicitly destroys other streams.
-static void audio_garbage_queue(struct audio_stream *a_src)
+static void audio_garbage_queue(struct audio_stream_list *dest,
+ struct audio_stream *a_src)
 {
 #ifdef AUDIO_GARBAGE_COLLECTOR
-  audio_stream_remove_from_lists(a_src);
-  audio_stream_insert_list(&audio.garbage_list_base,
-   &audio.garbage_list_end, a_src);
-#else
-  a_src->player->destruct(a_src);
+  dest = &audio.garbage_list;
 #endif
+  audio_stream_list_remove(&audio.stream_list, a_src);
+  audio_stream_list_insert(dest, a_src);
+
+  if(audio.primary_stream == a_src)
+    audio.primary_stream = NULL;
 }
 
 void destruct_audio_stream(struct audio_stream *a_src)
 {
-  audio_stream_remove_from_lists(a_src);
   free(a_src);
 }
 
 void initialize_audio_stream(struct audio_stream *a_src,
  unsigned int volume, boolean repeat)
 {
+  struct audio_stream_list local = { NULL, NULL };
   a_src->is_spot_sample = false;
 
   if(a_src->player->set_volume)
@@ -180,15 +197,14 @@ void initialize_audio_stream(struct audio_stream *a_src,
   if(a_src->player->set_repeat)
     a_src->player->set_repeat(a_src, repeat);
 
-  a_src->next = NULL;
-
   LOCK();
 
-  audio_garbage_collect();
-  audio_stream_insert_list(&audio.stream_list_base,
-   &audio.stream_list_end, a_src);
+  audio_garbage_collect(&local);
+  audio_stream_list_insert(&audio.stream_list, a_src);
 
   UNLOCK();
+
+  audio_stream_list_destruct(&local);
 }
 
 static void clip_buffer_u8(uint8_t *dest, int32_t *src, size_t samples)
@@ -257,13 +273,14 @@ static void clip_buffer_s16(int16_t *dest, int32_t *src, size_t samples)
 size_t audio_mixer_render_frames(void *stream, unsigned frames,
  unsigned channels, unsigned format)
 {
+  struct audio_stream_list local = { NULL, NULL };
   struct audio_stream *current_astream;
   size_t frames_chn;
   boolean destroy_flag;
 
   LOCK_AUDIO_THREAD();
 
-  current_astream = audio.stream_list_base;
+  current_astream = audio.stream_list.base;
 
   if(current_astream && audio.mix_buffer && frames && channels)
   {
@@ -294,7 +311,7 @@ size_t audio_mixer_render_frames(void *stream, unsigned frames,
          audio.mix_buffer, frames, channels);
 
         if(destroy_flag)
-          audio_garbage_queue(current_astream);
+          audio_garbage_queue(&local, current_astream);
       }
 
       current_astream = next_astream;
@@ -321,6 +338,7 @@ size_t audio_mixer_render_frames(void *stream, unsigned frames,
 
   UNLOCK_AUDIO_THREAD();
 
+  audio_stream_list_destruct(&local);
   return frames;
 }
 
@@ -451,7 +469,7 @@ void init_audio(struct config_info *conf)
 
 void quit_audio(void)
 {
-  struct audio_stream *a_src;
+  struct audio_stream_list local = { NULL, NULL };
 
   // Signal the audio thread to stop and wait for it to release the lock.
   if(audio.driver)
@@ -464,20 +482,15 @@ void quit_audio(void)
 
   audio_sfx_clear_queue();
 
-  a_src = audio.stream_list_base;
-  while(a_src)
-  {
-    struct audio_stream *next = a_src->next;
-    a_src->player->destruct(a_src);
-    a_src = next;
-  }
-  audio.stream_list_base = audio.stream_list_end = NULL;
+  audio_stream_list_append(&local, &audio.stream_list);
+  audio_garbage_collect(&local);
   audio.pcs_stream = NULL;
 
-  audio_garbage_collect();
   audio_mixer_free();
 
   UNLOCK();
+
+  audio_stream_list_destruct(&local);
 
 #ifdef DEBUG
   platform_mutex_destroy(&audio.audio_debug_mutex);
@@ -530,6 +543,7 @@ void audio_end_module(void)
 {
   if(audio.primary_stream)
   {
+    struct audio_stream_list local = { NULL, NULL };
     struct audio_stream *current_astream;
 
     LOCK();
@@ -537,24 +551,29 @@ void audio_end_module(void)
     // Ensure that this didn't change while waiting for the lock.
     if(audio.primary_stream)
     {
-      audio.primary_stream->player->destruct(audio.primary_stream);
+      audio_stream_list_remove(&audio.stream_list, audio.primary_stream);
+      audio_stream_list_insert(&local, audio.primary_stream);
       audio.primary_stream = NULL;
     }
 
     // Also end any sound effects attached to the mod.
-    current_astream = audio.stream_list_base;
+    current_astream = audio.stream_list.base;
     while(current_astream)
     {
       struct audio_stream *next_astream = current_astream->next;
 
       if(current_astream->is_spot_sample)
-        current_astream->player->destruct(current_astream);
-
+      {
+        audio_stream_list_remove(&audio.stream_list, current_astream);
+        audio_stream_list_insert(&local, current_astream);
+      }
       current_astream = next_astream;
     }
-    audio_garbage_collect();
+    audio_garbage_collect(&local);
 
     UNLOCK();
+
+    audio_stream_list_destruct(&local);
   }
 }
 
@@ -579,6 +598,7 @@ int audio_get_max_samples(void)
 
 static void limit_samples(int max)
 {
+  struct audio_stream_list local = { NULL, NULL };
   struct audio_stream *current_astream;
   struct audio_stream *prev_astream;
   int samples_playing = 0;
@@ -591,7 +611,7 @@ static void limit_samples(int max)
 
   /* The most recent audio streams are at the end of the list.
    * For efficiency, walk the list in reverse. */
-  current_astream = audio.stream_list_end;
+  current_astream = audio.stream_list.end;
   while(current_astream)
   {
     prev_astream = current_astream->previous;
@@ -599,8 +619,10 @@ static void limit_samples(int max)
     if(current_astream != audio.primary_stream && current_astream != audio.pcs_stream)
     {
       if(samples_playing >= max)
-        current_astream->player->destruct(current_astream);
-
+      {
+        audio_stream_list_remove(&audio.stream_list, current_astream);
+        audio_stream_list_insert(&local, current_astream);
+      }
       samples_playing++;
     }
 
@@ -608,6 +630,8 @@ static void limit_samples(int max)
   }
 
   UNLOCK();
+
+  audio_stream_list_destruct(&local);
 }
 
 void audio_play_sample(char *filename, boolean safely, int period)
@@ -678,24 +702,29 @@ void audio_spot_sample(int period, int which)
 
 void audio_end_sample(void)
 {
+  struct audio_stream_list local = { NULL, NULL };
   struct audio_stream *current_astream;
   struct audio_stream *next_astream;
 
   LOCK();
 
-  current_astream = audio.stream_list_base;
+  current_astream = audio.stream_list.base;
   while(current_astream)
   {
     next_astream = current_astream->next;
 
     if(current_astream != audio.primary_stream && current_astream != audio.pcs_stream)
-      current_astream->player->destruct(current_astream);
-
+    {
+      audio_stream_list_remove(&audio.stream_list, current_astream);
+      audio_stream_list_insert(&local, current_astream);
+    }
     current_astream = next_astream;
   }
-  audio_garbage_collect();
+  audio_garbage_collect(&local);
 
   UNLOCK();
+
+  audio_stream_list_destruct(&local);
 }
 
 /**
@@ -924,7 +953,7 @@ void audio_set_sound_volume(int volume)
   audio.sound_volume = volume;
   real_volume = volume_function(255, audio.sound_volume);
 
-  current_astream = audio.stream_list_base;
+  current_astream = audio.stream_list.base;
   while(current_astream)
   {
     if(current_astream != audio.primary_stream && current_astream != audio.pcs_stream)

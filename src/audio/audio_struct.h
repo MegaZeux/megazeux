@@ -95,9 +95,19 @@ struct audio_player
   const char *name;
 
   boolean   (*test)(vfile *vf, const char *filename, boolean is_primary);
+
+  /* Construct an audio stream. Only call this function from the main thread,
+   * and do NOT call it under lock; it will lock when needed.
+   */
   struct audio_stream *(*construct)(vfile *vf, const char *filename,
                                     uint32_t frequency, unsigned int volume,
                                     boolean repeat);
+
+  /* Destruct an audio stream. Do not call this function under lock; it should
+   * have been moved to a local list (also removed from audio.primary_stream
+   * etc.) prior to destruction. In the DOS port, only call from the main thread
+   * (see AUDIO_GARBAGE_COLLECTOR).
+   */
   void      (*destruct)(struct audio_stream *a_src);
 
   /* Render data to PCM. Non-PCM players do not need to implement this.
@@ -195,6 +205,12 @@ struct audio_sfx_data
   boolean cancel_current_note;
 };
 
+struct audio_stream_list
+{
+  struct audio_stream *base;
+  struct audio_stream *end;
+};
+
 struct audio
 {
   const struct audio_driver *driver;
@@ -213,11 +229,9 @@ struct audio
 
   struct audio_stream *primary_stream;
   struct audio_stream *pcs_stream;
-  struct audio_stream *stream_list_base;
-  struct audio_stream *stream_list_end;
+  struct audio_stream_list stream_list;
 #ifdef AUDIO_GARBAGE_COLLECTOR
-  struct audio_stream *garbage_list_base;
-  struct audio_stream *garbage_list_end;
+  struct audio_stream_list garbage_list;
 #endif
 
   platform_mutex audio_mutex;
