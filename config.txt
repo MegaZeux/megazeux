@@ -287,6 +287,10 @@
 
 # max_simultaneous_samples = -1
 
+# Audio can be disabled entirely by selecting the "none" audio driver.
+
+# audio_driver = none
+
 
 ### Audio options (DOS-only) ###
 
@@ -294,7 +298,7 @@
 # further configurable via a driver-specific configuration string. If none is
 # specified, MegaZeux will check the BLASTER environment variable.
 
-# Sound Blaster 16, Pro 2, Pro, 2.0, DSP 2.0, and compatibles. Configuration
+# Sound Blaster 16, Pro 2, Pro, 2.0, DSP 2.00, and compatibles. Configuration
 # is in the same format as BLASTER, and will override it if provided. The
 # maximum supported sample rate is 22050 or 44100 (depending on the device).
 
@@ -334,6 +338,18 @@
 
 # audio_driver = lptdss
 # audio_config_lpt = 1
+
+# This driver can be used without a sound card to enable hardware PC speaker
+# sound effects without playing PCM. It is automatically selected if the
+# other audio drivers fail to initialize.
+
+# audio_driver = nopcm
+
+# To enable hardware PC speaker sound effects for any DOS audio driver,
+# enable this option. This is disabled by default for most drivers, but
+# may improve performance on slower machines.
+
+# audio_pc_speaker_use_hardware = 1
 
 
 ### Game options ###

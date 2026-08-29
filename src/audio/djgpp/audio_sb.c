@@ -437,7 +437,7 @@ const struct audio_driver audio_driver_sb =
 
   NULL,
   &audio_player_pcs,
-  NULL, /* &audio_player_pcs_pit */
+  &audio_player_pcs_hw,
 
   init_audio_driver_sb,
   quit_audio_driver_sb,

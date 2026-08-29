@@ -34,6 +34,7 @@ extern const struct audio_driver audio_driver_lpt_mono;
 extern const struct audio_driver audio_driver_lpt_stereo1;
 extern const struct audio_driver audio_driver_lpt_stereo2;
 extern const struct audio_driver audio_driver_lpt_dss;
+extern const struct audio_driver audio_driver_no_pcm;
 
 extern const struct audio_driver audio_driver_nds;
 extern const struct audio_driver audio_driver_3ds;

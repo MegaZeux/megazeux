@@ -36,6 +36,7 @@ unit_objs := \
   ${unit_obj_io}/vfs.o                 \
   ${unit_obj_io}/vio.o                 \
   ${unit_obj_io}/zip.o                 \
+  ${unit_obj_audio}/audio_sfx.o        \
   ${unit_obj_audio}/audio_wav_load.o   \
   ${unit_obj_audio}/mixer.o            \
   ${unit_obj_editor}/stringsearch.o    \

@@ -61,6 +61,8 @@ MEGAZEUX_BEGIN_DECLS
 #define LPT_48K_HZ            47727 /* Divider 25 gets closest to 48000 */
 #define LPT_DSS_HZ            7000  /* For mixer; DSS outputs a fixed rate */
 
+struct audio_sfx_data; /* audio_struct.h */
+
 extern const int int_lock_start;
 extern const int int_lock_end;
 extern unsigned short int_ds;
@@ -73,6 +75,10 @@ extern volatile int32_t timer_pos;
 extern volatile int32_t timer_prev_pos;
 //extern uint32_t timer_prev_div;
 extern uint32_t current_div;
+extern struct audio_sfx_data *sfx_ptr;
+extern boolean *sfx_on_ptr;
+extern uint16_t sfx_timer;
+extern uint8_t sfx_playing;
 
 /* Audio interrupt variables */
 extern const int lpt_mono_handler;

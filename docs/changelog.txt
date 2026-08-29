@@ -13,6 +13,9 @@ USERS
 
 + DOS: added new LPT DAC audio drivers. See config.txt for more
   information.
++ DOS: added hardware PC speaker support for PC speaker sound
+  effects. This can be enabled with the config setting
+  audio_pc_speaker_use_hardware, and is disabled by default.
 + DOS: Sound Blaster configuration can now be provided from the
   command line/config.txt with the audio_config_sb option. If
   used, this option overrides the BLASTER environment variable.
