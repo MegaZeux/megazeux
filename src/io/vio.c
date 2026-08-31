@@ -108,7 +108,8 @@ static boolean vio_cache_directory_recursively(vfilesystem *vfs, const char *pat
   code = vfs_stat(vfs, path, &st);
   if(code == 0 || code == VFS_ERR_IS_CACHED)
   {
-    trace("--VIO-- vio_cache_directory_recursively: '%s' exists\n", path);
+    /* This message is highly spammy, only uncomment if needed. */
+    //trace("--VIO-- vio_cache_directory_recursively: '%s' exists\n", path);
     return true;
   }
 
