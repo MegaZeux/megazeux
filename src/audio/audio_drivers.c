@@ -41,6 +41,7 @@ static const struct audio_driver * const available_drivers[] =
   &audio_driver_lpt_stereo1,
   &audio_driver_lpt_stereo2,
   &audio_driver_lpt_dss,
+  &audio_driver_no_pcm,
 #endif
 #ifdef CONFIG_NDS
   &audio_driver_nds,
@@ -72,6 +73,10 @@ const struct audio_driver *audio_init_driver(struct config_info *conf,
   /* If specified, search for the named driver first. */
   if(name && name[0])
   {
+    /* Special: if "none", do not initialize any driver. */
+    if(!strcasecmp(name, "none"))
+      return NULL;
+
     for(i = 0; i < ARRAY_SIZE(available_drivers); i++)
     {
       const struct audio_driver *driver = available_drivers[i];

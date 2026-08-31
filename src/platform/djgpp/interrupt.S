@@ -22,6 +22,15 @@
 #define TIMER_MS	$2		/* Number of ticks per timer IRQ */
 #define TIMER_DIVIDER	$2386		/* ~500Hz, hardcoded timer rate */
 
+/* See audio_struct.h, audio_sfx.h */
+#define SFX_DIVIDEND_DX	$0x12		/* (PIT_BASE_CLOCK / 12) >> 16 */
+#define SFX_DIVIDEND_AX	$0x34de		/* (PIT_BASE_CLOCK / 12) & 0xffff */
+#define SFX_QUEUE_MASK	$4095		/* AUDIO_SFX_QUEUE_SIZE - 1 */
+#define SFX_HEAD	16384		/* offsetof(struct audio_sfx_data, head_index) */
+#define SFX_TAIL	16388		/* offsetof(struct audio_sfx_data, tail_index) */
+#define SFX_CANCEL	16392		/* offsetof(struct audio_sfx_data, cancel_current_note) */
+#define SFX_FREQ_REST	$1		/* Frequency value for nosound */
+
 .global _int_lock_start
 _int_lock_start:
 
@@ -57,6 +66,22 @@ _timer_prev_div:			/* Number of clocks for old IRQ0 */
 _current_div:				/* Current active divider (<=2386) */
 	.long	0
 
+.global _sfx_ptr			/* struct audio_sfx_data *sfx_ptr; */
+_sfx_ptr:				/* Pointer to audio.sfx */
+	.long	0
+
+.global _sfx_on_ptr			/* boolean *sfx_on_ptr; */
+_sfx_on_ptr:				/* Pointer to audio.pcs_on */
+	.long	0
+
+.global _sfx_timer			/* uint16_t sfx_timer; */
+_sfx_timer:				/* Countdown timer for current note */
+	.word	0
+
+.global _sfx_playing			/* uint8_t sfx_playing; */
+_sfx_playing:				/* 1 if there is an active sound */
+	.byte	0
+
 .balign 16
 .global _timer_handler
 _timer_handler:
@@ -64,8 +89,68 @@ _timer_handler:
 	pushl	%ds
 	movw	%cs:_int_ds, %ds
 _timer_handler_tick:
-	/* FIXME: PC speaker */
 	addl	TIMER_MS, _timer_ticks	/* timer_ticks += 2ms; */
+	/* PC speaker sound effects
+	 * This mirrors parts of audio_sfx.c, see that file for more info.
+	 * Note the original implementation decremented sfx_timer from 1 to 0
+	 * without updating; this is compensated for in sfx.c by adding 1 to
+	 * every duration submitted to the sound system (see extra_duration).
+	 */
+	movl	_sfx_ptr, %eax
+	testl	%eax, %eax		/* if(sfx_ptr == NULL) */
+	je	_timer_handler_prev	/*   goto timer_handler_prev; */
+	pushl	%ecx
+	pushl	%edx
+	movw	_sfx_timer, %dx
+	decw	%dx			/* if((--sfx_timer) <= 0) */
+	jle	4f			/*   goto pcs_update; */
+	movw	%dx, _sfx_timer
+	cmpb	$0, SFX_CANCEL(%eax)	/* if(sfx.cancel_current_note) */
+	jnz	3f			/*   goto nosound; */
+	jmp	2f			/* goto pcs_end */
+4:
+	movb	$0, SFX_CANCEL(%eax)	/* sfx.cancel_current_note = false; */
+	movl	SFX_HEAD(%eax), %edx
+	cmpl	SFX_TAIL(%eax), %edx	/* if(sfx.head_index == sfx.tail_index) */
+	jz	3f			/*   goto nosound; */
+	movl	(%eax, %edx, 4), %ecx	/* note = audio.sfx.queue[head]; */
+	incl	%edx			/* head = (head + 1) & (AUDIO_SFX_QUEUE_SIZE - 1); */
+	andl	SFX_QUEUE_MASK, %edx
+	movl	%edx, SFX_HEAD(%eax)	/* sfx.head_index = head; */
+	movw	%cx, %dx		/* dx = note.duration; */
+	shrl	$16, %ecx		/* cx = note.freq; */
+	movw	%dx, _sfx_timer		/* sfx_timer = note.duration; */
+	cmpl	SFX_FREQ_REST, %ecx	/* if(note.freq <= AUDIO_SFX_FREQ_REST) */
+	jle	3f			/*   goto nosound; */
+	movl	_sfx_on_ptr, %eax
+	cmpb	$0, (%eax)		/* if(audio.pcs_on == 0) */
+	je	3f			/*   goto nosound; */
+	/* sound(freq) */
+	movb	$1, _sfx_playing	/* sfx_playing = true; */
+	movb	$0xb6, %al		/* Channel 2, lo + hi, mode 2, binary */
+	outb	%al, $0x43		/* PIT Mode/Command register */
+	movw	SFX_DIVIDEND_DX, %dx
+	movw	SFX_DIVIDEND_AX, %ax
+	divw	%cx			/* ax = SFX_DIVIDEND / note.freq */
+	outb	%al, $0x42		/* PIT Channel 2: write divider lo */
+	movb	%ah, %al
+	outb	%al, $0x42		/* PIT Channel 2: write divider hi */
+	inb	$0x61, %al		/* I/O register: */
+	orb	$0x03, %al		/*   enable PC speaker output */
+	outb	%al, $0x61
+	jmp	2f
+3:
+	/* nosound() */
+	cmpb	$0, _sfx_playing	/* if(!sfx_playing) */
+	je	2f			/*   goto pcs_end; avoid unnecessary port IO */
+	movb	$0, _sfx_playing	/* sfx_playing = false; */
+	inb	$0x61, %al		/* I/O register: */
+	andb	$0xfc, %al		/*  disable PC speaker output */
+	outb	%al, $0x61
+2:
+	popl	%edx
+	popl	%ecx
+
 _timer_handler_prev:
 	movl	_timer_prev_pos, %eax
 	subl	_current_div, %eax	/* timer_prev_pos -= current_div; */
@@ -154,7 +239,7 @@ _lpt_mono_handler:
 	pushl	%edx
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
-	mov	_lpt_left_port, %dx
+	movw	_lpt_left_port, %dx
 	movb	(%esi), %al		/* al = *pos++; */
 	incl	%esi
 	outb	%al, %dx		/* Write sample */
@@ -178,17 +263,17 @@ _lpt_stereo1_handler:
 	pushl	%edx
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
-	mov	_lpt_left_port, %dx	/* Data port */
+	movw	_lpt_left_port, %dx	/* Data port */
 	movw	(%esi), %ax		/* ax = *((uint16_t *)pos)++; */
 	addl	$2, %esi
 	outb	%al, %dx		/* Write left sample */
-	add	$2, %dx			/* Control port */
+	addw	$2, %dx			/* Control port */
 	movb	$0x01, %al		/* Latch left: AutoLF on (low), Strobe off (high) */
 	outb	%al, %dx
-	sub	$2, %dx			/* Data port */
-	shr	$8, %ax
+	subw	$2, %dx			/* Data port */
+	movb	%ah, %al
 	outb	%al, %dx		/* Write right sample */
-	add	$2, %dx			/* Control port */
+	addw	$2, %dx			/* Control port */
 	movb	$0x02, %al		/* Latch right: AutoLF off (high), Strobe on (low) */
 	outb	%al, %dx
 	cmpl	_dos_audio_buffer_end, %esi
@@ -204,12 +289,12 @@ _lpt_stereo2_handler:
 	pushl	%edx
 	movw	%cs:_int_ds, %ds
 	movl	_dos_audio_buffer_pos, %esi
-	mov	_lpt_left_port, %dx
+	movw	_lpt_left_port, %dx
 	movw	(%esi), %ax		/* ax = *((uint16_t *)pos)++; */
 	addl	$2, %esi
 	outb	%al, %dx		/* Write left sample */
-	mov	_lpt_right_port, %dx
-	shr	$8, %ax
+	movw	_lpt_right_port, %dx
+	movb	%ah, %al
 	outb	%al, %dx		/* Write right sample */
 	cmpl	_dos_audio_buffer_end, %esi
 	jae	2b			/* if(pos >= end) goto 2; */

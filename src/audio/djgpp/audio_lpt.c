@@ -241,7 +241,7 @@ const struct audio_driver audio_driver_lpt_mono =
 
   NULL,
   &audio_player_pcs,
-  NULL, /* &audio_player_pcs_pit */
+  &audio_player_pcs_hw,
 
   init_audio_driver_lpt_mono,
   quit_audio_driver_lpt,
@@ -255,7 +255,7 @@ const struct audio_driver audio_driver_lpt_stereo1 =
 
   NULL,
   &audio_player_pcs,
-  NULL, /* &audio_player_pcs_pit */
+  &audio_player_pcs_hw,
 
   init_audio_driver_lpt_stereo1,
   quit_audio_driver_lpt,
@@ -269,7 +269,7 @@ const struct audio_driver audio_driver_lpt_stereo2 =
 
   NULL,
   &audio_player_pcs,
-  NULL, /* &audio_player_pcs_pit */
+  &audio_player_pcs_hw,
 
   init_audio_driver_lpt_stereo2,
   quit_audio_driver_lpt,
@@ -283,7 +283,7 @@ const struct audio_driver audio_driver_lpt_dss =
 
   NULL,
   &audio_player_pcs,
-  NULL, /* &audio_player_pcs_pit */
+  &audio_player_pcs_hw,
 
   init_audio_driver_lpt_dss,
   quit_audio_driver_lpt,

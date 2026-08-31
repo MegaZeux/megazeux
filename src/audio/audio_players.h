@@ -37,6 +37,8 @@ extern const struct audio_player audio_player_modplug;
 extern const struct audio_player audio_player_mikmod;
 extern const struct audio_player audio_player_openmpt;
 
+extern const struct audio_player audio_player_pcs_hw; /* DOS */
+
 struct audio_stream *audio_construct_stream(const char *filename,
  uint32_t frequency, unsigned int volume, boolean is_primary, boolean repeat);
 

@@ -464,7 +464,7 @@ void init_audio(struct config_info *conf)
       pcs_player = audio.driver->pcs_hardware_player;
 
     if(pcs_player)
-      audio.pcs_stream = pcs_player->construct(NULL, NULL, 0, 255, 0);
+      audio.pcs_stream = pcs_player->construct(NULL, NULL, 0, 255, true);
   }
 
   audio_set_pcs_volume(conf->pc_speaker_volume);
@@ -959,7 +959,8 @@ void audio_set_sound_volume(int volume)
   current_astream = audio.stream_list.base;
   while(current_astream)
   {
-    if(current_astream != audio.primary_stream && current_astream != audio.pcs_stream)
+    if(current_astream != audio.primary_stream &&
+     current_astream != audio.pcs_stream && current_astream->player->set_volume)
       current_astream->player->set_volume(current_astream, real_volume);
 
     current_astream = current_astream->next;
@@ -977,7 +978,7 @@ void audio_set_pcs_volume(int volume)
   audio.pcs_volume = volume;
   real_volume = volume_function(255, audio.pcs_volume);
 
-  if(audio.pcs_stream)
+  if(audio.pcs_stream && audio.pcs_stream->player->set_volume)
     audio.pcs_stream->player->set_volume(audio.pcs_stream, real_volume);
 
   UNLOCK();

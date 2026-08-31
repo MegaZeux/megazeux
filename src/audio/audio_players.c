@@ -62,6 +62,15 @@ static struct audio_stream *try_construct(const struct audio_player *player,
 {
   struct audio_stream *stream;
 
+  /* If the driver didn't initialize the mixer, assume it is not capable of
+   * playing software mixed PCM. This prevents accumulating streams that can't
+   * automatically end (since this would occur in audio_mixer_render_frames).
+   * TODO: since this is currently only a problem for sound effects, allow
+   * useless primary streams for the MemorySanitizer regression tests.
+   */
+  if(!audio.mix_buffer && player->mix_data && !is_primary)
+    return NULL;
+
   if(player->test)
   {
     boolean result = player->test(vf, filename, is_primary);

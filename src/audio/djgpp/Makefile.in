@@ -7,6 +7,8 @@ ifeq (${BUILD_DJGPP},1)
 audio_djgpp_obj  := ${audio_obj}/djgpp
 audio_djgpp_objs += \
   ${audio_djgpp_obj}/audio_lpt.o \
+  ${audio_djgpp_obj}/audio_nopcm.o \
+  ${audio_djgpp_obj}/audio_pcs_hw.o \
   ${audio_djgpp_obj}/audio_sb.o \
 
 -include ${audio_djgpp_objs:.o=.d}
