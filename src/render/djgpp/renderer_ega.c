@@ -41,7 +41,7 @@
 // Limit  : 0x03FFF
 // Type   : 0x3
 // Flags  : Application, Ring 3, Present, 32-bit
-static uint8_t ega_vb_desc[8] =
+static const uint8_t ega_vb_desc[8] =
 {
   0xFF, 0x3F, 0x00, 0x80, 0x0B, 0xF3, 0x40, 0x00
 };
@@ -89,6 +89,7 @@ static boolean ega_init_video(struct graphics_data *graphics,
   struct ega_render_data *render_data =
    (struct ega_render_data *)cmalloc(sizeof(struct ega_render_data));
   int display, sel;
+  uint8_t sel_desc[8];
 
   if(!render_data)
     return false;
@@ -96,17 +97,34 @@ static boolean ega_init_video(struct graphics_data *graphics,
   display = djgpp_display_adapter_detect();
   if(display == DISPLAY_ADAPTER_UNSUPPORTED)
   {
-    warn("Could not find EGA-compatible graphics card!");
+    warn("Could not find EGA-compatible graphics card!\n");
     free(render_data);
     return false;
   }
 
   sel = __dpmi_allocate_ldt_descriptors(1);
-  if(__dpmi_set_descriptor(sel, ega_vb_desc) < 0)
+  if(sel < 0)
   {
-    warn("Failed to create VRAM selector.");
+    warn("Failed to allocate VRAM selector (err=%04x).\n", __dpmi_error);
     free(render_data);
     return false;
+  }
+
+  memcpy(sel_desc, ega_vb_desc, sizeof(ega_vb_desc));
+  if(__dpmi_set_descriptor(sel, sel_desc) < 0)
+  {
+    int err3 = __dpmi_error;
+
+    /* PMODE/DJ may be configured to only accept requests for ring 0 access. */
+    sel_desc[5] &= 0x9f;
+    if(__dpmi_set_descriptor(sel, sel_desc) < 0)
+    {
+      warn("Failed to set VRAM selector (sel=%d, err3=%04x, err0=%04x).\n",
+       sel, err3, __dpmi_error);
+      __dpmi_free_ldt_descriptor(sel);
+      free(render_data);
+      return false;
+    }
   }
   render_data->vbsel = sel;
 
