@@ -339,14 +339,24 @@
 # audio_driver = lptdss
 # audio_config_lpt = 1
 
+# The PC speaker pulse width modulation driver can play PCM sounds over the
+# hardware PC speaker. Like LPT audio, it can be computationally expensive.
+# Lower sample rates correspond to better sample quality, but rates under about
+# 18kHz have audible high pitched carrier frequencies. Different combinations
+# of audio_sample_rate and audio_buffer_samples can help reduce noise somewhat.
+# Supported sample rates (approximate): 5000, 6000, 7000, 8000, 9321, 10000,
+# 11000, 15500, 17000, 18643, 22500, 26500, 27500, 32000, 37286.
+
+# audio_driver = pcs
+
 # This driver can be used without a sound card to enable hardware PC speaker
 # sound effects without playing PCM. It is automatically selected if the
 # other audio drivers fail to initialize.
 
 # audio_driver = nopcm
 
-# To enable hardware PC speaker sound effects for any DOS audio driver,
-# enable this option. This is disabled by default for most drivers, but
+# To enable hardware PC speaker sound effects for most DOS audio drivers,
+# enable this option. This is disabled by default except with nopcm, but
 # may improve performance on slower machines.
 
 # audio_pc_speaker_use_hardware = 1

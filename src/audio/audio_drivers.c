@@ -41,6 +41,7 @@ static const struct audio_driver * const available_drivers[] =
   &audio_driver_lpt_stereo1,
   &audio_driver_lpt_stereo2,
   &audio_driver_lpt_dss,
+  &audio_driver_pcs_pwm,
   &audio_driver_no_pcm,
 #endif
 #ifdef CONFIG_NDS

@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <dpmi.h>
@@ -177,8 +178,18 @@ static boolean init_audio_driver_lpt(unsigned mix_rate, unsigned irq_rate,
     return false;
   }
 
-  info("LPT audio initialized: %xh/%xh %uFr %uCh %zuHz (%uHz)", lpt_left_port,
-   lpt_right_port, audio.buffer_frames, channels, audio.output_frequency, irq_rate);
+  if(irq_handler == &pcs_pwm_handler)
+  {
+    info("PCS audio initialized: %.2f bit %uFr %uCh %zuHz (%uHz)\n",
+     log(current_div) / M_LN2, audio.buffer_frames, channels,
+     audio.output_frequency, irq_rate);
+  }
+  else
+  {
+    info("LPT audio initialized: %xh/%xh %uFr %uCh %zuHz (%uHz)\n",
+     lpt_left_port, lpt_right_port, audio.buffer_frames, channels,
+     audio.output_frequency, irq_rate);
+  }
   return true;
 }
 
@@ -231,6 +242,60 @@ static void quit_audio_driver_lpt(void)
   djgpp_reset_irq0_handler();
   lpt_quit_callback();
   lpt_free_buffer();
+}
+
+/* PC speaker rates are even more limited than LPT rates.
+ * Supporting more rates is possible but requires a multiply in IRQ0.
+ * FIXME: how did Mark J. Cox make this sound less bad */
+static uint16_t pcs_pwm_get_rate(int requested_rate)
+{
+  static const uint16_t supported_rates[] =
+  {
+    LPT_5K_HZ,  LPT_6K_HZ,  LPT_7K_HZ,  LPT_8K_HZ, PCS_9K_HZ,
+    LPT_10K_HZ, LPT_11K_HZ, LPT_15K_HZ, LPT_17K_HZ, PCS_18K_HZ,
+    LPT_22K_HZ, LPT_26K_HZ, LPT_28K_HZ, LPT_32K_HZ, PCS_37K_HZ
+  };
+  size_t i;
+
+  for(i = 0; i < ARRAY_SIZE(supported_rates) - 1; i++)
+    if(requested_rate < ((int)supported_rates[i] + supported_rates[i + 1]) >> 1)
+      break;
+
+  return supported_rates[i];
+}
+
+static void pcs_pwm_off(void)
+{
+  /* Clear PC speaker gate */
+  outportb(0x61, inportb(0x61) & 0xfc);
+  /* Reset mode to 3 */
+  outportb(0x43, 0xb6);
+}
+
+/* This driver is so similar to the LPT drivers that it is included here
+ * and shares most of the same code. */
+static boolean init_audio_driver_pcs_pwm(struct config_info *conf)
+{
+  unsigned rate = pcs_pwm_get_rate(conf->audio_sample_rate);
+  unsigned frames = MIN(conf->audio_buffer_samples, 32768);
+
+  /* Channel 2 mode: low byte, mode 0 "interrupt on terminal count", binary */
+  outportb(0x43, 0x90);
+  /* Raise PC speaker gate */
+  outportb(0x61, inportb(0x61) | 0x03);
+
+  if(!init_audio_driver_lpt(rate, rate, frames, 1, &pcs_pwm_handler))
+  {
+    pcs_pwm_off();
+    return false;
+  }
+  return true;
+}
+
+static void quit_audio_driver_pcs_pwm(void)
+{
+  quit_audio_driver_lpt();
+  pcs_pwm_off();
 }
 
 const struct audio_driver audio_driver_lpt_mono =
@@ -287,4 +352,18 @@ const struct audio_driver audio_driver_lpt_dss =
 
   init_audio_driver_lpt_dss,
   quit_audio_driver_lpt,
+};
+
+const struct audio_driver audio_driver_pcs_pwm =
+{
+  "PC Speaker pulse width modulated PCM",
+  "pcs",
+  false, /* Must be explicitly requested */
+
+  NULL,
+  &audio_player_pcs,
+  NULL,
+
+  init_audio_driver_pcs_pwm,
+  quit_audio_driver_pcs_pwm,
 };

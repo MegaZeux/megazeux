@@ -127,7 +127,7 @@ _timer_handler_tick:
 	je	3f			/*   goto nosound; */
 	/* sound(freq) */
 	movb	$1, _sfx_playing	/* sfx_playing = true; */
-	movb	$0xb6, %al		/* Channel 2, lo + hi, mode 2, binary */
+	movb	$0xb6, %al		/* Channel 2, lo + hi, mode 3, binary */
 	outb	%al, $0x43		/* PIT Mode/Command register */
 	movw	SFX_DIVIDEND_DX, %dx
 	movw	SFX_DIVIDEND_AX, %ax
@@ -229,6 +229,30 @@ _lpt_left_port:
 .global _lpt_right_port			/* uint16_t lpt_right_port; */
 _lpt_right_port:
 	.word	0
+
+.balign 16
+.global _pcs_pwm_handler
+_pcs_pwm_handler:
+	pushl	%eax
+	pushl	%ds
+	pushl	%esi
+	movw	%cs:_int_ds, %ds
+	movl	_dos_audio_buffer_pos, %esi
+	movb	_current_div, %ah
+	movb	(%esi), %al		/* al = *pos++; */
+	incl	%esi
+	mulb	%ah			/* ax = al * ah; */
+	movb	%ah, %al		/* ax >>= 8; */
+	outb	%al, $0x42		/* write shifted sample to PCS reload */
+	cmpl	_dos_audio_buffer_end, %esi
+	jae	2f			/* if(pos >= end) goto 2; */
+1:
+	movl	%esi, _dos_audio_buffer_pos
+	popl	%esi
+	jmp	_timer_handler_var	/* goto timer_handler_var; */
+2:					/* (early predictors assume no jump) */
+	movl	_dos_audio_buffer, %esi	/* pos = dos_audio_buffer; */
+	jmp	1b
 
 .balign 16
 .global _lpt_mono_handler
