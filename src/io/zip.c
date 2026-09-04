@@ -52,7 +52,7 @@
 // DJGPP may be running on exceptionally slow hardware.
 
 #if defined(CONFIG_NDS) || defined(CONFIG_3DS) || defined(CONFIG_SWITCH) || \
- defined(CONFIG_PSVITA) || defined(CONFIG_DJGPP)
+ defined(CONFIG_PSVITA) || defined(CONFIG_DJGPP) || defined(PS2)
 #define ZIP_WRITE_DATA_DESCRIPTOR
 #endif
 
