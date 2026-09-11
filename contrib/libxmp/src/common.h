@@ -171,9 +171,9 @@ typedef int tst_uint64[2 * (8 == sizeof(uint64)) - 1];
 #define D_CRIT "  Error: "
 #define D_WARN "Warning: "
 #define D_INFO "   Info: "
+void libxmp_msvc_dbgprint(const char *text, ...);
 #ifdef DEBUG
 #define D_ libxmp_msvc_dbgprint  /* in win32.c */
-void libxmp_msvc_dbgprint(const char *text, ...);
 #else
 /* VS prior to VC7.1 does not support variadic macros.
  * VC8.0 does not optimize unused parameters passing. */
@@ -607,6 +607,7 @@ struct player_data {
 
 	int loop_count;
 	int sequence;
+	int bad_sequence;		/* 1 = can't find next order, need reposition */
 	unsigned char sequence_control[XMP_MAX_MOD_LENGTH];
 
 	int smix_vol;			/* SFX volume */
