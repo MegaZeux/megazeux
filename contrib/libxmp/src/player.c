@@ -563,7 +563,7 @@ static void update_invloop(struct context_data *ctx, struct channel_data *xc)
 {
 	struct xmp_sample *xxs = libxmp_get_sample(ctx, xc->smp);
 	struct module_data *m = &ctx->m;
-	int lps = 0, len = -1;
+	int lps = -1, lpe = -1, len = -1;
 
 	/* If an instrument number is present, reset the position. */
 	if (ctx->p.frame == 0 && TEST(NEW_INS)) {
@@ -573,25 +573,26 @@ static void update_invloop(struct context_data *ctx, struct channel_data *xc)
 	xc->invloop.count += invloop_table[xc->invloop.speed];
 
 	if (xxs != NULL) {
+		len = xxs->len;
 		if (xxs->flg & XMP_SAMPLE_LOOP) {
 			lps = xxs->lps;
-			len = xxs->lpe - lps;
+			lpe = xxs->lpe;
 		} else if (xxs->flg & XMP_SAMPLE_SLOOP) {
 			/* Some formats that support invert loop use sustain
 			 * loops instead (Digital Symphony). */
 			lps = m->xtra[xc->smp].sus;
-			len = m->xtra[xc->smp].sue - lps;
+			lpe = m->xtra[xc->smp].sue;
 		}
 	}
 
-	if (len >= 0 && xc->invloop.count >= 128) {
+	if (lps >= 0 && lps <= lpe && xc->invloop.count >= 128) {
 		xc->invloop.count = 0;
 
-		if (++xc->invloop.pos > len) {
+		if (++xc->invloop.pos > lpe - lps) {
 			xc->invloop.pos = 0;
 		}
 
-		if (xxs->data == NULL) {
+		if (xxs->data == NULL || lps >= len || lpe > len) {
 			return;
 		}
 
@@ -1733,44 +1734,65 @@ static void inject_event(struct context_data *ctx)
  * Sequencing
  */
 
-static void next_order(struct context_data *ctx, int last_ord)
+static int skip_invalid_orders(struct context_data *ctx)
+{
+	struct player_data *p = &ctx->p;
+	struct module_data *m = &ctx->m;
+	struct xmp_module *mod = &m->mod;
+
+	if (p->ord < 0) {
+		p->ord = 0;
+	}
+
+	for (;;) {
+		if (p->ord >= mod->len ||
+		    (HAS_QUIRK(QUIRK_MARKER) && mod->xxo[p->ord] == XMP_MARK_END)) {
+			return -1;
+		}
+		if (mod->xxo[p->ord] < mod->pat) {
+			break;
+		}
+		p->ord++;
+	}
+	return 0;
+}
+
+static int next_order(struct context_data *ctx, int last_ord)
 {
 	struct player_data *p = &ctx->p;
 	struct flow_control *f = &p->flow;
 	struct module_data *m = &ctx->m;
 	struct xmp_module *mod = &m->mod;
-	int reset_gvol = 0;
-	int mark;
 	int i;
 
-	do {
-		p->ord++;
+	p->ord++;
 
+	if (skip_invalid_orders(ctx) < 0) {
 		/* Restart module */
-		mark = HAS_QUIRK(QUIRK_MARKER) && p->ord < mod->len &&
-		       mod->xxo[p->ord] == XMP_MARK_END;
-		if (p->ord >= mod->len || mark) {
-			if (mod->rst > mod->len ||
-			    mod->xxo[mod->rst] >= mod->pat ||
-			    p->ord < m->seq_data[p->sequence].entry_point) {
-				p->ord = m->seq_data[p->sequence].entry_point;
+		if (mod->rst > mod->len ||
+		    mod->xxo[mod->rst] >= mod->pat ||
+		    p->ord < m->seq_data[p->sequence].entry_point) {
+			p->ord = m->seq_data[p->sequence].entry_point;
+		} else {
+			if (libxmp_get_sequence(ctx, mod->rst) == p->sequence) {
+				p->ord = mod->rst;
 			} else {
-				if (libxmp_get_sequence(ctx, mod->rst) == p->sequence) {
-					p->ord = mod->rst;
-				} else {
-					p->ord = m->seq_data[p->sequence].entry_point;
-				}
+				p->ord = m->seq_data[p->sequence].entry_point;
 			}
-			/* This might be a marker, so delay updating global
-			 * volume until an actual pattern is found */
-			reset_gvol = 1;
-			/* Module restart should always reset the play time. */
-			last_ord = -1;
 		}
-	} while (mod->xxo[p->ord] >= mod->pat);
-
-	if (reset_gvol)
+		/* Nothing valid, even from the entry point? Fail.
+		 * This should be prevented by the scan, but check anyway. */
+		if (skip_invalid_orders(ctx) < 0) {
+			p->bad_sequence = 1;
+			return -1;
+		}
 		p->gvol = m->xxo_info[p->ord].gvl;
+
+		/* Module restart should always reset the play time. */
+		last_ord = -1;
+	}
+	/* Playback now has a valid position. */
+	p->bad_sequence = 0;
 
 	/* Bxx+Dxx within same position, Archimedes line jump,
 	 * etc. should not reset time tracking. */
@@ -1806,9 +1828,10 @@ static void next_order(struct context_data *ctx, int last_ord)
 		}
 	}
 #endif
+	return 0;
 }
 
-static void next_row(struct context_data *ctx)
+static int next_row(struct context_data *ctx)
 {
 	struct player_data *p = &ctx->p;
 	struct flow_control *f = &p->flow;
@@ -1827,7 +1850,7 @@ static void next_row(struct context_data *ctx)
 			f->jump = -1;
 		}
 
-		next_order(ctx, last_ord);
+		return next_order(ctx, last_ord);
 	} else {
 		if (f->rowdelay == 0) {
 			p->row++;
@@ -1843,9 +1866,10 @@ static void next_row(struct context_data *ctx)
 
 		/* check end of pattern */
 		if (p->row >= f->num_rows) {
-			next_order(ctx, last_ord);
+			return next_order(ctx, last_ord);
 		}
 	}
+	return 0;
 }
 
 #ifndef LIBXMP_CORE_DISABLE_IT
@@ -1958,6 +1982,7 @@ int xmp_start_player(xmp_context opaque, int rate, int format)
 	p->current_time = 0;
 	p->loop_count = 0;
 	p->sequence = 0;
+	p->bad_sequence = 0;
 
 	/* Set default volume and mute status */
 	for (i = 0; i < XMP_MAX_CHANNELS; i++) {
@@ -1969,22 +1994,16 @@ int xmp_start_player(xmp_context opaque, int rate, int format)
 		p->channel_vol[i] = 100;
 	}
 
-	/* Skip invalid patterns at start (the seventh laboratory.it) */
-	while (p->ord < mod->len && mod->xxo[p->ord] >= mod->pat) {
-		p->ord++;
-	}
-	/* Check if all positions skipped */
-	if (p->ord >= mod->len) {
-		mod->len = 0;
-	}
-
-	if (mod->len == 0) {
-		/* set variables to sane state */
+	/* Handle markers/invalid patterns at start (the seventh laboratory.it).
+	 * If there are no valid orders or if an end marker is found, set some
+	 * safe default values (note: this previously zeroed mod->len). */
+	if (skip_invalid_orders(ctx) < 0) {
 		/* Note: previously did this for mod->chn == 0, which caused
 		 * crashes on invalid order 0s. 0 channel modules are technically
 		 * valid (if useless) so just let them play normally. */
 		p->ord = p->scan[0].ord = 0;
 		p->row = p->scan[0].row = 0;
+		p->bad_sequence = 1;
 		f->end_point = 0;
 		f->num_rows = 0;
 	} else {
@@ -2077,10 +2096,6 @@ int xmp_play_frame(xmp_context opaque)
 		return -XMP_END;
 	}
 
-	if (HAS_QUIRK(QUIRK_MARKER) && mod->xxo[p->ord] == XMP_MARK_END) {
-		return -XMP_END;
-	}
-
 	/* check reposition */
 	if (p->ord != p->pos || f->force_reposition) {
 		int start = m->seq_data[p->sequence].entry_point;
@@ -2113,13 +2128,23 @@ int xmp_play_frame(xmp_context opaque)
 			p->ord = start - 1;
 		}
 
-		next_order(ctx, -1);
+		if (next_order(ctx, -1) < 0) {
+			/* Current sequence contains no valid orders;
+			 * playback can't continue. */
+			return -XMP_END;
+		}
 
 		update_from_ord_info(ctx);
 
 		libxmp_virt_reset(ctx);
 		reset_channels(ctx);
 	} else {
+		/* Sequences with no valid orders can't continue playing from
+		 * here and require manual repositioning to another sequence. */
+		if (p->bad_sequence) {
+			return -XMP_END;
+		}
+
 		p->frame++;
 		if (p->frame >= (p->speed * (1 + f->delay))) {
 			/* If break during pattern delay, next row is skipped.
@@ -2127,12 +2152,15 @@ int xmp_play_frame(xmp_context opaque)
 			 * EE2 + D31 ignores D00 in order 1C line 31. Reported
 			 * by The Welder <welder@majesty.net>, Jan 14 2012
 			 */
-			if (HAS_QUIRK(QUIRK_PROTRACK) && f->delay && f->pbreak)
-			{
-				next_row(ctx);
+			if (HAS_QUIRK(QUIRK_PROTRACK) && f->delay && f->pbreak) {
+				if (next_row(ctx) < 0) {
+					return -XMP_END;
+				}
 				check_end_of_module(ctx);
 			}
-			next_row(ctx);
+			if (next_row(ctx) < 0) {
+				return -XMP_END;
+			}
 		}
 	}
 

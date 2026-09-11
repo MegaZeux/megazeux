@@ -665,6 +665,7 @@ static void reset_scan_data(struct context_data *ctx)
 		ctx->m.xxo_info[i].time = -1.0;
 	}
 	memset(ctx->p.sequence_control, NO_SEQUENCE, XMP_MAX_MOD_LENGTH);
+	memset(&ctx->p.scan[0], 0, sizeof(struct scan_data));
 }
 
 #ifndef LIBXMP_CORE_PLAYER
@@ -751,8 +752,7 @@ int libxmp_scan_sequences(struct context_data *ctx)
 #endif
 
 	if (p->scan[0].time < 0.0) {
-		D_(D_CRIT "scan was not able to find any valid orders");
-		return -1;
+		D_(D_WARN "main sequence contains no valid orders");
 	}
 
 	while (1) {
@@ -810,6 +810,13 @@ int libxmp_scan_sequences(struct context_data *ctx)
 			p->sequence_control[i] =
 				(i > 0) ? p->sequence_control[i - 1] : 0;
 		}
+	}
+
+	/* If the module is currently playing, rescanning the sequences may
+	 * invalidate the current sequence. */
+	if (ctx->state >= XMP_STATE_PLAYING) {
+		seq = libxmp_get_sequence(ctx, p->pos);
+		p->sequence = (seq != NO_SEQUENCE) ? seq : 0;
 	}
 
 	return 0;

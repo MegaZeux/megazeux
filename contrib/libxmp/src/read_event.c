@@ -406,7 +406,8 @@ static int read_event_mod(struct context_data *ctx, const struct xmp_event *e, i
 	 * of its loop (see above).
 	 */
 	if (new_swap_ins && sub && HAS_QUIRK(QUIRK_PROTRACK) && TEST_NOTE(NOTE_SET)) {
-		libxmp_virt_queuepatch(ctx, chn, e->ins - 1, sub->sid, xc->note);
+		int smp = IS_VALID_SAMPLE(sub->sid) ? sub->sid : -1;
+		libxmp_virt_queuepatch(ctx, chn, e->ins - 1, smp, xc->note);
 		xc->smp = sub->sid;
 	}
 
