@@ -296,8 +296,8 @@ jobs:
         run: arch/psvita/CONFIG.PSVITA --disable-libpng --disable-lto
       - name: Build Vita
         run: $MZX_MAKE
-      - name: Package Vita
-        run: make archive
+#      - name: Package Vita
+#        run: make archive
 
   #
   # Sanitizers.
