@@ -2,6 +2,7 @@
 *
 * Copyright (C) 1996 Alexis Janson
 * Copyright (C) 2010 Alan Williams <mralert@gmail.com>
+* Copyright (C) 2026 Alice Rowan <petrifiedrowan@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License as
@@ -25,18 +26,22 @@
 #undef delay
 #include "../event.h"
 #include "../../graphics.h"
+#include "../../util.h"
 #include "../../platform/platform.h"
 #include "../../platform/djgpp/interrupt.h"
 
 extern struct input_status input;
 
-static enum
+struct bios_key_event
 {
-  KBD_RELEASED,
-  KBD_PRESSING,
-  KBD_PRESSED
-} kbd_statmap[0x80] = {0};
-static uint16_t kbd_unicode[0x80] = {0};
+  uint8_t code;
+  uint8_t ascii;
+};
+
+static struct bios_key_event bios_pending[64];
+static uint8_t bios_pending_pos;
+static uint8_t bios_pending_num;
+static boolean initialized_numlock;
 
 static int read_kbd(void)
 {
@@ -44,6 +49,7 @@ static int read_kbd(void)
   if(kbd_read == kbd_write)
     return -1;
   ret = kbd_buffer[kbd_read++];
+  trace("buffer: %02xh\n", ret);
   return ret;
 }
 
@@ -58,7 +64,7 @@ static const enum keycode xt_to_internal[0x80] =
   IKEY_q, IKEY_w, IKEY_e, IKEY_r,
   IKEY_t, IKEY_y, IKEY_u, IKEY_i,
   IKEY_o, IKEY_p, IKEY_LEFTBRACKET, IKEY_RIGHTBRACKET,
-  IKEY_RETURN, IKEY_RCTRL, IKEY_a, IKEY_s,
+  IKEY_RETURN, IKEY_LCTRL, IKEY_a, IKEY_s,
   // 2x
   IKEY_d, IKEY_f, IKEY_g, IKEY_h,
   IKEY_j, IKEY_k, IKEY_l, IKEY_SEMICOLON,
@@ -67,7 +73,7 @@ static const enum keycode xt_to_internal[0x80] =
   // 3x
   IKEY_b, IKEY_n, IKEY_m, IKEY_COMMA,
   IKEY_PERIOD, IKEY_SLASH, IKEY_RSHIFT, IKEY_KP_MULTIPLY,
-  IKEY_RALT, IKEY_SPACE, IKEY_CAPSLOCK, IKEY_F1,
+  IKEY_LALT, IKEY_SPACE, IKEY_CAPSLOCK, IKEY_F1,
   IKEY_F2, IKEY_F3, IKEY_F4, IKEY_F5,
   // 4x
   IKEY_F6, IKEY_F7, IKEY_F8, IKEY_F9,
@@ -76,7 +82,7 @@ static const enum keycode xt_to_internal[0x80] =
   IKEY_KP5, IKEY_KP6, IKEY_KP_PLUS, IKEY_KP1,
   // 5x
   IKEY_KP2, IKEY_KP3, IKEY_KP0, IKEY_KP_PERIOD,
-  IKEY_SYSREQ, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_F11,
+  IKEY_SYSREQ /*Alt+*/, IKEY_UNKNOWN, IKEY_LESS, IKEY_F11,
   IKEY_F12, IKEY_UNKNOWN
 };
 
@@ -91,7 +97,7 @@ static const enum keycode extended_xt_to_internal[0x80] =
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
-  IKEY_KP_ENTER, IKEY_LCTRL, IKEY_UNKNOWN, IKEY_UNKNOWN,
+  IKEY_KP_ENTER, IKEY_RCTRL, IKEY_UNKNOWN, IKEY_UNKNOWN,
   // 2x
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
@@ -100,7 +106,7 @@ static const enum keycode extended_xt_to_internal[0x80] =
   // 3x
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
   IKEY_UNKNOWN, IKEY_KP_DIVIDE, IKEY_UNKNOWN, IKEY_SYSREQ,
-  IKEY_LALT, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
+  IKEY_RALT, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
   // 4x
   IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN, IKEY_UNKNOWN,
@@ -114,10 +120,10 @@ static const enum keycode extended_xt_to_internal[0x80] =
   IKEY_RSUPER, IKEY_MENU, IKEY_UNKNOWN
 };
 
-static enum keycode convert_ext_internal(uint8_t key)
+static enum keycode convert_xt_internal(enum pcxt_keycode key, boolean alternate)
 {
-  if(key & 0x80)
-    return extended_xt_to_internal[key & 0x7F];
+  if(alternate)
+    return extended_xt_to_internal[key];
   else
     return xt_to_internal[key];
 }
@@ -150,166 +156,178 @@ static void update_lock_status(struct buffered_status *status)
   res = extbioskey(2);
   status->numlock_status = !!(res & 0x20);
   status->caps_status = !!(res & 0x40);
+  trace(" num:%d caps:%d\n", status->numlock_status, status->caps_status);
 }
 
 static uint8_t convert_bios_xt(uint8_t key)
 {
   switch(key)
   {
-    case 0x54: return 0x3B; // Shift-F1
-    case 0x55: return 0x3C; // Shift-F2
-    case 0x56: return 0x3D; // Shift-F3
-    case 0x57: return 0x3E; // Shift-F4
-    case 0x58: return 0x3F; // Shift-F5
-    case 0x59: return 0x40; // Shift-F6
-    case 0x5A: return 0x41; // Shift-F7
-    case 0x5B: return 0x42; // Shift-F8
-    case 0x5C: return 0x43; // Shift-F9
-    case 0x5D: return 0x44; // Shift-F10
-    case 0x5E: return 0x3B; // Ctrl-F1
-    case 0x5F: return 0x3C; // Ctrl-F2
-    case 0x60: return 0x3D; // Ctrl-F3
-    case 0x61: return 0x3E; // Ctrl-F4
-    case 0x62: return 0x3F; // Ctrl-F5
-    case 0x63: return 0x40; // Ctrl-F6
-    case 0x64: return 0x41; // Ctrl-F7
-    case 0x65: return 0x42; // Ctrl-F8
-    case 0x66: return 0x43; // Ctrl-F9
-    case 0x67: return 0x44; // Ctrl-F10
-    case 0x68: return 0x3B; // Alt-F1
-    case 0x69: return 0x3C; // Alt-F2
-    case 0x6A: return 0x3D; // Alt-F3
-    case 0x6B: return 0x3E; // Alt-F4
-    case 0x6C: return 0x3F; // Alt-F5
-    case 0x6D: return 0x40; // Alt-F6
-    case 0x6E: return 0x41; // Alt-F7
-    case 0x6F: return 0x42; // Alt-F8
-    case 0x70: return 0x43; // Alt-F9
-    case 0x71: return 0x44; // Alt-F10
-    case 0x72: return 0x37; // Ctrl-PrtSc
-    case 0x73: return 0x4B; // Ctrl-Left
-    case 0x74: return 0x4D; // Ctrl-Right
-    case 0x75: return 0x4F; // Ctrl-End
-    case 0x76: return 0x51; // Ctrl-PgDn
-    case 0x77: return 0x47; // Ctrl-Home
-    case 0x78: return 0x02; // Alt-1
-    case 0x79: return 0x03; // Alt-2
-    case 0x7A: return 0x04; // Alt-3
-    case 0x7B: return 0x05; // Alt-4
-    case 0x7C: return 0x06; // Alt-5
-    case 0x7D: return 0x07; // Alt-6
-    case 0x7E: return 0x08; // Alt-7
-    case 0x7F: return 0x09; // Alt-8
-    case 0x80: return 0x0A; // Alt-9
-    case 0x81: return 0x0B; // Alt-0
-    case 0x82: return 0x0C; // Alt--
-    case 0x83: return 0x0D; // Alt-=
-    case 0x84: return 0x49; // Ctrl-PgUp
-    // Extended keycodes
-    case 0x85: return 0x57; // F11
-    case 0x86: return 0x58; // F12
-    case 0x87: return 0x57; // Shift-F11
-    case 0x88: return 0x58; // Shift-F12
-    case 0x89: return 0x57; // Ctrl-F11
-    case 0x8A: return 0x58; // Ctrl-F12
-    case 0x8B: return 0x57; // Alt-F11
-    case 0x8C: return 0x58; // Alt-F12
-    case 0x8D: return 0x48; // Ctrl-KP-8 (Up)
-    case 0x8E: return 0x4A; // Ctrl-KP--
-    case 0x8F: return 0x4C; // Ctrl-KP-5
-    case 0x90: return 0x4E; // Ctrl-KP-+
-    case 0x91: return 0x50; // Ctrl-KP-2 (Down)
-    case 0x92: return 0x52; // Ctrl-KP-0 (Insert)
-    case 0x93: return 0x53; // Ctrl-KP-. (Delete)
-    case 0x94: return 0x0F; // Ctrl-Tab
-    case 0x95: return 0x35; // Ctrl-KP-/
-    case 0x96: return 0x37; // Ctrl-KP-*
-    case 0x97: return 0x47; // Alt-Home
-    case 0x98: return 0x48; // Alt-Up
-    case 0x99: return 0x49; // Alt-PgUp
-    case 0x9B: return 0x4B; // Alt-Left
-    case 0x9D: return 0x4D; // Alt-Right
-    case 0x9F: return 0x4F; // Alt-End
-    case 0xA0: return 0x50; // Alt-Down
-    case 0xA1: return 0x51; // Alt-PgDn
-    case 0xA2: return 0x52; // Alt-Insert
-    case 0xA3: return 0x53; // Alt-Delete
-    case 0xA4: return 0x35; // Alt-KP-/
-    case 0xA5: return 0x0F; // Alt-Tab
-    case 0xA6: return 0x1C; // Alt-KP-Enter
-    default: return key & 0x7F;
+    case 0x54: return XTKEY_F1;           // Shift-F1
+    case 0x55: return XTKEY_F2;           // Shift-F2
+    case 0x56: return XTKEY_F3;           // Shift-F3
+    case 0x57: return XTKEY_F4;           // Shift-F4
+    case 0x58: return XTKEY_F5;           // Shift-F5
+    case 0x59: return XTKEY_F6;           // Shift-F6
+    case 0x5A: return XTKEY_F7;           // Shift-F7
+    case 0x5B: return XTKEY_F8;           // Shift-F8
+    case 0x5C: return XTKEY_F9;           // Shift-F9
+    case 0x5D: return XTKEY_F10;          // Shift-F10
+    case 0x5E: return XTKEY_F1;           // Ctrl-F1
+    case 0x5F: return XTKEY_F2;           // Ctrl-F2
+    case 0x60: return XTKEY_F3;           // Ctrl-F3
+    case 0x61: return XTKEY_F4;           // Ctrl-F4
+    case 0x62: return XTKEY_F5;           // Ctrl-F5
+    case 0x63: return XTKEY_F6;           // Ctrl-F6
+    case 0x64: return XTKEY_F7;           // Ctrl-F7
+    case 0x65: return XTKEY_F8;           // Ctrl-F8
+    case 0x66: return XTKEY_F9;           // Ctrl-F9
+    case 0x67: return XTKEY_F10;          // Ctrl-F10
+    case 0x68: return XTKEY_F1;           // Alt-F1
+    case 0x69: return XTKEY_F2;           // Alt-F2
+    case 0x6A: return XTKEY_F3;           // Alt-F3
+    case 0x6B: return XTKEY_F4;           // Alt-F4
+    case 0x6C: return XTKEY_F5;           // Alt-F5
+    case 0x6D: return XTKEY_F6;           // Alt-F6
+    case 0x6E: return XTKEY_F7;           // Alt-F7
+    case 0x6F: return XTKEY_F8;           // Alt-F8
+    case 0x70: return XTKEY_F9;           // Alt-F9
+    case 0x71: return XTKEY_F10;          // Alt-F10
+    case 0x72: return XTKEY_KP_MULTIPLY;  // Ctrl-PrtSc
+    case 0x73: return XTKEY_KP_4;         // Ctrl-KP-4 (Left)
+    case 0x74: return XTKEY_KP_6;         // Ctrl-KP-6 (Right)
+    case 0x75: return XTKEY_KP_1;         // Ctrl-KP-1 (End)
+    case 0x76: return XTKEY_KP_3;         // Ctrl-KP-3 (PgDn)
+    case 0x77: return XTKEY_KP_7;         // Ctrl-KP-7 (Home)
+    case 0x78: return XTKEY_1;            // Alt-1
+    case 0x79: return XTKEY_2;            // Alt-2
+    case 0x7A: return XTKEY_3;            // Alt-3
+    case 0x7B: return XTKEY_4;            // Alt-4
+    case 0x7C: return XTKEY_5;            // Alt-5
+    case 0x7D: return XTKEY_6;            // Alt-6
+    case 0x7E: return XTKEY_7;            // Alt-7
+    case 0x7F: return XTKEY_8;            // Alt-8
+    case 0x80: return XTKEY_9;            // Alt-9
+    case 0x81: return XTKEY_0;            // Alt-0
+    case 0x82: return XTKEY_MINUS;        // Alt--
+    case 0x83: return XTKEY_EQUALS;       // Alt-=
+    case 0x84: return XTKEY_KP_9;         // Ctrl-PgUp
+    case 0x85: return XTKEY_F11;          // F11
+    case 0x86: return XTKEY_F12;          // F12
+    case 0x87: return XTKEY_F11;          // Shift-F11
+    case 0x88: return XTKEY_F12;          // Shift-F12
+    case 0x89: return XTKEY_F11;          // Ctrl-F11
+    case 0x8A: return XTKEY_F12;          // Ctrl-F12
+    case 0x8B: return XTKEY_F11;          // Alt-F11
+    case 0x8C: return XTKEY_F12;          // Alt-F12
+    case 0x8D: return XTKEY_KP_8;         // Ctrl-KP-8 (Up)
+    case 0x8E: return XTKEY_KP_MINUS;     // Ctrl-KP--
+    case 0x8F: return XTKEY_KP_5;         // Ctrl-KP-5
+    case 0x90: return XTKEY_KP_PLUS;      // Ctrl-KP-+
+    case 0x91: return XTKEY_KP_2;         // Ctrl-KP-2 (Down)
+    case 0x92: return XTKEY_KP_0;         // Ctrl-KP-0 (Insert)
+    case 0x93: return XTKEY_KP_PERIOD;    // Ctrl-KP-. (Delete)
+    case 0x94: return XTKEY_TAB;          // Ctrl-Tab
+    case 0x95: return XTKEY_SLASH;        // Ctrl-KP-/
+    case 0x96: return XTKEY_KP_MULTIPLY;  // Ctrl-KP-*
+    case 0x97: return XTKEY_KP_7;         // Alt-KP-7 (Home)
+    case 0x98: return XTKEY_KP_8;         // Alt-KP-8 (Up)
+    case 0x99: return XTKEY_KP_9;         // Alt-KP-9 (PgUp)
+    case 0x9B: return XTKEY_KP_4;         // Alt-KP-4 (Left)
+    case 0x9D: return XTKEY_KP_6;         // Alt-KP-6 (Right)
+    case 0x9F: return XTKEY_KP_1;         // Alt-KP-1 (End)
+    case 0xA0: return XTKEY_KP_2;         // Alt-KP-2 (Down)
+    case 0xA1: return XTKEY_KP_3;         // Alt-KP-3 (PgDn)
+    case 0xA2: return XTKEY_KP_0;         // Alt-KP-0 (Insert)
+    case 0xA3: return XTKEY_KP_PERIOD;    // Alt-KP-. (Delete)
+    case 0xA4: return XTKEY_SLASH;        // Alt-KP-/
+    case 0xA5: return XTKEY_TAB;          // Alt-Tab
+    case 0xA6: return XTKEY_RETURN;       // Alt-Return
+    case 0xE0: return XTKEY_EXTENDED;     // KP-/, possibly others with ASCII.
+    default: return XTKEY_CODE(key);
   }
 }
 
 static void poll_keyboard_bios(void)
 {
   unsigned short res;
-  uint8_t scancode;
-  uint16_t unicode;
 
   while(extbioskey(1))
   {
+    struct bios_key_event ev;
     res = extbioskey(0);
-    scancode = convert_bios_xt(res >> 8);
-    unicode = res & 0xFF;
-    kbd_unicode[scancode] = unicode;
-    if(kbd_statmap[scancode] == KBD_RELEASED)
-      kbd_statmap[scancode] = KBD_PRESSING;
+    ev.code = res >> 8;
+    ev.ascii = res & 0xFF;
+    trace("bioskey: %04xh -> %02x\n", res, convert_bios_xt(ev.code));
+    if(bios_pending_num < ARRAY_SIZE(bios_pending))
+      bios_pending[bios_pending_num++] = ev;
   }
 }
 
-static uint16_t convert_ext_unicode(uint8_t key)
+static int convert_xt_unicode(enum pcxt_keycode key, boolean alternate)
 {
+  struct bios_key_event ev;
+  unsigned pos = bios_pending_pos;
+  int ascii = -1;
+
   poll_keyboard_bios();
-  return kbd_unicode[key & 0x7F];
-}
-
-static int get_keystat(int key)
-{
-  return kbd_statmap[key & 0x7F];
-}
-
-static void set_keystat(int key, int stat)
-{
-  kbd_statmap[key & 0x7F] = stat;
-}
-
-static boolean non_bios_key(uint8_t key)
-{
-  switch(key)
+  for(pos = bios_pending_pos; pos < bios_pending_num; pos++)
   {
-    case 0x1D: // Right Ctrl
-    case 0x9D: // Left Ctrl
-    case 0x38: // Right Alt
-    case 0xB8: // Left Alt
-    case 0x2A: // Left Shift
-    case 0x36: // Right Shift
-    case 0xDB: // Left Super (Windows)
-    case 0xDC: // Right Super (Windows)
-    case 0xDD: // Menu
-      return true;
-    // BIOS can't return keycodes >= 0x54 due to Alt/Ctrl keycode modification
-    // shenanigans, except for F11/F12 which are given alternate keycodes
-    case 0x57:
-    case 0x58:
-      return false;
-    default:
-      if((key & 0x7F) >= 0x54)
-        return true;
-      else
-        return false;
+    ev = bios_pending[pos];
+
+    /* The 102nd key will pass through BIOS as 56h despite not
+     * having a BIOS mapping. This is probably the only ASCII key
+     * that overlaps the BIOS extended codes?
+     */
+    if(key != XTKEY_LESS)
+      ev.code = convert_bios_xt(ev.code);
+
+    /* BIOS puts the E0h for most extended keys in AL, but for numpad slash
+     * and return which also emit ASCII, BIOS puts E0h in AH instead.
+     * These keys can't be matched with 100% certainty.
+     */
+    if(alternate)
+    {
+      if(ev.code == XTKEY_EXTENDED ||
+       (key == ev.code && ev.ascii == XTKEY_EXTENDED))
+      {
+        ascii = ev.code == XTKEY_EXTENDED ? ev.ascii : 0;
+        break;
+      }
+    }
+    else
+
+    /* Not extended: AH should match and AL should not be E0h. */
+    if(key == ev.code && ev.ascii != XTKEY_EXTENDED)
+    {
+      ascii = ev.ascii;
+      break;
+    }
   }
+  if(ascii < 0) /* No corresponding BIOS press */
+    return -1;
+
+  trace(" [%2u] -> %02xh\n", pos, ascii);
+  bios_pending_pos = pos;
+  return ascii;
 }
 
-static boolean process_keypress(int key)
+static boolean process_keypress(enum pcxt_keycode key, boolean alternate)
 {
   struct buffered_status *status = store_status();
-  enum keycode ikey = convert_ext_internal(key);
-  uint16_t unicode = convert_ext_unicode(key);
+  enum keycode ikey = convert_xt_internal(key, alternate);
+  int unicode = convert_xt_unicode(key, alternate);
 
-  if((get_keystat(key) != KBD_PRESSING) && !non_bios_key(key))
-    return false;
-  set_keystat(key, KBD_PRESSED);
+  if(unicode < 0)
+  {
+    /* Previously filtered BIOS keys here; however, BIOS fails to send so
+     * many keys in certain situations that it's better to just trust the PS/2
+     * codes from IRQ1. BIOS never sends: NumLock, KP return, KP slash; most
+     * KP and navigation keys with Alt; most number and symbol keys with Ctrl.
+     */
+    trace(" key %02xh (ikey %d) has no corresponding BIOS press\n", key, ikey);
+    unicode = 0;
+  }
 
   if(!ikey)
   {
@@ -319,7 +337,7 @@ static boolean process_keypress(int key)
       return false;
   }
 
-  if(status->keymap[ikey])
+  if(status->keymap[ikey]) /* suppress key repeat */
     return false;
 
   if((ikey == IKEY_CAPSLOCK) || (ikey == IKEY_NUMLOCK))
@@ -365,14 +383,10 @@ static boolean process_keypress(int key)
   return true;
 }
 
-static boolean process_keyrelease(int key)
+static boolean process_keyrelease(enum pcxt_keycode key, boolean alternate)
 {
   struct buffered_status *status = store_status();
-  enum keycode ikey = convert_ext_internal(key);
-
-  if((get_keystat(key) != KBD_PRESSED) && !non_bios_key(key))
-    return false;
-  set_keystat(key, KBD_RELEASED);
+  enum keycode ikey = convert_xt_internal(key, alternate);
 
   if(!ikey)
   {
@@ -382,32 +396,26 @@ static boolean process_keyrelease(int key)
       return false;
   }
 
-  status->keymap[ikey] = 0;
-  if(status->key_repeat == ikey)
-  {
-    status->key_repeat = IKEY_UNKNOWN;
-    status->unicode_repeat = 0;
-  }
-  status->key_release = ikey;
+  key_release(status, ikey);
   return true;
 }
 
 static boolean process_key(int key)
 {
-  static int extended = 0;
+  static boolean alternate = false;
   boolean ret;
 
-  if(key == 0xE0)
+  if(key == XTKEY_EXTENDED)
   {
-    extended = 0x80;
+    alternate = true;
     return false;
   }
 
-  if(key & 0x80)
-    ret = process_keyrelease((key & 0x7F) | extended);
+  if(key & XTKEY_RELEASE)
+    ret = process_keyrelease(XTKEY_CODE(key), alternate);
   else
-    ret = process_keypress(key | extended);
-  extended = 0;
+    ret = process_keypress(XTKEY_CODE(key), alternate);
+  alternate = false;
 
   return ret;
 }
@@ -497,6 +505,19 @@ boolean __update_event_status(void)
   boolean rval = false;
   int key;
 
+  /* Always unconditionally poll BIOS at least once */
+  bios_pending_pos = 0;
+  bios_pending_num = 0;
+  poll_keyboard_bios();
+
+  if(!initialized_numlock)
+  {
+    /* Synchronize CapsLock and NumLock status to BIOS values. */
+    struct buffered_status *status = store_status();
+    update_lock_status(status);
+    initialized_numlock = true;
+  }
+
   while((key = read_kbd()) != -1)
     rval |= process_key(key);
   while(read_mouse(&mev))
@@ -512,15 +533,12 @@ void __wait_event(void)
   int key;
 
   while((key = read_kbd()) == -1 && !(ret = read_mouse(&mev)));
-  if(key != -1)
-    process_key(key);
-  if(ret)
-    process_mouse(&mev);
+  __update_event_status();
 }
 
 void __warp_mouse(int x, int y)
 {
-  // TODO?
+  // nop: not required because MegaZeux only uses relative mouse coordinates.
 }
 
 boolean __peek_exit_input(void)
