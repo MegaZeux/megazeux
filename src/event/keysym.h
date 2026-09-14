@@ -122,7 +122,7 @@ enum keycode
   IKEY_F12          = 293,
   IKEY_NUMLOCK      = 300,
   IKEY_CAPSLOCK     = 301,
-  IKEY_SCROLLOCK    = 302,
+  IKEY_SCROLLLOCK   = 302,
   IKEY_RSHIFT       = 303,
   IKEY_LSHIFT       = 304,
   IKEY_RCTRL        = 305,
@@ -136,6 +136,110 @@ enum keycode
   IKEY_BREAK        = 318,
   IKEY_MENU         = 319,
   IKEY_LAST
+};
+
+#define XTKEY_CODE(x) ((x) & 0x7f)
+
+enum pcxt_keycode /* and PS/2 */
+{
+  XTKEY_UNKNOWN       = 0x00,
+  XTKEY_ESCAPE        = 0x01,
+  XTKEY_1             = 0x02,
+  XTKEY_2             = 0x03,
+  XTKEY_3             = 0x04,
+  XTKEY_4             = 0x05,
+  XTKEY_5             = 0x06,
+  XTKEY_6             = 0x07,
+  XTKEY_7             = 0x08,
+  XTKEY_8             = 0x09,
+  XTKEY_9             = 0x0a,
+  XTKEY_0             = 0x0b,
+  XTKEY_MINUS         = 0x0c,
+  XTKEY_EQUALS        = 0x0d,
+  XTKEY_BACKSPACE     = 0x0e,
+  XTKEY_TAB           = 0x0f,
+  XTKEY_Q             = 0x10,
+  XTKEY_W             = 0x11,
+  XTKEY_E             = 0x12,
+  XTKEY_R             = 0x13,
+  XTKEY_T             = 0x14,
+  XTKEY_Y             = 0x15,
+  XTKEY_U             = 0x16,
+  XTKEY_I             = 0x17,
+  XTKEY_O             = 0x18,
+  XTKEY_P             = 0x19,
+  XTKEY_LEFTBRACKET   = 0x1a,
+  XTKEY_RIGHTBRACKET  = 0x1b,
+  XTKEY_RETURN        = 0x1c, /* Alternate: KP return */
+  XTKEY_LCTRL         = 0x1d, /* Alternate: right control */
+  XTKEY_A             = 0x1e,
+  XTKEY_S             = 0x1f,
+  XTKEY_D             = 0x20,
+  XTKEY_F             = 0x21,
+  XTKEY_G             = 0x22,
+  XTKEY_H             = 0x23,
+  XTKEY_J             = 0x24,
+  XTKEY_K             = 0x25,
+  XTKEY_L             = 0x26,
+  XTKEY_SEMICOLON     = 0x27,
+  XTKEY_QUOTE         = 0x28,
+  XTKEY_BACKQUOTE     = 0x29,
+  XTKEY_LSHIFT        = 0x2a,
+  XTKEY_BACKSLASH     = 0x2b,
+  XTKEY_Z             = 0x2c,
+  XTKEY_X             = 0x2d,
+  XTKEY_C             = 0x2e,
+  XTKEY_V             = 0x2f,
+  XTKEY_B             = 0x30,
+  XTKEY_N             = 0x31,
+  XTKEY_M             = 0x32,
+  XTKEY_COMMA         = 0x33,
+  XTKEY_PERIOD        = 0x34,
+  XTKEY_SLASH         = 0x35, /* Alternate: KP divide */
+  XTKEY_RSHIFT        = 0x36,
+  XTKEY_KP_MULTIPLY   = 0x37, /* Alternate: print screen */
+  XTKEY_LALT          = 0x38, /* Alternate: right alt or AltGr */
+  XTKEY_SPACE         = 0x39,
+  XTKEY_CAPSLOCK      = 0x3a,
+  XTKEY_F1            = 0x3b,
+  XTKEY_F2            = 0x3c,
+  XTKEY_F3            = 0x3d,
+  XTKEY_F4            = 0x3e,
+  XTKEY_F5            = 0x3f,
+  XTKEY_F6            = 0x40,
+  XTKEY_F7            = 0x41,
+  XTKEY_F8            = 0x42,
+  XTKEY_F9            = 0x43,
+  XTKEY_F10           = 0x44,
+  XTKEY_NUMLOCK       = 0x45,
+  XTKEY_SCROLLLOCK    = 0x46,
+  XTKEY_KP_7          = 0x47, /* Alternate: home */
+  XTKEY_KP_8          = 0x48, /* Alternate: up */
+  XTKEY_KP_9          = 0x49, /* Alternate: page up */
+  XTKEY_KP_MINUS      = 0x4a,
+  XTKEY_KP_4          = 0x4b, /* Alternate left */
+  XTKEY_KP_5          = 0x4c,
+  XTKEY_KP_6          = 0x4d, /* Alternate: right */
+  XTKEY_KP_PLUS       = 0x4e,
+  XTKEY_KP_1          = 0x4f, /* Alternate: end */
+  XTKEY_KP_2          = 0x50, /* Alternate: down */
+  XTKEY_KP_3          = 0x51, /* Alternate: page down */
+  XTKEY_KP_0          = 0x52, /* Alternate: insert */
+  XTKEY_KP_PERIOD     = 0x53, /* Alternate: delete */
+  XTKEY_F11           = 0x57,
+  XTKEY_F12           = 0x58,
+  XTKEY_LSUPER        = 0x5b, /* Alternate only */
+  XTKEY_RSUPER        = 0x5c, /* Alternate only */
+  XTKEY_MENU          = 0x5d, /* Alternate only */
+  XTKEY_NUM_CODES     = 0x80,
+
+  XTKEY_BREAK         = 0xc5, /* Not a real PC/XT keycode, but derived from the
+                               * PS/2 break sequence E1 1D 45 E1 9D C5
+                               * (press LCtrl + Numlock, release LCtrl + Numlock).
+                               * This specifically is the release Numlock code. */
+
+  XTKEY_RELEASE       = 0x80, /* PS/2 flag to indicate release. */
+  XTKEY_EXTENDED      = 0xe0  /* PS/2 marker indicates alternate key for next code. */
 };
 
 #define MOUSE_BUTTON(x) (1 << ((x) - 1))

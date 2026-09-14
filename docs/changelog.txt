@@ -11,8 +11,8 @@ GIT - MZX 2.93e
 
 USERS
 
-+ DOS: added new LPT DAC audio drivers. See config.txt for more
-  information.
++ DOS: added new LPT DAC and PC speaker pulse width modulation
+  audio drivers. See config.txt for more information.
 + DOS: added hardware PC speaker support for PC speaker sound
   effects. This can be enabled with the config setting
   audio_pc_speaker_use_hardware, and is disabled by default.
@@ -31,6 +31,9 @@ USERS
   CWSDPMI, PMODE/DJ, 386MAX/DPMIONE, possibly other DPMI hosts.
 + DOS: fixed 16-bit DMA for the Sound Blaster 16.
 + DOS: fixed FPEs caused by incorrect audio FSAVE/FRSTOR usage.
++ DOS: fixed numpad return/slash being ignored, and fixed misc.
+  related keys including arrows being ignored when alt is held.
++ DOS: fixed reversed left/right control and alt keys.
 + NDS: fixed PC speaker playback of rests (e.g. game over SFX).
 + Unix/Darwin: installed utilities are now prefixed with
   "megazeux-" so they can be installed to PATH. Package

@@ -405,12 +405,10 @@ _kbd_handler:
 	inb	$0x60, %al		/* Get scan code */
 	xorl	%ebx, %ebx
 	movb	_kbd_write, %bl
-	movb	_kbd_read, %bh
-	incb	%bl
-	cmpb	%bh, %bl
+	movb	_kbd_read, %ah
+	decb	%ah
+	cmpb	%ah, %bl
 	je	2f			/* Buffer got full somehow */
-	decb	%bl
-	xorb	%bh, %bh
 	movb	%al, _kbd_buffer(%ebx)
 	incb	_kbd_write
 2:

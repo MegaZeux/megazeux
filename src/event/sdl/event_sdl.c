@@ -165,7 +165,7 @@ static enum keycode convert_SDL_internal(SDL_Keycode key)
     case SDLK_F12: return IKEY_F12;
     case SDLK_NUMLOCKCLEAR: return IKEY_NUMLOCK;
     case SDLK_CAPSLOCK: return IKEY_CAPSLOCK;
-    case SDLK_SCROLLLOCK: return IKEY_SCROLLOCK;
+    case SDLK_SCROLLLOCK: return IKEY_SCROLLLOCK;
     case SDLK_RSHIFT: return IKEY_RSHIFT;
     case SDLK_LSHIFT: return IKEY_LSHIFT;
     case SDLK_RCTRL: return IKEY_RCTRL;
