@@ -47,6 +47,7 @@ MEGAZEUX_BEGIN_DECLS
 
 // Data types
 typedef SDLKey SDL_Keycode;
+typedef int SDL_Scancode;
 typedef int (*SDL_ThreadFunction)(void *);
 typedef Uint32 SDL_threadID;
 // Use a macro because sdl1.2-compat typedefs SDL_Window...

@@ -755,7 +755,7 @@ static enum keycode convert_USB_internal(unsigned int usb_hid_key)
     case 0x44: return IKEY_F11;
     case 0x45: return IKEY_F12;
     case 0x46: return IKEY_SYSREQ;
-    case 0x47: return IKEY_SCROLLOCK;
+    case 0x47: return IKEY_SCROLLLOCK;
     case 0x48: return IKEY_BREAK;
     case 0x49: return IKEY_INSERT;
     case 0x4A: return IKEY_HOME;
@@ -784,6 +784,7 @@ static enum keycode convert_USB_internal(unsigned int usb_hid_key)
     case 0x61: return IKEY_KP9;
     case 0x62: return IKEY_KP0;
     case 0x63: return IKEY_KP_PERIOD;
+    case 0x64: return IKEY_LESS;
     case 0x65: return IKEY_MENU;
     case 0xE0: return IKEY_LCTRL;
     case 0xE1: return IKEY_LSHIFT;

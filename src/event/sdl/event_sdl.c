@@ -94,6 +94,7 @@ static enum keycode convert_SDL_internal(SDL_Keycode key)
     case SDLK_8: return IKEY_8;
     case SDLK_9: return IKEY_9;
     case SDLK_SEMICOLON: return IKEY_SEMICOLON;
+    case SDLK_LESS: return IKEY_LESS;
     case SDLK_EQUALS: return IKEY_EQUALS;
     case SDLK_LEFTBRACKET: return IKEY_LEFTBRACKET;
     case SDLK_BACKSLASH: return IKEY_BACKSLASH;
@@ -165,7 +166,7 @@ static enum keycode convert_SDL_internal(SDL_Keycode key)
     case SDLK_F12: return IKEY_F12;
     case SDLK_NUMLOCKCLEAR: return IKEY_NUMLOCK;
     case SDLK_CAPSLOCK: return IKEY_CAPSLOCK;
-    case SDLK_SCROLLLOCK: return IKEY_SCROLLOCK;
+    case SDLK_SCROLLLOCK: return IKEY_SCROLLLOCK;
     case SDLK_RSHIFT: return IKEY_RSHIFT;
     case SDLK_LSHIFT: return IKEY_LSHIFT;
     case SDLK_RCTRL: return IKEY_RCTRL;
@@ -192,9 +193,9 @@ static enum keycode convert_SDL_internal(SDL_Keycode key)
     case SDLK_PRINTSCREEN: return IKEY_SYSREQ;
     case SDLK_APPLICATION: return IKEY_MENU;
 #endif
-#ifdef __WIN32__
+#ifdef _WIN32
 #if SDL_VERSION_ATLEAST(2,0,6) && !SDL_VERSION_ATLEAST(2,0,10)
-    // Dumb hack for a Windows virtual keycode bug. TODO remove.
+    // Dumb hack for a Windows virtual keycode bug.
     case SDLK_CLEAR: return IKEY_KP5;
 #endif
 #endif
