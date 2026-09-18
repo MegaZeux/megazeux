@@ -1,0 +1,32 @@
+ifeq ($(strip $(PS2DEV)),)
+$(error "PS2DEV must be set in your environment.")
+endif
+
+CROSS_COMPILE = mips64r5900el-ps2-elf-
+BINEXT := .elf
+
+# Disable rules that require target code to run natively.
+SUPPRESS_HOST_TARGETS ?= 1
+
+PS2_CFLAGS = -D_EE -D__PS2__
+PS2_INCLUDES = -isystem $(PS2DEV)/ps2sdk/common/include -isystem $(PS2DEV)/ps2sdk/ports/include
+PS2_LDFLAGS = -T$(PS2DEV)/ps2sdk/ee/startup/linkfile -L$(PS2DEV)/ps2sdk/ports/lib \
+              -L$(PS2DEV)/gsKit/lib -Wl,-zmax-page-size=128 -G0 -gdwarf-2 -gz
+
+SDL_CFLAGS = -isystem $(PS2DEV)/ps2sdk/ports/include/SDL2
+SDL_LDFLAGS = -lSDL2main -lSDL2 -lpatches -lgskit -ldmakit -lps2_drivers
+
+LIBPNG_CFLAGS =
+LIBPNG_LDFLAGS = -lpng16
+
+MIKMOD_CFLAGS =
+MIKMOD_LDFLAGS = -lmikmod
+
+ARCH_CFLAGS += ${PS2_CFLAGS} ${PS2_INCLUDES}
+ARCH_CXXFLAGS += ${PS2_CFLAGS} ${PS2_INCLUDES}
+ARCH_LDFLAGS += ${PS2_LDFLAGS}
+
+build: ${build}
+	${CP} arch/ps2/pad.config ${build}
+
+include arch/zip.inc
