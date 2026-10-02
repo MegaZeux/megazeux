@@ -36,6 +36,9 @@ USERS
   "megazeux-" so they can be installed to PATH. Package
   maintainers should move --bindir from LIBDIR/bin to the normal
   system bin directory.
++ The key located between left shift and Z/Y/W on ISO keyboards
+  now returns key_pressed 60 and key_code 86 for layouts which
+  map this key to <.
 + fsafetranslate now rejects paths containing invalid characters
   for NTFS/VFAT/exFAT filenames and paths containing reserved
   DOS/Windows devices. There is no compatibility check for this,
