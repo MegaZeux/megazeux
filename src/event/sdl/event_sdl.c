@@ -1526,7 +1526,6 @@ static boolean process_event(SDL_Event *event)
       break;
     }
 
-    case SDL_EVENT_GAMEPAD_ADDED:
     case SDL_EVENT_JOYSTICK_ADDED:
     {
       // Add a new joystick.
@@ -1541,7 +1540,6 @@ static boolean process_event(SDL_Event *event)
       break;
     }
 
-    case SDL_EVENT_GAMEPAD_REMOVED:
     case SDL_EVENT_JOYSTICK_REMOVED:
     {
       // Close a disconnected joystick.

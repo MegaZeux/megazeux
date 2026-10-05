@@ -13,8 +13,8 @@ PS2_INCLUDES = -isystem $(PS2DEV)/ps2sdk/common/include -isystem $(PS2DEV)/ps2sd
 PS2_LDFLAGS = -T$(PS2DEV)/ps2sdk/ee/startup/linkfile -L$(PS2DEV)/ps2sdk/ports/lib \
               -L$(PS2DEV)/gsKit/lib -Wl,-zmax-page-size=128 -G0 -gdwarf-2 -gz
 
-SDL_CFLAGS = -isystem $(PS2DEV)/ps2sdk/ports/include/SDL2
-SDL_LDFLAGS = -lSDL2main -lSDL2 -lpatches -lgskit -ldmakit -lps2_drivers
+SDL_CFLAGS = -isystem $(PS2DEV)/ps2sdk/ports/include/SDL3
+SDL_LDFLAGS = -lSDL3 -laudsrv -lgskit -ldma -ldmakit -ldraw -ldebug -lps2_drivers -lpatches -lconfig -latomic -lm -lc
 
 LIBPNG_CFLAGS =
 LIBPNG_LDFLAGS = -lpng16
