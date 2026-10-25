@@ -167,3 +167,14 @@ PKGCONF ?= ${shell \
  command -v pkg-config >/dev/null && result=pkg-config; \
  command -v pkgconf >/dev/null && result=pkgconf; \
  echo $$result; }
+
+#
+# Get zip utility. First user provided param should be the output file,
+# all following params should be input files. If 7z isn't available, assume
+# Info-ZIP is present (which at minimum provides an obvious error).
+#
+ZIP ?= ${shell \
+ result="zip -r9"; \
+ command -v 7z >/dev/null 2>/dev/null && result="7z a -mx9 -tzip"; \
+ command -v 7za >/dev/null 2>/dev/null && result="7za a -mx9 -tzip"; \
+ echo $$result; }

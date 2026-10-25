@@ -205,7 +205,9 @@ ${ASSETS_DIR}:
 
 ${ASSETS_DIR}/assets.zip: ${ASSETS_DIR}
 	@${MAKE} ANDROID_TARGET=arm    build/android/assets
-	@(cd build/android/ && zip -9 -r assets.zip LICENSE LICENSE.3rd config.txt assets/ && mv assets.zip ../../$@)
+	@cd build/android/ && \
+	${ZIP} assets.zip LICENSE LICENSE.3rd config.txt assets/ && \
+	mv assets.zip ../../$@
 
 dist:
 	@${MAKE} ANDROID_TARGET=arm    clean
