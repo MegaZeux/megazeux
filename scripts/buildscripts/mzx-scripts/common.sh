@@ -70,7 +70,7 @@ mzx_error()
 	echo "ERROR:" "$1" "(code $2)" 1>&2
 }
 
-# $@ commands to check for (e.g. "7za")
+# $@ commands to check for (e.g. "7z")
 cmd_check()
 {
 	MSG=""

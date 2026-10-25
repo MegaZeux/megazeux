@@ -84,24 +84,35 @@ clean:
 all: emzip.js
 
 ${build}/mzxrun.js: ${build}
-	@cp mzxrun.js ${build}/
+	${CP} mzxrun.js ${build}/
 
 ${build}/mzxrun.wasm: ${build}
-	@cp mzxrun.wasm ${build}/
-	@(if [ -f mzxrun.wasm.map ]; then cp mzxrun.wasm.map ${build}/ && rm -rf ${build}/src && cp -r src/ ${build}/; fi)
+	${CP} mzxrun.wasm ${build}/
+	@if [ -f mzxrun.wasm.map ]; then \
+		cp mzxrun.wasm.map ${build}/ && \
+		rm -rf ${build}/src && \
+		cp -r src/ ${build}/; \
+	fi
 
 ${build}/emzip.js: ${build} emzip.js ${build}/emzip.wasm
-	@cp emzip.js ${build}/
+	${CP} emzip.js ${build}/
 
 ${build}/emzip.wasm: ${build}
-	@cp emzip.wasm ${build}/
+	${CP} emzip.wasm ${build}/
 
 build: ${build} ${build}/mzxrun.js ${build}/mzxrun.wasm ${build}/assets ${build}/emzip.js
-	@rm -rf ${build}/config.txt
-	@(if [ -d ${build}/assets ]; then cd ${build} && rm -rf assets.zip && zip -9 -r assets.zip assets/ && rm -r assets/; fi)
-	@(if [ ! -d "arch/emscripten/web/node_modules" ]; then cd arch/emscripten/web && npm install; fi)
-	@(cd arch/emscripten/web && npm run $(EMSCRIPTEN_FRONTEND_BUILD_PROFILE))
-	@cp -r arch/emscripten/web/res/* ${build}/
-	@cp arch/emscripten/web/mzxrun_web.js ${build}/
+	${RM} -f ${build}/config.txt
+	@if [ -d ${build}/assets ]; then \
+		cd ${build} && \
+		rm -rf assets.zip && \
+		${ZIP} assets.zip assets/ && \
+		rm -r assets/; \
+	fi
+	@if [ ! -d "arch/emscripten/web/node_modules" ]; then \
+		cd arch/emscripten/web && npm install; \
+	fi
+	@cd arch/emscripten/web && npm run $(EMSCRIPTEN_FRONTEND_BUILD_PROFILE)
+	${CP} -r arch/emscripten/web/res/* ${build}/
+	${CP} arch/emscripten/web/mzxrun_web.js ${build}/
 
 include arch/zip.inc

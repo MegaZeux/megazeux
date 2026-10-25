@@ -32,7 +32,7 @@ most recent versions available.
 - **GNU binutils** or **LLVM** or equivalent
 - **GNU Make**: <=3.79 or newer
 - **pkgconf** or **pkg-config** (SDL 3 builds only)
-- **zip** or **7za** (packaging only)
+- **zip** or **7z** or **7za** (packaging only)
 - **tar** and **xz** (packaging source only)
 - **ImageMagick** 7.0 or newer (rebuilding icons only)
   - Older versions may work if `MAGICK=convert` is provided to Make.

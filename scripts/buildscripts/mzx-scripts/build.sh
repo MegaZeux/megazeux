@@ -106,13 +106,13 @@ build_remove_debug()
 	FILES=$(find . -name "*.zip")
 	for SRC in $FILES
 	do
-		# NOTE: 7za uses its own internal globs, hence the quotes.
-		if [ -n "$SRC" ] && 7za l "$SRC" "*.debug" -r | grep -q ".debug"
+		# NOTE: 7z uses its own internal globs, hence the quotes.
+		if [ -n "$SRC" ] && 7z l "$SRC" "*.debug" -r | grep -q ".debug"
 		then
 			DEST=$(echo "$SRC" | sed "s/\.zip\$/\.debug\.zip/g")
-			7za e "$SRC"        "*.debug" -r
-			7za d "$SRC"        "*.debug" -r
-			7za a -tzip "$DEST" ./*.debug
+			7z e "$SRC"        "*.debug" -r
+			7z d "$SRC"        "*.debug" -r
+			7z a -tzip "$DEST" ./*.debug
 			rm ./*.debug
 		fi
 	done

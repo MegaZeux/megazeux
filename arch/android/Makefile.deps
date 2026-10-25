@@ -19,7 +19,7 @@ endif
 #
 
 SDL_VERSION       ?= 2.30.9
-LIBOGG_VERSION    ?= 1.3.5
+LIBOGG_VERSION    ?= 1.3.6
 LIBVORBIS_VERSION ?= 1.3.7
 WGET              ?= wget
 TAR               ?= tar
@@ -48,41 +48,45 @@ ${DEPS} ${JNI_INCLUDES}:
 
 ifeq (${ANDROID_TARGET},)
 
-${DEPS}/SDL2-${SDL_VERSION}: | ${DEPS}
+${DEPS}/SDL2-${SDL_VERSION}:
 	$(if ${V},,@echo "  WGET    " $@)
 	${RM} -f $@.tar.gz
 	${WGET} https://www.libsdl.org/release/SDL2-${SDL_VERSION}.tar.gz -O$@.tar.gz
 	${TAR} -xzf $@.tar.gz -C ${DEPS}/
 	${PATCH} -i ../../SDL2-page-sizes.patch -p1 -d ${DEPS}/SDL2-${SDL_VERSION}
 
-${DEPS}/libogg-${LIBOGG_VERSION}: | ${DEPS}
+${DEPS}/libogg-${LIBOGG_VERSION}:
 	$(if ${V},,@echo "  WGET    " $@)
 	${RM} -f $@.tar.gz
 	${WGET} http://downloads.xiph.org/releases/ogg/libogg-${LIBOGG_VERSION}.tar.gz -O$@.tar.gz
 	${TAR} -xzf $@.tar.gz -C ${DEPS}/
 
-${DEPS}/libvorbis-${LIBVORBIS_VERSION}: | ${DEPS}
+${DEPS}/libvorbis-${LIBVORBIS_VERSION}:
 	$(if ${V},,@echo "  WGET    " $@)
 	${RM} -f $@.tar.gz
 	${WGET} http://downloads.xiph.org/releases/vorbis/libvorbis-${LIBVORBIS_VERSION}.tar.gz -O$@.tar.gz
 	${TAR} -xzf $@.tar.gz -C ${DEPS}/
 
+${DEPS}/SDL2-${SDL_VERSION} \
+${DEPS}/libogg-${LIBOGG_VERSION} \
+${DEPS}/libvorbis-${LIBVORBIS_VERSION}: $(filter-out $(wildcard ${DEPS}), ${DEPS})
+
 ${DEPS_BUILD}:
 	$(if ${V},,@echo "  MKDIR   " $@)
 	${MKDIR} -p ${DEPS_BUILD}
 
-${DEPS_BUILD}/libogg: ${DEPS}/libogg-${LIBOGG_VERSION} | ${DEPS_BUILD}
+${DEPS_BUILD}/libogg: ${DEPS}/libogg-${LIBOGG_VERSION}
 	${RM} -rf $@
 	${CP} -r $< $@
 	${CP} arch/android/libogg-Android.mk "$@/Android.mk"
 	${CP} arch/android/config_types.h "$@/include/ogg/"
 
-${DEPS_BUILD}/libvorbis: ${DEPS}/libvorbis-${LIBVORBIS_VERSION} | ${DEPS_BUILD}
+${DEPS_BUILD}/libvorbis: ${DEPS}/libvorbis-${LIBVORBIS_VERSION}
 	${RM} -rf $@
 	${CP} -r $< $@
 	${CP} arch/android/libvorbis-Android.mk "$@/Android.mk"
 
-${DEPS_BUILD}/SDL2: ${DEPS}/SDL2-${SDL_VERSION} | ${DEPS_BUILD}
+${DEPS_BUILD}/SDL2: ${DEPS}/SDL2-${SDL_VERSION}
 	${RM} -rf $@
 	${CP} -r $< $@
 
@@ -95,6 +99,10 @@ ${DEPS_BUILD}/out: ${DEPS_BUILD}/libogg ${DEPS_BUILD}/libvorbis ${DEPS_BUILD}/SD
 	  APP_BUILD_SCRIPT="${DEPS_BUILD}/Android.mk" \
 	  APP_ABI="armeabi-v7a arm64-v8a x86 x86_64" \
 	  APP_PLATFORM="android-16"
+
+${DEPS_BUILD}/libogg \
+${DEPS_BUILD}/libvorbis \
+${DEPS_BUILD}/SDL2: $(filter-out $(wildcard ${DEPS_BUILD}), ${DEPS_BUILD})
 
 deps-build: ${DEPS_BUILD}/out
 
@@ -112,22 +120,25 @@ dep_targets := \
 ${DEPS_BUILD}/out/${ABI}/%.so:
 	@test -f $@ || { echo "Missing $@! Aborting..."; exit 1; }
 
-${JNI_LIBS}/%.so: ${DEPS_BUILD}/out/${ABI}/%.so | ${JNI_LIBS}
+${JNI_LIBS}/%.so: ${DEPS_BUILD}/out/${ABI}/%.so
 	$(if ${V},,@echo "  CP      " $< " " $@)
 	${CP} $< $@
 
-${JNI_INCLUDES}/SDL2: ${DEPS_BUILD}/SDL2 | ${JNI_INCLUDES}
+${JNI_INCLUDES}/SDL2: ${DEPS_BUILD}/SDL2
 	$(if ${V},,@echo "  CP      " "$</include/*" $@)
 	${MKDIR} -p $@
 	${CP} $</include/* $@
 
-${JNI_INCLUDES}/ogg: ${DEPS_BUILD}/libogg | ${JNI_INCLUDES}
+${JNI_INCLUDES}/ogg: ${DEPS_BUILD}/libogg
 	$(if ${V},,@echo "  CP      " $</include ${JNI_INCLUDES})
 	${CP} -r "$</include/ogg" ${JNI_INCLUDES}
 
-${JNI_INCLUDES}/vorbis: ${DEPS_BUILD}/libvorbis | ${JNI_INCLUDES}
+${JNI_INCLUDES}/vorbis: ${DEPS_BUILD}/libvorbis
 	$(if ${V},,@echo "  CP      " $</include ${JNI_INCLUDES})
 	${CP} -r "$</include/vorbis" ${JNI_INCLUDES}
+
+${dep_targets}: $(filter-out $(wildcard ${JNI_INCLUDES}), ${JNI_INCLUDES})
+${dep_targets}: $(filter-out $(wildcard ${JNI_LIBS}), ${JNI_LIBS})
 
 deps-install: ${dep_targets}
 

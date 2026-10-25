@@ -31,7 +31,7 @@ CAVERNS_MMUTIL_PATH="caverns_mmutil"
 
 caverns_init()
 {
-	cmd_check 7za wget
+	cmd_check 7z wget
 	[ "$ERRNO" = "0" ] || { return; }
 
 	mkdir -p "$CAVERNS_BASE"
@@ -41,13 +41,13 @@ caverns_init()
 	fi
 
 	if [ ! -d "$CAVERNS_BASE/$CAVERNS_PATH" ]; then
-		7za e "$CAVERNS_BASE/caverns.zip" "-o$CAVERNS_BASE/$CAVERNS_PATH"
+		7z e "$CAVERNS_BASE/caverns.zip" "-o$CAVERNS_BASE/$CAVERNS_PATH"
 	fi
 
 	dkp_dependency_check mmutil
 	if [ "$ERRNO" = "0" ]; then
 		if [ ! -d "$CAVERNS_BASE/$CAVERNS_MMUTIL_PATH" ]; then
-			7za e "$CAVERNS_BASE/caverns.zip" "-o$CAVERNS_BASE/$CAVERNS_MMUTIL_PATH"
+			7z e "$CAVERNS_BASE/caverns.zip" "-o$CAVERNS_BASE/$CAVERNS_MMUTIL_PATH"
 			OLD_DIR="$(pwd)"
 			cd "$CAVERNS_BASE/$CAVERNS_MMUTIL_PATH" || { ERRNO="CV-1"; return; }
 			for f in ./*.MOD; do
@@ -61,7 +61,7 @@ caverns_init()
 
 caverns_platform_init()
 {
-	# A pretty convoluted directory structure is required to get 7za to
+	# A pretty convoluted directory structure is required to get 7z to
 	# put anything where we want it to go.
 
 	CAVERNS_SETUP=$CAVERNS_PATH
@@ -78,20 +78,20 @@ caverns_platform_init()
 # $2 - filename to check for
 caverns_check_archive()
 {
-	7za l "$1" "$2" -r | grep -q "$2"
+	7z l "$1" "$2" -r | grep -q "$2"
 	return $?
 }
 
 # $1 - archive to check
 caverns_add()
 {
-	# 7za actually requires changing to the directory for the copy to not
+	# 7z actually requires changing to the directory for the copy to not
 	# include the containing directory. No, really.
 
 	OLD_DIR="$(pwd)"
 	cd "$CAVERNS_BASE/$SUBPLATFORM" || { ERRNO="CV-1"; return; }
 
-	7za a "$1" ./* -y -bsp0 -bso0
+	7z a "$1" ./* -y -bsp0 -bso0
 
 	cd "$OLD_DIR" || { ERRNO="CV-2"; return; }
 }
