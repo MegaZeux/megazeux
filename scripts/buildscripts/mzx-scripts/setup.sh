@@ -25,7 +25,7 @@ common_setup_environment()
 	if [ -n "$MSYSTEM" ]; then
 		pacman --needed --noconfirm -S git make tar curl p7zip
 	fi
-	cmd_check git make tar curl 7za
+	cmd_check git make tar curl 7z
 	if [ "$ERRNO" != "0" ]; then
 		mzx_error "failed setup; missing required tools" "$ERRNO"
 		return
