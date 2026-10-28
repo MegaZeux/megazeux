@@ -86,6 +86,10 @@
 #define __STDC_LIMIT_MACROS
 #include <inttypes.h>
 
+#if !defined(_MSC_VER) && !defined(__amigaos__)
+#include <unistd.h>
+#endif
+
 #ifndef UNIT_DIR_SEPARATOR
 #if defined(_WIN32) || defined(CONFIG_DJGPP)
 #define UNIT_DIR_SEPARATOR "\\"
@@ -431,6 +435,33 @@ namespace Unit
     void skip();
 
     virtual void run_impl(void) = 0;
+  };
+
+  class pushd
+  {
+  private:
+    boolean success;
+    char prev[MAX_PATH];
+
+    pushd(const pushd &) {}
+
+  public:
+    pushd(const char *new_dir)
+    {
+      success = false;
+      if(getcwd(prev, MAX_PATH))
+        if(!chdir(new_dir))
+          success = true;
+
+      if(!success)
+        FAIL("chdir failed");
+    }
+
+    ~pushd()
+    {
+      if(success)
+        chdir(prev);
+    }
   };
 
   /**

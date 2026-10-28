@@ -204,7 +204,7 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  tile = malloc(sizeof(mzx_tile) * img.width * img.height);
+  tile = (mzx_tile *)malloc(sizeof(mzx_tile) * img.width * img.height);
   if(!tile)
   {
     fprintf(stderr, "Error allocating tile buffer.\n");
