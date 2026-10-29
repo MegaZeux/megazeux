@@ -5,7 +5,7 @@ Release:	1%{?dist}
 Summary:	A simple game creation system (GCS)
 
 Group:		Amusements/Games
-License:	GPLv2+
+License:	GPL-2.0-or-later
 URL:		https://www.digitalmzx.com/
 Source:		megazeux-2.93d.tar.xz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
@@ -18,15 +18,15 @@ BuildRequires:	libappstream-glib
 
 %description
 
-MegaZeux is a Game Creation System (GCS), inspired by Epic MegaGames' ZZT,
-first released by Alexis Janson in 1994. It has since been ported from 16-bit
-MS DOS C/ASM to portable SDL C/C++, improving its platform support and
-hardware compatibility.
+MegaZeux is a spiritual successor to ZZT originally written for DOS in 1994. MegaZeux allows
+playing and creating games based on—but no longer limited to—VGA 80x25 text mode graphics.
+MegaZeux includes a built-in editor and supports rudimentary scripting.
 
-Many features have been added since the original DOS version, and with the
-help of an intuitive editor and a simple but powerful object-oriented
-programming language, MegaZeux allows you to create your own ANSI-esque games
-regardless of genre.
+Hundreds of games have been created for MegaZeux,
+and are available for download at no charge from DigitalMZX.
+
+Supported platforms include Linux/BSD, Windows, macOS, MS-DOS, Wasm,
+Android, Haiku, and numerous games consoles and handhelds.
 
 See https://www.digitalmzx.com/ for more information.
 
@@ -82,6 +82,8 @@ rm -rf "$RPM_BUILD_ROOT"
 %changelog
 # TODO
 # - add 16, 22, 24, 32, 48, 64, 256, SVG icons
+# - update package description to match metainfo.xml
+# - correct license tag
 
 * Mon Jun 09 2025 Alice Rowan <petrifiedrowan@gmail.com> 2.93d-1
 - new upstream version
