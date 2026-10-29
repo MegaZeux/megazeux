@@ -169,7 +169,6 @@ enum png_error png_write(
 {
   png_struct *png = NULL;
   png_info *info = NULL;
-  png_bool set_filler = 0;
   uint32_t i;
   enum png_error ret;
 
@@ -199,24 +198,21 @@ enum png_error png_write(
     case PNG_PIXEL_RGB24:
       png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB,
        PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
-      set_filler = 1;
+      png_write_info(png, info);
+      /* Needs to be called after writing the header for some reason... */
+      png_set_filler(png, 0, PNG_FILLER_AFTER);
       break;
 
     case PNG_PIXEL_RGBA32:
       png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB_ALPHA,
        PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+      png_write_info(png, info);
       break;
 
     default:
       ret = PNG_ERROR_INIT;
       goto error;
   }
-
-  png_write_info(png, info);
-
-  /* Needs to be called after writing the header for some reason... */
-  if(set_filler)
-    png_set_filler(png, 0, PNG_FILLER_AFTER);
 
   for(i = 0; i < height; i++)
   {
