@@ -20,25 +20,27 @@
 
 struct rgba_color;
 
-typedef struct {
+typedef struct
+{
   unsigned char chr;
   unsigned char clr;
 } mzx_tile;
 
 typedef unsigned char mzx_glyph[14];
 
-typedef struct {
+typedef struct
+{
   unsigned char r;
   unsigned char g;
   unsigned char b;
 } mzx_color;
 
-typedef struct _smzx_converter smzx_converter;
+typedef struct smzx_converter smzx_converter;
 
-smzx_converter *smzx_convert_init (int w, int h, int chroff, int chrskip,
+smzx_converter *smzx_convert_init(int w, int h, int chroff, int chrskip,
  int chrlen, int clroff, int clrlen);
-int smzx_convert (smzx_converter *c, const struct rgba_color *img, mzx_tile *tile,
- mzx_glyph *chr, mzx_color *pal);
-void smzx_convert_free (smzx_converter *c);
+int smzx_convert(smzx_converter *c, const struct rgba_color *img,
+ mzx_tile *tile, mzx_glyph *chr, mzx_color *pal);
+void smzx_convert_free(smzx_converter *c);
 
 #endif /* MEGAZEUX_SMZXCONV_H */

@@ -29,37 +29,6 @@
 static const char *DATA_DIR = "unit/network/data";
 static const char *TEMP_FILE = "DELETE_ME.txt";
 
-class pushd
-{
-private:
-  boolean success;
-  char prev[MAX_PATH];
-
-  pushd(const pushd &) {}
-
-public:
-  pushd(const char *new_dir)
-  {
-    trace("--UNIT-- attempting to chdir to %s.\n", new_dir);
-    success = false;
-    if(getcwd(prev, MAX_PATH))
-      if(!chdir(new_dir))
-        success = true;
-
-    if(!success)
-      FAIL("chdir failed");
-  }
-
-  ~pushd()
-  {
-    if(success)
-    {
-      trace("--UNIT-- attempting to chdir back to %s.\n", prev);
-      chdir(prev);
-    }
-  }
-};
-
 struct manifestdata
 {
   const char *filename;
@@ -141,7 +110,7 @@ UNITTEST(ManifestEntry)
 
   SECTION(validate)
   {
-    pushd ch(DATA_DIR);
+    Unit::pushd ch(DATA_DIR);
 
     for(const manifestdata &f : filedata)
     {
@@ -202,7 +171,7 @@ UNITTEST(ManifestEntry)
 
   SECTION(create_from_file)
   {
-    pushd ch(DATA_DIR);
+    Unit::pushd ch(DATA_DIR);
 
     for(const manifestdata &f : filedata)
     {
@@ -235,7 +204,7 @@ UNITTEST(Manifest)
 {
   SECTION(create)
   {
-    pushd ch(DATA_DIR);
+    Unit::pushd ch(DATA_DIR);
 
     Manifest m;
     m.create("manifest.txt");
@@ -284,7 +253,7 @@ UNITTEST(Manifest)
 
   SECTION(write_to_file)
   {
-    pushd ch(DATA_DIR);
+    Unit::pushd ch(DATA_DIR);
 
     Manifest m;
     m.create(manifest_str, arraysize(manifest_str));
