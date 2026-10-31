@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2020-2021 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2020-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -25,12 +25,14 @@
 #define MEGAZEUX_ZIP_REDUCE_H
 
 #include "../compat.h"
+#include "zip.h"
 
 MEGAZEUX_BEGIN_DECLS
 
 #include <assert.h>
 #include <inttypes.h>
 
+#include "alloc.h"
 #include "bitstream.h"
 #include "zip_dict.h"
 #include "zip_stream.h"
@@ -49,7 +51,7 @@ struct reduce_stream_data
  */
 static inline struct zip_stream_data *reduce_ex_create(void)
 {
-  return cmalloc(sizeof(struct reduce_stream_data));
+  return (struct zip_stream_data *)mzx_io_malloc(sizeof(struct reduce_stream_data));
 }
 
 /**
@@ -93,8 +95,8 @@ static inline enum zip_error reduce_ex_file(struct zip_stream_data *zs)
   struct bitstream *b = &(rs->b);
   uint8_t factor = rs->factor;
   uint8_t n[256];
-  uint8_t *buffer = cmalloc((REDUCE_BUFFER_SIZE + 32 * 256) * sizeof(uint8_t));
-  uint8_t *sets = buffer + REDUCE_BUFFER_SIZE;
+  uint8_t *buffer;
+  uint8_t *sets;
   uint8_t *set;
 
   uint8_t *start = zs->output_buffer;
@@ -120,6 +122,12 @@ static inline enum zip_error reduce_ex_file(struct zip_stream_data *zs)
 
   if(!zs->input_buffer)
     return ZIP_INPUT_EMPTY;
+
+  buffer = (uint8_t *)mzx_io_malloc((REDUCE_BUFFER_SIZE + 32 * 256) * sizeof(uint8_t));
+  if(!buffer)
+    return ZIP_DECOMPRESS_FAILED;
+
+  sets = buffer + REDUCE_BUFFER_SIZE;
 
   b->input = zs->input_buffer;
   b->input_left = zs->input_length;

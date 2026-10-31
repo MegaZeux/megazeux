@@ -26,6 +26,7 @@
 
 #include "../util.h"
 #include "../platform/log.h"
+#include "alloc.h"
 #include "memfile.h"
 #include "path.h"
 #include "vio.h"
@@ -639,7 +640,7 @@ vfile *vfopen_unsafe_ext(const char *filename, const char *mode,
   if(filename[0] == '\0')
     return NULL;
 
-  vf = (vfile *)calloc(1, sizeof(vfile));
+  vf = (vfile *)mzx_io_calloc(1, sizeof(vfile));
   vf->tmp_chr = EOF;
   vf->flags = flags;
 
@@ -720,7 +721,7 @@ vfile *vfile_init_fp(FILE *fp, const char *mode)
 
   assert(fp && flags);
 
-  vf = (vfile *)ccalloc(1, sizeof(vfile));
+  vf = (vfile *)mzx_io_calloc(1, sizeof(vfile));
   vf->fp = fp;
   vf->tmp_chr = EOF;
   vf->flags = flags | VF_FILE;
@@ -744,7 +745,7 @@ vfile *vfile_init_mem(void *buffer, size_t size, const char *mode)
   if(flags & VF_TRUNCATE)
     filesize = 0;
 
-  vf = (vfile *)ccalloc(1, sizeof(vfile));
+  vf = (vfile *)mzx_io_calloc(1, sizeof(vfile));
   mfopen_wr(buffer ? buffer : vf->dummy, filesize, &(vf->mf));
   vf->mf.seek_past_end = true;
   vf->tmp_chr = EOF;
@@ -789,7 +790,7 @@ vfile *vtempfile(size_t initial_size)
 
   if(initial_size)
   {
-    void *buffer = malloc(initial_size);
+    void *buffer = mzx_io_malloc(initial_size);
     if(buffer)
     {
       vf = vfile_init_mem(buffer, initial_size, "wb+");
@@ -845,7 +846,7 @@ boolean vfile_force_to_memory(vfile *vf)
     if(len < 0 || (size_t)len >= SIZE_MAX)
       return false;
 
-    buffer = malloc(len);
+    buffer = mzx_io_malloc(len);
     if(!buffer)
       return false;
 
@@ -1330,6 +1331,7 @@ static inline boolean vfile_ensure_space(size_t amount_to_write, vfile *vf)
       if(i >= 64)
         return false;
 
+      /* May be under VFS write lock -> can not safely call mzx_io_realloc */
       t = realloc(vf->local_buffer, new_size_alloc);
       if(!t)
         return false;
@@ -1882,6 +1884,7 @@ int vf_vprintf(vfile *vf, const char *fmt, va_list args)
     // little slower but less messy than the alternative.
     if((size_t)length >= sizeof(_buffer))
     {
+      /* May be under VFS write lock -> can not safely call mzx_io_malloc */
       buffer = malloc(length + 1);
       if(!buffer)
       {
@@ -2114,12 +2117,12 @@ vdir *vdir_open_ext(const char *path, int flags)
   if(pathlen < 0)
     pathlen = strlen(path);
 
-  dir = (vdir *)calloc(1, sizeof(vdir) + pathlen);
+  dir = (vdir *)mzx_io_calloc(1, sizeof(vdir) + pathlen);
   if(dir)
     memcpy(dir->path, path, pathlen + 1);
 
 #else
-  dir = (vdir *)calloc(1, sizeof(vdir));
+  dir = (vdir *)mzx_io_calloc(1, sizeof(vdir));
 
   // Path needs to be made absolute only for VFS operations.
   if(vfs_base)
@@ -2335,14 +2338,14 @@ struct vvolumelist
 
 static vvolumelist *vvolumelist_alloc(void)
 {
-  vvolumelist *volumes = (vvolumelist *)malloc(sizeof(vvolumelist));
+  vvolumelist *volumes = (vvolumelist *)mzx_io_malloc(sizeof(vvolumelist));
   if(!volumes)
     return NULL;
 
   volumes->pos = 0;
   volumes->num_total = 0;
   volumes->num_alloc = 16;
-  volumes->names = (char **)malloc(volumes->num_alloc * sizeof(char *));
+  volumes->names = (char **)mzx_io_malloc(volumes->num_alloc * sizeof(char *));
   if(!volumes->names)
   {
     free(volumes);
@@ -2366,7 +2369,7 @@ static boolean vvolumelist_append(vvolumelist *volumes,
     if(new_num <= volumes->num_alloc)
       return false;
 
-    tmp = (char **)realloc(volumes->names, new_num * sizeof(char *));
+    tmp = (char **)mzx_io_realloc(volumes->names, new_num * sizeof(char *));
     if(!tmp)
       return false;
 
@@ -2374,7 +2377,7 @@ static boolean vvolumelist_append(vvolumelist *volumes,
     volumes->num_alloc = new_num;
   }
 
-  n = (char *)malloc(name_len + 1);
+  n = (char *)mzx_io_malloc(name_len + 1);
   if(!n)
     return false;
 

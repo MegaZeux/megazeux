@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2020-2021 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2020-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -31,6 +31,7 @@ MEGAZEUX_BEGIN_DECLS
 #include <assert.h>
 #include <inttypes.h>
 
+#include "alloc.h"
 #include "bitstream.h"
 #include "zip.h"
 #include "zip_dict.h"
@@ -126,7 +127,10 @@ static inline enum zip_error expl_SF_read_tree(struct bitstream *b,
     goto err_free;
 
   // Read the raw tree data.
-  data = cmalloc(sizeof(struct SF_pair) * tree_data_len);
+  data = (struct SF_pair *)mzx_io_malloc(sizeof(struct SF_pair) * tree_data_len);
+  if(!data)
+    goto err_free;
+
   for(i = 0; i < tree_data_len; i++)
   {
     int value = BS_READ(b, 8);
@@ -138,7 +142,9 @@ static inline enum zip_error expl_SF_read_tree(struct bitstream *b,
     tree_list_len += data[i].count;
   }
 
-  list = cmalloc(sizeof(struct SF_value) * tree_list_len);
+  list = (struct SF_value *)mzx_io_malloc(sizeof(struct SF_value) * tree_list_len);
+  if(!list)
+    goto err_free;
 
   // Build the initial node list.
   {
@@ -159,7 +165,9 @@ static inline enum zip_error expl_SF_read_tree(struct bitstream *b,
 
   qsort(list, tree_list_len, sizeof(struct SF_value), sort_sf_list);
 
-  codes = cmalloc(sizeof(uint16_t) * tree_list_len);
+  codes = (uint16_t *)mzx_io_malloc(sizeof(uint16_t) * tree_list_len);
+  if(!codes)
+    goto err_free;
 
   // Calculate the SF codes.
   {
@@ -180,7 +188,9 @@ static inline enum zip_error expl_SF_read_tree(struct bitstream *b,
   }
 
   // Allocate twice as many nodes as there are leaves for now...
-  tree = ccalloc(tree_list_len * 2, sizeof(struct SF_tree));
+  tree = (struct SF_tree *)mzx_io_calloc(tree_list_len * 2, sizeof(struct SF_tree));
+  if(!tree)
+    goto err_free;
 
   // Construct the searchable tree using the list.
   {
@@ -228,7 +238,12 @@ static inline enum zip_error expl_SF_read_tree(struct bitstream *b,
     }
 
     // Shrink the tree...
-    tree = crealloc(tree, count * sizeof(struct SF_tree));
+    if(count < tree_list_len * 2)
+    {
+      void *tmp = mzx_io_realloc(tree, count * sizeof(struct SF_tree));
+      if(tmp)
+        tree = (struct SF_tree *)tmp;
+    }
   }
   free(list);
   free(codes);
@@ -282,7 +297,7 @@ static inline void expl_SF_free(struct SF_tree *tree)
  */
 static inline struct zip_stream_data *expl_create(void)
 {
-  return cmalloc(sizeof(struct explode_stream_data));
+  return (struct zip_stream_data *)mzx_io_malloc(sizeof(struct explode_stream_data));
 }
 
 /**

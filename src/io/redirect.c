@@ -20,9 +20,9 @@
 #include <inttypes.h>
 #include <time.h>
 
-#include "log.h"
-#include "../io/path.h"
-#include "../io/vio.h"
+#include "path.h"
+#include "redirect.h"
+#include "vio.h"
 
 #ifdef CONFIG_STDIO_REDIRECT
 FILE *mzxout_h = NULL;

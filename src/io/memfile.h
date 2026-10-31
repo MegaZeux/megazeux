@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2017-2024 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2017-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -29,6 +29,8 @@ MEGAZEUX_BEGIN_DECLS
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "alloc.h"
 
 struct memfile
 {
@@ -75,7 +77,9 @@ static inline void mfopen_wr(void *dest, size_t len, struct memfile *mf)
  */
 static inline struct memfile *mfopen_alloc(const void *src, size_t len)
 {
-  struct memfile *mf = (struct memfile *)cmalloc(sizeof(struct memfile));
+  struct memfile *mf = (struct memfile *)mzx_io_malloc(sizeof(struct memfile));
+  if(!mf)
+    return NULL;
 
   mf->start = (unsigned char *)src;
   mf->current = (unsigned char *)src;
@@ -138,7 +142,7 @@ static inline void mfmove(void *new_buf, size_t new_len, struct memfile *mf)
  */
 static inline void mfresize(size_t new_len, struct memfile *mf)
 {
-  void *new_buf = realloc(mf->start, new_len);
+  void *new_buf = mzx_io_realloc(mf->start, new_len);
   if(new_buf)
     mfmove(new_buf, new_len, mf);
 }
