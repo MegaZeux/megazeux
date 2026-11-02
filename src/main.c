@@ -46,6 +46,7 @@
 #include "window.h"
 #include "world.h"
 #include "io/path.h"
+#include "io/redirect.h"
 #include "io/vio.h"
 
 #include "audio/audio.h"

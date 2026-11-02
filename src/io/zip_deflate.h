@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2020-2024 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2020-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -33,6 +33,7 @@ MEGAZEUX_BEGIN_DECLS
 #include <string.h>
 #include <zlib.h>
 
+#include "alloc.h"
 #include "zip.h"
 
 struct deflate_stream_data
@@ -47,7 +48,7 @@ struct deflate_stream_data
 
 static inline struct zip_stream_data *deflate_create(void)
 {
-  return (struct zip_stream_data *)calloc(1, sizeof(struct deflate_stream_data));
+  return (struct zip_stream_data *)mzx_io_calloc(1, sizeof(struct deflate_stream_data));
 }
 
 static inline void deflate_destroy(struct zip_stream_data *zs)

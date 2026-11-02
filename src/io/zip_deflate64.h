@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2020-2023 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2020-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -36,6 +36,7 @@ MEGAZEUX_BEGIN_DECLS
 #include "../../contrib/infback9/inftree9.h"
 #include "../../contrib/infback9/inftree9.c"
 
+#include "alloc.h"
 #include "zip.h"
 
 struct deflate64_stream_data
@@ -50,7 +51,7 @@ struct deflate64_stream_data
  */
 static inline struct zip_stream_data *inflate64_create(void)
 {
-  return (struct zip_stream_data *)malloc(sizeof(struct deflate64_stream_data));
+  return (struct zip_stream_data *)mzx_io_malloc(sizeof(struct deflate64_stream_data));
 }
 
 static inline void inflate64_open(struct zip_stream_data *zs, uint16_t method,

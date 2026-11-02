@@ -89,7 +89,9 @@ else # !BUILD_MODULAR
 # by directly linking their objects.
 #
 unit_extra_objs += \
+  ${io_obj}/alloc.o       \
   ${io_obj}/path.o        \
+  ${io_obj}/redirect.o    \
   ${io_obj}/vfs.o         \
   ${io_obj}/vio.o         \
   ${io_obj}/zip.o         \

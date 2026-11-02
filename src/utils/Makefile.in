@@ -16,7 +16,8 @@ utils_cflags := ${PTHREAD_CFLAGS} -DUTILS_LIBSPEC=
 UTILS_ZLIB_LDFLAGS ?= ${ZLIB_LDFLAGS}
 UTILS_LIBPNG_LDFLAGS ?= ${LIBPNG_LDFLAGS}
 
-zip_objs  := ${io_obj}/path.o ${io_obj}/vio_no_vfs.o ${io_obj}/zip.o ${io_obj}/zip_stream.o
+zip_objs  := ${io_obj}/alloc.o ${io_obj}/path.o ${io_obj}/redirect.o \
+             ${io_obj}/vio_no_vfs.o ${io_obj}/zip.o ${io_obj}/zip_stream.o
 img_objs  := ${io_obj}/image_file.o ${io_obj}/image_gif.o ${io_obj}/image_png.o
 img_flags :=
 

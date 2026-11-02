@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2020-2021 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2020-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -31,6 +31,7 @@ MEGAZEUX_BEGIN_DECLS
 #include <assert.h>
 #include <inttypes.h>
 
+#include "alloc.h"
 #include "bitstream.h"
 #include "zip.h"
 
@@ -81,9 +82,10 @@ struct shrink_stream_data
 /**
  * Add an LZW code.
  */
-static inline void LZW_add(struct LZW_tree *tree)
+static inline enum zip_error LZW_add(struct LZW_tree *tree)
 {
   struct LZW_node *current = tree->nodes + tree->next;
+  struct LZW_node *tmp;
   uint8_t prev_length;
 
   if(tree->next == tree->length)
@@ -91,10 +93,15 @@ static inline void LZW_add(struct LZW_tree *tree)
     if(tree->length == tree->alloc)
     {
       if(tree->alloc >= LZW_TREE_ALLOC_MAX)
-        return;
+        return ZIP_SUCCESS;
 
       tree->alloc *= 2;
-      tree->nodes = crealloc(tree->nodes, tree->alloc * sizeof(struct LZW_node));
+      tmp = (struct LZW_node *)mzx_io_realloc(tree->nodes,
+       tree->alloc * sizeof(struct LZW_node));
+      if(tmp == NULL)
+        return ZIP_DECOMPRESS_FAILED;
+
+      tree->nodes = tmp;
       current = tree->nodes + tree->next;
     }
     tree->length++;
@@ -122,6 +129,7 @@ static inline void LZW_add(struct LZW_tree *tree)
   // invalidating the lengths of their children as well (see below).
   prev_length = tree->nodes[tree->previous_code].length;
   current->length = prev_length ? prev_length + 1 : 0;
+  return ZIP_SUCCESS;
 }
 
 /**
@@ -270,7 +278,12 @@ static inline enum zip_error LZW_decode(struct LZW_tree *tree, uint16_t code,
       return ZIP_DECOMPRESS_FAILED;
     }
 
-    LZW_add(tree);
+    if(LZW_add(tree) != ZIP_SUCCESS)
+    {
+      trace("--UNSHRINK-- out of memory\n");
+      return ZIP_DECOMPRESS_FAILED;
+    }
+
     result = LZW_output(tree, code, _pos, end);
     tree->previous_code = code;
     return result;
@@ -282,7 +295,13 @@ static inline enum zip_error LZW_decode(struct LZW_tree *tree, uint16_t code,
   if(result == ZIP_SUCCESS)
   {
     if(tree->previous_code != LZW_NO_CODE)
-      LZW_add(tree);
+    {
+      if(LZW_add(tree) != ZIP_SUCCESS)
+      {
+        trace("--UNSHRINK-- out of memory\n");
+        return ZIP_DECOMPRESS_FAILED;
+      }
+    }
 
     tree->previous_code = code;
   }
@@ -294,7 +313,7 @@ static inline enum zip_error LZW_decode(struct LZW_tree *tree, uint16_t code,
  */
 static inline struct zip_stream_data *unshrink_create(void)
 {
-  return cmalloc(sizeof(struct shrink_stream_data));
+  return (struct zip_stream_data *)mzx_io_malloc(sizeof(struct shrink_stream_data));
 }
 
 /**
@@ -305,22 +324,15 @@ static inline void unshrink_open(struct zip_stream_data *zs, uint16_t method,
 {
   struct shrink_stream_data *ss = ((struct shrink_stream_data *)zs);
   struct LZW_tree *tree = &(ss->tree);
-  int i;
 
   memset(zs, 0, sizeof(struct shrink_stream_data));
 
-  tree->nodes = cmalloc(LZW_TREE_ALLOC_DEFAULT * sizeof(struct LZW_node));
+  tree->nodes = NULL;
   tree->alloc = LZW_TREE_ALLOC_DEFAULT;
   tree->next = LZW_NUM_CODES_DEFAULT;
   tree->length = LZW_NUM_CODES_DEFAULT;
   tree->previous_code = LZW_NO_CODE;
   tree->previous_first_char = 0;
-
-  for(i = 0; i < LZW_NUM_CODES_DEFAULT; i++)
-  {
-    tree->nodes[i].length = 1;
-    LZW_SET_STATE(tree->nodes + i, LZW_BRANCH);
-  }
 
   ss->bit_width = LZW_BIT_WIDTH_DEFAULT;
 }
@@ -349,6 +361,7 @@ static inline enum zip_error unshrink_file(struct zip_stream_data *zs)
   struct shrink_stream_data *ss = ((struct shrink_stream_data *)zs);
   struct LZW_tree *tree = &(ss->tree);
   struct bitstream *b = &(ss->b);
+  struct LZW_node *tmp;
   enum zip_error result;
 
   uint8_t *start = zs->output_buffer;
@@ -356,6 +369,7 @@ static inline enum zip_error unshrink_file(struct zip_stream_data *zs)
   uint8_t *end = zs->output_buffer + zs->output_length;
 
   uint8_t bit_width = ss->bit_width;
+  int i;
 
   if(zs->finished)
     return ZIP_STREAM_FINISHED;
@@ -365,6 +379,21 @@ static inline enum zip_error unshrink_file(struct zip_stream_data *zs)
 
   if(!zs->input_buffer)
     return ZIP_INPUT_EMPTY;
+
+  if(tree->alloc < LZW_NUM_CODES_DEFAULT) /* Should never happen */
+    return ZIP_DECOMPRESS_FAILED;
+
+  tmp = (struct LZW_node *)mzx_io_realloc(tree->nodes,
+   tree->alloc * sizeof(struct LZW_node));
+  if(!tmp)
+    return ZIP_DECOMPRESS_FAILED;
+
+  tree->nodes = tmp;
+  for(i = 0; i < LZW_NUM_CODES_DEFAULT; i++)
+  {
+    tree->nodes[i].length = 1;
+    LZW_SET_STATE(tree->nodes + i, LZW_BRANCH);
+  }
 
   b->input = zs->input_buffer;
   b->input_left = zs->input_length;

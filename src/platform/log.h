@@ -26,18 +26,7 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-#ifdef CONFIG_STDIO_REDIRECT
-CORE_LIBSPEC extern FILE *mzxout_h;
-CORE_LIBSPEC extern FILE *mzxerr_h;
-#define mzxout (mzxout_h ? mzxout_h : stdout)
-#define mzxerr (mzxerr_h ? mzxerr_h : stderr)
-#else
-#define mzxout stdout
-#define mzxerr stderr
-#endif
-
-CORE_LIBSPEC boolean redirect_stdio_init(const char *base_path, boolean require_conf);
-CORE_LIBSPEC void redirect_stdio_exit(void);
+#include "../io/redirect.h" /* mzxout, mzxerr */
 
 #ifdef DEBUG_TRACE
 #define LOG_LINE_STR2(x) #x

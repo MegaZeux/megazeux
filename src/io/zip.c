@@ -35,6 +35,7 @@
 #include "../util.h"
 #include "../platform/log.h"
 
+#include "alloc.h"
 #include "memfile.h"
 #include "vio.h"
 #include "zip.h"
@@ -440,7 +441,7 @@ static struct zip_file_header *zip_allocate_file_header(uint16_t filename_len)
   size_t size = MAX(sizeof(struct zip_file_header),
    offsetof(struct zip_file_header, file_name) + filename_len + 1);
 
-  return (struct zip_file_header *)malloc(size);
+  return (struct zip_file_header *)mzx_io_malloc(size);
 }
 
 /**
@@ -479,7 +480,7 @@ static boolean zip_ensure_header_buffer_size(struct zip_archive *zp,
 
   if(zp->header_buffer)
   {
-    uint8_t *tmp = (uint8_t *)realloc(zp->header_buffer, new_size);
+    uint8_t *tmp = (uint8_t *)mzx_io_realloc(zp->header_buffer, new_size);
     if(!tmp)
       return false;
 
@@ -487,7 +488,7 @@ static boolean zip_ensure_header_buffer_size(struct zip_archive *zp,
   }
   else
   {
-    zp->header_buffer = (uint8_t *)malloc(new_size);
+    zp->header_buffer = (uint8_t *)mzx_io_malloc(new_size);
     if(!zp->header_buffer)
       return false;
   }
@@ -950,7 +951,7 @@ static enum zip_error zip_write_file_header(struct zip_archive *zp,
 
   if(header_size > zp->header_buffer_alloc)
   {
-    uint8_t *tmp = (uint8_t *)realloc(zp->header_buffer, header_size);
+    uint8_t *tmp = (uint8_t *)mzx_io_realloc(zp->header_buffer, header_size);
     if(!tmp)
       return ZIP_ALLOC_ERROR;
 
@@ -1060,7 +1061,7 @@ static enum zip_error zip_set_stream_buffer_size(struct zip_archive *zp, size_t 
 
   if(!zp->stream_buffer || zp->stream_buffer_alloc < size)
   {
-    uint8_t *tmp = (uint8_t *)realloc(zp->stream_buffer, size);
+    uint8_t *tmp = (uint8_t *)mzx_io_realloc(zp->stream_buffer, size);
     if(!tmp)
       return ZIP_ALLOC_ERROR;
 
@@ -2081,8 +2082,9 @@ static enum zip_error zip_write_open_stream(struct zip_archive *zp,
   if(zp->pos == zp->files_alloc)
   {
     size_t count = zp->files_alloc * 2;
-    struct zip_file_header **tmp = (struct zip_file_header **)realloc(zp->files,
-     count * sizeof(struct zip_file_header *));
+    struct zip_file_header **tmp =
+     (struct zip_file_header **)mzx_io_realloc(zp->files,
+      count * sizeof(struct zip_file_header *));
     if(!tmp)
       return ZIP_ALLOC_ERROR;
 
@@ -2709,7 +2711,7 @@ static enum zip_error zip_read_directory(struct zip_archive *zp)
   {
     size_t n = zp->num_files;
     struct zip_file_header **f =
-     (struct zip_file_header **)calloc(n, sizeof(struct zip_file_header *));
+     (struct zip_file_header **)mzx_io_calloc(n, sizeof(struct zip_file_header *));
     zp->files = f;
     if(!f)
     {
@@ -2761,7 +2763,7 @@ static enum zip_error zip_read_directory(struct zip_archive *zp)
     // Shrink file header array.
     if(zp->files_alloc < n)
     {
-      f = (struct zip_file_header **)realloc(zp->files,
+      f = (struct zip_file_header **)mzx_io_realloc(zp->files,
        zp->files_alloc * sizeof(struct zip_file_header *));
       if(f)
         zp->files = f;
@@ -2782,8 +2784,9 @@ err_realloc:
   // Shrink file header array.
   if(zp->files_alloc)
   {
-    struct zip_file_header **f = (struct zip_file_header **)realloc(zp->files,
-     zp->files_alloc * sizeof(struct zip_file_header *));
+    struct zip_file_header **f =
+     (struct zip_file_header **)mzx_io_realloc(zp->files,
+      zp->files_alloc * sizeof(struct zip_file_header *));
     if(f)
       zp->files = f;
   }
@@ -3065,7 +3068,7 @@ enum zip_error zip_close(struct zip_archive *zp, uint64_t *final_length)
     if(zp->is_memory && zp->external_buffer && zp->external_buffer_size &&
      *(zp->external_buffer_size) > end_pos)
     {
-      void *tmp = realloc(*(zp->external_buffer), end_pos);
+      void *tmp = mzx_io_realloc(*(zp->external_buffer), end_pos);
       if(tmp)
       {
         *(zp->external_buffer) = tmp;
@@ -3101,13 +3104,13 @@ enum zip_error zip_close(struct zip_archive *zp, uint64_t *final_length)
 static boolean zip_init_for_write(struct zip_archive *zp, int num_files)
 {
   zp->files_alloc = num_files;
-  zp->files = (struct zip_file_header **)malloc(num_files *
+  zp->files = (struct zip_file_header **)mzx_io_malloc(num_files *
    sizeof(struct zip_file_header *));
 
   if(!zp->files)
     return false;
 
-  zp->header_buffer = (uint8_t *)malloc(ZIP_DEFAULT_HEADER_BUFFER);
+  zp->header_buffer = (uint8_t *)mzx_io_malloc(ZIP_DEFAULT_HEADER_BUFFER);
   zp->header_buffer_alloc = ZIP_DEFAULT_HEADER_BUFFER;
   zp->header_timestamp = zip_get_dos_date_time();
   zp->running_file_name_length = 0;
@@ -3129,7 +3132,7 @@ static boolean zip_init_for_write(struct zip_archive *zp, int num_files)
 static struct zip_archive *zip_new_archive(void)
 {
   struct zip_archive *zp =
-   (struct zip_archive *)calloc(1, sizeof(struct zip_archive));
+   (struct zip_archive *)mzx_io_calloc(1, sizeof(struct zip_archive));
 
   zp->mode = ZIP_S_READ_UNINITIALIZED;
   return zp;

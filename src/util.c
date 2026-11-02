@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2004 Gilead Kutnick <exophase@adelphia.net>
  * Copyright (C) 2008 Alistair John Strachan <alistair@devzero.co.uk>
- * Copyright (C) 2012-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2012-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -40,6 +40,7 @@
 
 #include "const.h" // for MAX_PATH
 #include "error.h"
+#include "io/alloc.h"
 #include "io/path.h"
 #include "io/vio.h"
 #include "platform/platform.h"
@@ -124,60 +125,28 @@ static void out_of_memory_check(void *p, const char *file, int line)
       error(msgbuf, ERROR_T_FATAL, ERROR_OPT_EXIT|ERROR_OPT_NO_HELP, 0);
     }
     else
-      warn("Out of memory in in %s:%d (thread %zu)\n",
+      warn("Out of memory in %s:%d (thread %zu)\n",
        file, line, (size_t)cur_thread_id);
   }
 }
 
-// Attempt to free buffered memory from the virtual filesystem for reuse.
-static boolean check_free_buffered(size_t amount, boolean *retry)
-{
-  if(!*retry || !amount)
-    return false;
-
-  if(!vio_invalidate_at_least(&amount))
-  {
-    vio_invalidate_all();
-    *retry = false;
-  }
-  return true;
-}
-
 void *check_calloc(size_t nmemb, size_t size, const char *file, int line)
 {
-  void *result = calloc(nmemb, size);
-  if(!result && nmemb * size >= size)
-  {
-    boolean retry = true;
-    while(!result && check_free_buffered(nmemb * size, &retry))
-      result = calloc(nmemb, size);
-  }
+  void *result = mzx_io_calloc(nmemb, size);
   out_of_memory_check(result, file, line);
   return result;
 }
 
 void *check_malloc(size_t size, const char *file, int line)
 {
-  void *result = malloc(size);
-  if(!result)
-  {
-    boolean retry = true;
-    while(!result && check_free_buffered(size, &retry))
-      result = malloc(size);
-  }
+  void *result = mzx_io_malloc(size);
   out_of_memory_check(result, file, line);
   return result;
 }
 
 void *check_realloc(void *ptr, size_t size, const char *file, int line)
 {
-  void *result = realloc(ptr, size);
-  if(!result)
-  {
-    boolean retry = true;
-    while(!result && check_free_buffered(size, &retry))
-      result = realloc(ptr, size);
-  }
+  void *result = mzx_io_realloc(ptr, size);
   out_of_memory_check(result, file, line);
   return result;
 }
