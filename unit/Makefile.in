@@ -8,6 +8,8 @@
 
 unit_src        := unit
 unit_obj        := ${build_base}/${unit_src}
+unit_src_algo   := ${unit_src}/algorithm
+unit_obj_algo   := ${build_base}/${unit_src_algo}
 unit_src_audio  := ${unit_src}/audio
 unit_obj_audio  := ${build_base}/${unit_src_audio}
 unit_src_editor := ${unit_src}/editor
@@ -19,7 +21,7 @@ unit_obj_network:= ${build_base}/${unit_src_network}
 unit_src_utils  := ${unit_src}/utils
 unit_obj_utils  := ${build_base}/${unit_src_utils}
 
-build_dirs += ${unit_obj} ${unit_obj_audio} ${unit_obj_editor}
+build_dirs += ${unit_obj} ${unit_obj_algo} ${unit_obj_audio} ${unit_obj_editor}
 build_dirs += ${unit_obj_io} ${unit_obj_network} ${unit_obj_utils}
 
 unit_target = mzxunit${BINEXT}
@@ -30,7 +32,7 @@ unit_objs := \
   ${unit_obj}/align.o                  \
   ${unit_obj}/expr.o                   \
   ${unit_obj}/render.o                 \
-  ${unit_obj}/memcasecmp.o             \
+  ${unit_obj_algo}/string_compare.o    \
   ${unit_obj_io}/bitstream.o           \
   ${unit_obj_io}/image_file.o          \
   ${unit_obj_io}/memfile.o             \
@@ -164,6 +166,7 @@ ${unit_target}: ${unit_objs} ${unit_extra_objs}
 -include ${unit_objs:.o=.d}
 
 ${unit_objs}: $(filter-out $(wildcard ${unit_obj}), ${unit_obj})
+${unit_objs}: $(filter-out $(wildcard ${unit_obj_algo}), ${unit_obj_algo})
 ${unit_objs}: $(filter-out $(wildcard ${unit_obj_audio}), ${unit_obj_audio})
 ${unit_objs}: $(filter-out $(wildcard ${unit_obj_editor}), ${unit_obj_editor})
 ${unit_objs}: $(filter-out $(wildcard ${unit_obj_io}), ${unit_obj_io})

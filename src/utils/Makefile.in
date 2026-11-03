@@ -42,7 +42,8 @@ utils_objs += \
   ${utils_obj}/pefix.o \
 
 checkres := ${BINPRE}checkres${BINEXT}
-checkres_objs := ${utils_obj}/checkres.o ${io_obj}/fsafeopen.o ${zip_objs}
+checkres_objs := ${utils_obj}/checkres.o ${algo_obj}/string_compare.o \
+                 ${io_obj}/fsafeopen.o ${zip_objs}
 checkres_ldflags := ${UTILS_ZLIB_LDFLAGS}
 
 downver := ${BINPRE}downver${BINEXT}
@@ -54,7 +55,7 @@ emzip_objs := ${utils_obj}/emzip.o ${zip_objs}
 emzip_ldflags += ${UTILS_ZLIB_LDFLAGS}
 
 hlp2html := ${BINPRE}hlp2html${BINEXT}
-hlp2html_objs := ${utils_obj}/hlp2html.o
+hlp2html_objs := ${utils_obj}/hlp2html.o ${algo_obj}/string_compare.o
 
 hlp2txt := ${BINPRE}hlp2txt${BINEXT}
 hlp2txt_objs := ${utils_obj}/hlp2txt.o

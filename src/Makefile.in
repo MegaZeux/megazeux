@@ -126,6 +126,7 @@ core_cxxobjs :=
 #
 # MegaZeux subsystem Makefiles.
 #
+include src/algorithm/Makefile.in
 include src/io/Makefile.in
 
 include src/audio/Makefile.in

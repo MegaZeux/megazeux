@@ -1,0 +1,14 @@
+##
+# MegaZeux algorithms subsystem Makefile fragment
+##
+
+algo_src   = ${core_src}/algorithm
+algo_obj   = ${build_base}/${algo_src}
+algo_objs += \
+  ${algo_obj}/string_compare.o    \
+
+-include ${algo_objs:.o=.d}
+${algo_objs}: $(filter-out $(wildcard ${algo_obj}), ${algo_obj})
+
+build_dirs   += ${algo_obj}
+core_cobjs   += ${algo_objs}

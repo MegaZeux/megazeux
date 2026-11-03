@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2020-2021 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2020-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "Unit.hpp"
-#include "../src/memcasecmp.h"
+#include "../Unit.hpp"
+#include "../../src/algorithm/string_compare.c"
 
 #include <string.h>
 
@@ -48,15 +48,15 @@ struct bad_string_pair_aligned
   int expected;
 };
 
-UNITTEST(memtolower)
+UNITTEST(mzx_tolower)
 {
   int i;
   for(i = 0; i < 256; i++)
   {
     if(i >= 'A' && i <= 'Z')
-      ASSERTEQ(memtolower(i), (i - 'A' + 'a'), "");
+      ASSERTEQ(mzx_tolower(i), (i - 'A' + 'a'), "");
     else
-      ASSERTEQ(memtolower(i), i, "");
+      ASSERTEQ(mzx_tolower(i), i, "");
   }
 }
 
@@ -85,6 +85,47 @@ UNITTEST(Matching)
   };
   const char *a;
   const char *b;
+
+  ASSERTEQ((size_t)memcasecmp, (size_t)mzx_memcasecmp, "");
+  ASSERTEQ((size_t)memcasecmp32, (size_t)mzx_memcasecmp32, "");
+
+  SECTION(strcasecmp)
+  {
+    for(const string_pair &p : pairs)
+    {
+      a = p.a;
+      b = p.b;
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERT(!mzx_strcasecmp(a, b), "%s", a);
+    }
+
+    for(const string_pair_aligned &p : pairs64)
+    {
+      a = p.a.c_str();
+      b = p.b.c_str();
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERT(!mzx_strcasecmp(a, b), "%s", a);
+    }
+  }
+
+  SECTION(strncasecmp)
+  {
+    for(const string_pair &p : pairs)
+    {
+      a = p.a;
+      b = p.b;
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERT(!mzx_strncasecmp(a, b, strlen(a) + 1), "%s", a);
+    }
+
+    for(const string_pair_aligned &p : pairs64)
+    {
+      a = p.a.c_str();
+      b = p.b.c_str();
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERT(!mzx_strncasecmp(a, b, strlen(a) + 1), "%s", a);
+    }
+  }
 
   SECTION(memcasecmp)
   {
@@ -160,6 +201,48 @@ UNITTEST(NoMatch)
   const char *a;
   const char *b;
   int expected;
+
+  SECTION(strcasecmp)
+  {
+    for(const bad_string_pair &p : pairs)
+    {
+      a = p.a;
+      b = p.b;
+      expected = p.expected;
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERTEQ(mzx_strcasecmp(a, b), expected, "%s", a);
+    }
+
+    for(const bad_string_pair_aligned &p : pairs64)
+    {
+      a = p.a.c_str();
+      b = p.b.c_str();
+      expected = p.expected;
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERTEQ(mzx_strcasecmp(a, b), expected, "%s", a);
+    }
+  }
+
+  SECTION(strncasecmp)
+  {
+    for(const bad_string_pair &p : pairs)
+    {
+      a = p.a;
+      b = p.b;
+      expected = p.expected;
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERTEQ(mzx_strncasecmp(a, b, strlen(a)), expected, "%s", a);
+    }
+
+    for(const bad_string_pair_aligned &p : pairs64)
+    {
+      a = p.a.c_str();
+      b = p.b.c_str();
+      expected = p.expected;
+      ASSERTEQ(strlen(a), strlen(b), "%s", a);
+      ASSERTEQ(mzx_strncasecmp(a, b, strlen(a)), expected, "%s", a);
+    }
+  }
 
   SECTION(memcasecmp)
   {
