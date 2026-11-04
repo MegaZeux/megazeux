@@ -27,6 +27,7 @@
 #include "fsafeopen.h"
 #include "path.h"
 #include "vio.h"
+#include "../algorithm/string_compare.h"
 
 #include "../platform/log.h"
 

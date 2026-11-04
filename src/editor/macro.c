@@ -23,7 +23,7 @@
 #include "macro.h"
 #include "macro_struct.h"
 #include "../rasm.h"
-#include "../util.h"
+#include "../algorithm/string_compare.h"
 
 #include <string.h>
 #include <stdlib.h>

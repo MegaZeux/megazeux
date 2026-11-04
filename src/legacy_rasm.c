@@ -27,6 +27,7 @@
 #include "rasm.h"
 #include "data.h"
 #include "util.h"
+#include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 #include "io/memfile.h"
 #include "io/vio.h"

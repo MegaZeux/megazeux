@@ -44,6 +44,7 @@
 #include "window.h"
 #include "world.h"
 #include "world_struct.h"
+#include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 #include "io/vio.h"
 

@@ -19,6 +19,7 @@
  */
 
 #include "renderers.h"
+#include "../algorithm/string_compare.h"
 #include "../platform/log.h"
 
 const struct renderer * const renderers_available[] =

@@ -45,6 +45,7 @@
 #include "window.h"
 #include "world.h"
 #include "util.h"
+#include "algorithm/string_compare.h"
 #include "io/path.h"
 #include "io/vio.h"
 

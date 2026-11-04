@@ -20,6 +20,7 @@
 #include "audio_drivers.h"
 
 #include "../util.h"
+#include "../algorithm/string_compare.h"
 
 #ifdef CONFIG_SDL
 #include "../platform/sdl/SDLmzx.h"

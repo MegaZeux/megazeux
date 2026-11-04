@@ -40,6 +40,7 @@
 #include "vio.h"
 #include "zip.h"
 #include "zip_stream.h"
+#include "../algorithm/string_compare.h"
 
 // Data descriptors are short areas after the compressed file containing the
 // uncompressed size, compressed size, and CRC-32 checksum of the file, and

@@ -30,6 +30,7 @@
 #include "../graphics.h"
 #include "../intake.h"
 #include "../window.h"
+#include "../algorithm/string_compare.h"
 
 #include "../event/event.h"
 #include "../platform/platform.h"

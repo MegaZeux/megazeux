@@ -17,7 +17,8 @@ UTILS_ZLIB_LDFLAGS ?= ${ZLIB_LDFLAGS}
 UTILS_LIBPNG_LDFLAGS ?= ${LIBPNG_LDFLAGS}
 
 zip_objs  := ${io_obj}/alloc.o ${io_obj}/path.o ${io_obj}/redirect.o \
-             ${io_obj}/vio_no_vfs.o ${io_obj}/zip.o ${io_obj}/zip_stream.o
+             ${io_obj}/vio_no_vfs.o ${io_obj}/zip.o ${io_obj}/zip_stream.o \
+             ${algo_obj}/string_compare.o
 img_objs  := ${io_obj}/image_file.o ${io_obj}/image_gif.o ${io_obj}/image_png.o
 img_flags :=
 
@@ -42,8 +43,7 @@ utils_objs += \
   ${utils_obj}/pefix.o \
 
 checkres := ${BINPRE}checkres${BINEXT}
-checkres_objs := ${utils_obj}/checkres.o ${algo_obj}/string_compare.o \
-                 ${io_obj}/fsafeopen.o ${zip_objs}
+checkres_objs := ${utils_obj}/checkres.o ${io_obj}/fsafeopen.o ${zip_objs}
 checkres_ldflags := ${UTILS_ZLIB_LDFLAGS}
 
 downver := ${BINPRE}downver${BINEXT}

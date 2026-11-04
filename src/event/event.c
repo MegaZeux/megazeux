@@ -22,6 +22,7 @@
 #include "../configure.h"
 #include "../graphics.h"
 #include "../util.h"
+#include "../algorithm/string_compare.h"
 #include "../platform/platform.h"
 
 #include <assert.h>

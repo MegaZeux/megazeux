@@ -30,10 +30,12 @@ UTILS_LIBSPEC extern const unsigned char mzx_tolower_table[256];
 #define memcasecmp      mzx_memcasecmp
 #define memcasecmp32    mzx_memcasecmp32
 
-//#if defined(_WIN32) && defined(__STRICT_ANSI__)
+/* These functions aren't always provided by old versions of MinGW and MSVC.
+ * This compatibility doesn't actually matter that much anymore. */
+#if defined(_WIN32) && defined(__STRICT_ANSI__)
 #define strcasecmp      mzx_strcasecmp
 #define strncasecmp     mzx_strncasecmp
-//#endif
+#endif
 
 UTILS_LIBSPEC int mzx_strcasecmp(const char *a, const char *b);
 UTILS_LIBSPEC int mzx_strncasecmp(const char *a, const char *b, size_t n);

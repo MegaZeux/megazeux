@@ -28,6 +28,7 @@
 #include "HTTPHost.hpp"
 #include "Scoped.hpp"
 #include "../util.h"
+#include "../algorithm/string_compare.h"
 #include "../io/vio.h"
 #include "../platform/log.h"
 
