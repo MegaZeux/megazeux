@@ -23,6 +23,7 @@
 #include "../yuv.h"
 
 #include "../../util.h"
+#include "../../algorithm/string_compare.h"
 #include "../../event/event.h"
 #include "../../platform/log.h"
 

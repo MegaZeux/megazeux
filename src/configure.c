@@ -32,6 +32,7 @@
 #include "counter.h"
 #include "rasm.h"
 #include "util.h"
+#include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 #include "io/path.h"
 #include "io/vio.h"

@@ -93,8 +93,8 @@
 // Safe- self sufficient or completely macros/static inlines
 #include "../const.h"
 #include "../hashtable.h"
-#include "../memcasecmp.h"
 #include "../world_format.h"
+#include "../algorithm/string_compare.h"
 #include "../io/memfile.h"
 #include "../io/vio.h"
 #include "../io/zip.h"
@@ -552,7 +552,7 @@ static boolean check_wildcard_path(const char *path, const char *wildcard)
 
       default:
       {
-        if(memtolower(path[p]) == memtolower(next))
+        if(mzx_tolower(path[p]) == mzx_tolower(next))
         {
           state[pos].p++;
           state[pos].w = w;

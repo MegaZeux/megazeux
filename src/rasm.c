@@ -25,10 +25,10 @@
 
 #include "counter.h"
 #include "data.h"
-#include "memcasecmp.h"
 #include "rasm.h"
 #include "str.h"
 #include "util.h"
+#include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 #include "io/memfile.h"
 #include "io/vio.h"

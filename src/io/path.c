@@ -28,6 +28,7 @@
 #endif
 
 #include "../util.h"
+#include "../algorithm/string_compare.h"
 #include "../platform/log.h"
 #include "path.h"
 #include "vio.h"

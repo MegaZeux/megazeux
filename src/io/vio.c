@@ -32,6 +32,7 @@
 #include "vio.h"
 #include "vfs.h"
 //#include "zip.h"
+#include "../algorithm/string_compare.h"
 
 #ifdef _WIN32
 #include "vio_win32.h"

@@ -31,7 +31,7 @@
 #include "audio_wav_load.h"
 #include "sampled_stream.h"
 
-#include "../util.h"
+#include "../algorithm/string_compare.h"
 #include "../io/path.h"
 #include "../io/vio.h"
 

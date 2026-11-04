@@ -28,12 +28,12 @@
 #include "counter.h"
 #include "error.h"
 #include "graphics.h"
-#include "memcasecmp.h"
 #include "rasm.h"
 #include "robot.h"
 #include "util.h"
 #include "world.h"
 #include "world_struct.h"
+#include "algorithm/string_compare.h"
 #include "io/vio.h"
 
 /**
@@ -1581,7 +1581,7 @@ static int compare_wildcard_slow(const char *str, size_t str_len,
 
   while(i < pat_len && left <= str_len)
   {
-    next = exact_case ? pat[i] : memtolower(pat[i]);
+    next = exact_case ? pat[i] : mzx_tolower(pat[i]);
     i++;
 
 #ifdef WILDCARD_PRINT
@@ -1678,7 +1678,7 @@ static int compare_wildcard_slow(const char *str, size_t str_len,
         {
           for(j = right; j >= left; j--)
           {
-            str_matched[j] = str_matched[j-1] && memtolower(str[j-1]) == next;
+            str_matched[j] = str_matched[j-1] && mzx_tolower(str[j-1]) == next;
             if(str_matched[j])
             {
               new_left = j+1;
@@ -1842,7 +1842,7 @@ static int compare_wildcard(const char *str, size_t str_len,
         }
         else
         {
-          if(memtolower(str[s]) != memtolower(pat[w]))
+          if(mzx_tolower(str[s]) != mzx_tolower(pat[w]))
             return 1;
         }
         w++;

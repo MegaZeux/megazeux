@@ -36,7 +36,6 @@
 #include "graphics.h"
 #include "idarray.h"
 #include "legacy_rasm.h"
-#include "memcasecmp.h"
 #include "robot.h"
 #include "rasm.h"
 #include "scrdisp.h"
@@ -46,6 +45,7 @@
 #include "world.h"
 #include "world_format.h"
 #include "world_struct.h"
+#include "algorithm/string_compare.h"
 #include "io/memfile.h"
 #include "io/zip.h"
 

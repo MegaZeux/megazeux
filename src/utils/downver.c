@@ -58,6 +58,7 @@
 #include "../util.h"
 #include "../world.h"
 #include "../world_format.h"
+#include "../algorithm/string_compare.h"
 #include "../io/memfile.h"
 #include "../io/vio.h"
 #include "../io/zip.h"

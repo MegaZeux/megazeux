@@ -28,6 +28,7 @@
 #include "audio_struct.h"
 #include "sampled_stream.h"
 
+#include "../algorithm/string_compare.h"
 #include "../io/memfile.h"
 #include "../io/vio.h"
 

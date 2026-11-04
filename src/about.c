@@ -20,6 +20,7 @@
 #include "about.h"
 #include "util.h"
 #include "window.h"
+#include "algorithm/string_compare.h"
 #include "io/path.h"
 #include "io/vio.h"
 #include "platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */

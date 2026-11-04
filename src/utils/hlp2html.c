@@ -26,7 +26,7 @@
 #define CORE_LIBSPEC
 #include "../compat.h"
 #include "../hashtable.h"
-#include "../util.h"
+#include "../algorithm/string_compare.h"
 #include "../io/memfile.h"
 
 #include "utils_alloc.h"

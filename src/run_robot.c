@@ -49,6 +49,7 @@
 #include "util.h"
 #include "window.h"
 #include "world.h"
+#include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 
 #include "audio/audio.h"

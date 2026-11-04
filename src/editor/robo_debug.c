@@ -37,6 +37,7 @@
 #include "../util.h"
 #include "../window.h"
 #include "../world_struct.h"
+#include "../algorithm/string_compare.h"
 
 #include "../event/event.h"
 

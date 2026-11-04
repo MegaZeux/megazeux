@@ -31,6 +31,7 @@
 #include "world_format.h"
 #include "util.h"
 #include "world_struct.h"
+#include "algorithm/string_compare.h"
 #include "io/memfile.h"
 #include "io/zip.h"
 
