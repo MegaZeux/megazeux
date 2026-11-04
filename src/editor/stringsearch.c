@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../memcasecmp.h"
+#include "../algorithm/string_compare.h"
 #include "../util.h"
 
 #include "stringsearch.h"
@@ -60,7 +60,7 @@ static size_t get_suffix_length(const unsigned char *B, const size_t b_len,
   if(ignore_case)
   {
     for(i = 0; i < pos; i++)
-      if(memtolower(B[pos - i]) != memtolower(B[b_len - i - 1]))
+      if(mzx_tolower(B[pos - i]) != mzx_tolower(B[b_len - i - 1]))
         break;
   }
   else
@@ -122,7 +122,7 @@ void string_search_index(const void *B, const size_t b_len,
   else
   {
     for(pos = start; pos < end; pos++)
-      bad_char[memtolower(*pos)] = end - pos;
+      bad_char[mzx_tolower(*pos)] = end - pos;
 
     // Duplicating the lowercase values over the uppercase values helps avoid
     // an extra tolower in the search function.
@@ -268,7 +268,7 @@ const void *string_search(const void *A, const size_t a_len,
     {
       j = b_len - 1;
 
-      while(j >= 0 && memtolower(a[i]) == memtolower(b[j]))
+      while(j >= 0 && mzx_tolower(a[i]) == mzx_tolower(b[j]))
         j--, i--;
 
       if(j == -1)

@@ -41,7 +41,7 @@
  * - Alternate macros have been added to provide a uthash-like interface.
  *
  * All changes to this file for MegaZeux are also licensed under the MIT License.
- * However, certain functions used here (check alloc, memcasecmp) are not.
+ * However, certain functions used here (check alloc, memcasecmp32) are not.
  *
  * This header is not currently compatible with the standard khash header.
  * See contrib/khash.h for the original example and changelog from this file.
@@ -60,7 +60,7 @@ MEGAZEUX_BEGIN_DECLS
 #include <string.h>
 #include <limits.h>
 
-#include "memcasecmp.h"
+#include "algorithm/string_compare.h"
 #include "platform/platform_endian.h"
 
 #ifndef klib_unused
@@ -572,7 +572,7 @@ static inline uint32_t fnv_1a_hash_string_len(const void *_str, uint32_t len)
   const char *str = _str;
   uint32_t h = 0;
   for(; len; len--)
-    h = (h ^ (uint32_t)memtolower((int)*(str++))) * 16777619;
+    h = (h ^ (uint32_t)mzx_tolower((int)*(str++))) * 16777619;
   return h;
 }
 
