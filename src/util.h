@@ -111,21 +111,9 @@ static inline size_t round_to_power_of_two(size_t v)
 
 #include <sys/types.h>
 
-#if defined(__WIN32__) && defined(__STRICT_ANSI__)
-CORE_LIBSPEC int strcasecmp(const char *s1, const char *s2);
-CORE_LIBSPEC int strncasecmp(const char *s1, const char *s2, size_t n);
-#endif // __WIN32__ && __STRICT_ANSI__
-
 #if defined(__WIN32__) || defined(__amigaos__)
 CORE_LIBSPEC char *strsep(char **stringp, const char *delim);
 #endif // __WIN32__ || __amigaos__
-
-#ifndef __WIN32__
-// POSIX strcasecmp and strncasecmp are in strings.h,
-// which may or may not be included by string.h
-#include <string.h>
-#include <strings.h>
-#endif // !__WIN32__
 
 #if defined(__amigaos__)
 CORE_LIBSPEC extern long __stack_chk_guard[8];

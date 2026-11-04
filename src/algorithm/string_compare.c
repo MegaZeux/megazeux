@@ -23,6 +23,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+/**
+ * Convert ASCII uppercase characters (65-90) to lowercase characters (97-122)
+ * using a lookup table. This is faster than calling glibc's toupper().
+ */
 const unsigned char mzx_tolower_table[256] =
 {
   '\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07',
@@ -133,6 +137,17 @@ static inline int cmp8_loop(const uint8_t *a8, const uint8_t *b8, size_t n)
   return 0;
 }
 
+/**
+ * Compare two strings ignoring case for ASCII chars (65-90, 97-122).
+ * For best results, both strings should be 4 aligned (32-bit platforms) or
+ * 8 aligned (64-bit platforms), but this function is guaranteed to work
+ * with input strings of any alignment.
+ *
+ * @param  a            A non-terminated string.
+ * @param  b            A non-terminated string.
+ * @param  n            The length to compare.
+ * @return              0 if a==b; >0 if a>b; <0 if a<b.
+ */
 int mzx_memcasecmp(const void *a, const void *b, size_t n)
 {
   const uint8_t *a8 = (const uint8_t *)a;
@@ -203,9 +218,18 @@ int mzx_memcasecmp(const void *a, const void *b, size_t n)
   return cmp8_loop(a8, b8, n);
 }
 
-/* Special always-aligned memcasecmp implementation for hash tables.
- * These name strings are usually short enough that 64-bit alignment
- * doesn't matter. */
+/**
+ * Compare two strings known to be aligned to 4 bytes, ignoring case for
+ * ASCII chars (65-90, 97-122). This is useful primarily for counter and
+ * string name comparisons, which are always aligned to 4 bytes and are
+ * typically too short to benefit from the 64-bit compare conditionally
+ * used in the general case function.
+ *
+ * @param  a            A non-terminated string aligned to 4 bytes.
+ * @param  a            A non-terminated string aligned to 4 bytes.
+ * @param  n            The length to compare.
+ * @return              0 if a==a; >0 if a>b; <0 if a<b.
+ */
 int mzx_memcasecmp32(const void *a, const void *b, size_t n)
 {
   const uint32_t *a32;
