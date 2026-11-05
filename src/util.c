@@ -461,49 +461,6 @@ unsigned int Random(uint64_t range)
   return (((x * 0x2545F4914F6CDD1D) >> 32) * range) >> 32;
 }
 
-#if defined(__WIN32__) || defined(__amigaos__)
-
-// strsep() stolen from glibc (GPL)
-
-char *strsep(char **stringp, const char *delim)
-{
-  char *begin, *end;
-
-  begin = *stringp;
-  if(!begin)
-    return NULL;
-
-  if(delim[0] == '\0' || delim[1] == '\0')
-  {
-    char ch = delim[0];
-    if(ch == '\0')
-      end = NULL;
-    else
-    {
-      if(*begin == ch)
-        end = begin;
-      else if(*begin == '\0')
-        end = NULL;
-      else
-        end = strchr(begin + 1, ch);
-    }
-  }
-  else
-    end = strpbrk(begin, delim);
-
-  if(end)
-  {
-    *end++ = '\0';
-    *stringp = end;
-  }
-  else
-    *stringp = NULL;
-
-  return begin;
-}
-
-#endif // __WIN32__ || __amigaos__
-
 #if defined(__amigaos__)
 
 long __stack_chk_guard[8];

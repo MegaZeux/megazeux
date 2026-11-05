@@ -109,12 +109,6 @@ static inline size_t round_to_power_of_two(size_t v)
   return v + 1;
 }
 
-#include <sys/types.h>
-
-#if defined(__WIN32__) || defined(__amigaos__)
-CORE_LIBSPEC char *strsep(char **stringp, const char *delim);
-#endif // __WIN32__ || __amigaos__
-
 #if defined(__amigaos__)
 CORE_LIBSPEC extern long __stack_chk_guard[8];
 CORE_LIBSPEC void __stack_chk_fail(void);
