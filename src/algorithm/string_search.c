@@ -1,6 +1,6 @@
 /* MegaZeux
  *
- * Copyright (C) 2012, 2020 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2012-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -31,10 +31,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../algorithm/string_compare.h"
+#include "string_compare.h"
+#include "string_search.h"
 #include "../util.h"
 
-#include "stringsearch.h"
+#if defined(CONFIG_EDITOR) || defined(MZX_UNIT_TESTS)
+#define ENABLE_STRING_SEARCH
+#endif
+
+#ifdef ENABLE_STRING_SEARCH
 
 /**
  * Determine if the position of B starting at pos is also a prefix of B.
@@ -71,6 +76,8 @@ static size_t get_suffix_length(const unsigned char *B, const size_t b_len,
   return i;
 }
 
+#endif /* ENABLE_STRING_SEARCH */
+
 /**
  * Initialize a string search index for a needle substring to be used in
  * string_search(). This only needs to be performed once per search string.
@@ -83,9 +90,10 @@ static size_t get_suffix_length(const unsigned char *B, const size_t b_len,
  * @param data          Struct to store string search index info to.
  * @param ignore_case   True for case-insensitive; false for case-sensitive.
  */
-void string_search_index(const void *B, const size_t b_len,
- struct string_search_data *data, boolean ignore_case)
+void mzx_string_search_index(const void *B, const size_t b_len,
+ struct mzx_string_search_data *data, boolean ignore_case)
 {
+#ifdef ENABLE_STRING_SEARCH
   unsigned int *bad_char = data->bad_char;
   unsigned int *good_suffix = data->good_suffix;
   const unsigned char *start = (const unsigned char *)B;
@@ -135,7 +143,7 @@ void string_search_index(const void *B, const size_t b_len,
    * in the provided buffer. The currently provided buffer size is good enough
    * for all current applications of this algorithm (as of writing this).
    */
-  data->has_good_suffix_table = (b_len <= STRINGSEARCH_SUFFIX_MAX);
+  data->has_good_suffix_table = (b_len <= MZX_STRING_SEARCH_SUFFIX_MAX);
 
   if(data->has_good_suffix_table)
   {
@@ -184,6 +192,7 @@ void string_search_index(const void *B, const size_t b_len,
         good_suffix[b_len - suffix_len - 1] = b_len - i - 1 + suffix_len;
     }
   }
+#endif /* ENABLE_STRING_SEARCH */
 }
 
 /**
@@ -208,13 +217,14 @@ void string_search_index(const void *B, const size_t b_len,
  * @param data          Struct containing string search index information.
  * @param ignore_case   True for case-insensitive; false for case-sensitive.
  */
-const void *string_search(const void *A, const size_t a_len,
- const void *B, const size_t b_len, const struct string_search_data *data,
+const void *mzx_string_search(const void *A, const size_t a_len,
+ const void *B, const size_t b_len, const struct mzx_string_search_data *data,
  boolean ignore_case)
 {
+#ifdef ENABLE_STRING_SEARCH
   const unsigned char *a = (const unsigned char *)A;
   const unsigned char *b = (const unsigned char *)B;
-  struct string_search_data *alloc = NULL;
+  struct mzx_string_search_data *alloc = NULL;
   const unsigned int *bad_char_index;
   const unsigned int *good_suffix_index;
   const void *result = NULL;
@@ -228,8 +238,8 @@ const void *string_search(const void *A, const size_t a_len,
 
   if(!data)
   {
-    alloc = (struct string_search_data *)cmalloc(sizeof(struct string_search_data));
-    string_search_index(B, b_len, alloc, ignore_case);
+    alloc = (struct mzx_string_search_data *)cmalloc(sizeof(struct mzx_string_search_data));
+    mzx_string_search_index(B, b_len, alloc, ignore_case);
     data = alloc;
   }
   bad_char_index = data->bad_char;
@@ -287,4 +297,8 @@ const void *string_search(const void *A, const size_t a_len,
     free(alloc);
 
   return result;
+
+#else /* !ENABLE_STRING_SEARCH */
+  return NULL;
+#endif
 }

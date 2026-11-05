@@ -44,6 +44,7 @@
 #include "../window.h"
 #include "../world.h"
 #include "../algorithm/string_compare.h"
+#include "../algorithm/string_search.h"
 #include "../io/fsafeopen.h"
 #include "../io/path.h"
 #include "../io/vio.h"
@@ -58,7 +59,6 @@
 #include "macro.h"
 #include "macro_struct.h"
 #include "robo_ed.h"
-#include "stringsearch.h"
 #include "undo.h"
 #include "window.h"
 
@@ -86,7 +86,7 @@ static int last_color_selected = 0;
 static int last_char_selected = 0;
 
 static enum search_option last_search_action = SEARCH_OPTION_NONE;
-static struct string_search_data search_index;
+static struct mzx_string_search_data search_index;
 static char search_string[256];
 static char replace_string[256];
 static boolean search_wrap_enabled = true;
@@ -2076,7 +2076,7 @@ static void replace_current_line(struct robot_editor_context *rstate,
 }
 
 static int robo_ed_find_string(struct robot_editor_context *rstate, char *str,
- struct string_search_data *data, int *position, boolean wrap,
+ struct mzx_string_search_data *data, int *position, boolean wrap,
  boolean ignore_case, boolean allow_current)
 {
   struct robot_line *current_rline = rstate->current_rline;
@@ -2100,7 +2100,7 @@ static int robo_ed_find_string(struct robot_editor_context *rstate, char *str,
   {
     text += first_pos;
     text_len -= first_pos;
-    pos = string_search(text, text_len, str, str_len, data, ignore_case);
+    pos = mzx_string_search(text, text_len, str, str_len, data, ignore_case);
 
     text = rstate->command_buffer;
   }
@@ -2114,7 +2114,7 @@ static int robo_ed_find_string(struct robot_editor_context *rstate, char *str,
     while(current_rline != NULL)
     {
       text = current_rline->line_text;
-      pos = string_search(text, strlen(text), str, str_len, data, ignore_case);
+      pos = mzx_string_search(text, strlen(text), str, str_len, data, ignore_case);
 
       if(pos)
         break;
@@ -2132,7 +2132,7 @@ static int robo_ed_find_string(struct robot_editor_context *rstate, char *str,
     while(current_rline != rstate->current_rline->next)
     {
       text = current_rline->line_text;
-      pos = string_search(text, strlen(text), str, str_len, data, ignore_case);
+      pos = mzx_string_search(text, strlen(text), str, str_len, data, ignore_case);
 
       if(pos)
         break;
@@ -2326,7 +2326,7 @@ static void robo_ed_search_dialog(struct robot_editor_context *rstate)
 
   search_wrap_enabled = wrap;
   search_ignore_case_enabled = !casesens;
-  string_search_index(search_string, strlen(search_string), &search_index,
+  mzx_string_search_index(search_string, strlen(search_string), &search_index,
    search_ignore_case_enabled);
 
   if(result != -1)
@@ -2368,7 +2368,7 @@ static void robo_ed_replace_dialog(struct robot_editor_context *rstate)
 
   search_wrap_enabled = wrap;
   search_ignore_case_enabled = !casesens;
-  string_search_index(search_string, strlen(search_string), &search_index,
+  mzx_string_search_index(search_string, strlen(search_string), &search_index,
    search_ignore_case_enabled);
 
   if(result != -1)

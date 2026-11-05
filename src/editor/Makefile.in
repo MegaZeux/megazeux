@@ -42,7 +42,6 @@ editor_objs := \
   ${editor_obj}/robot.o         \
   ${editor_obj}/select.o        \
   ${editor_obj}/sfx_edit.o      \
-  ${editor_obj}/stringsearch.o  \
   ${editor_obj}/undo.o          \
   ${editor_obj}/window.o        \
   ${editor_obj}/world.o
