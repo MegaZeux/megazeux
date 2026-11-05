@@ -25,7 +25,6 @@
 #include "debug.h"
 #include "robot.h"
 #include "robo_debug.h"
-#include "stringsearch.h"
 #include "window.h"
 
 #include "../core.h"
@@ -38,6 +37,7 @@
 #include "../window.h"
 #include "../world_struct.h"
 #include "../algorithm/string_compare.h"
+#include "../algorithm/string_search.h"
 
 #include "../event/event.h"
 
@@ -47,7 +47,7 @@ struct breakpoint
 {
   char match_name[ROBOT_NAME_SIZE];
   char match_string[MATCH_STRING_MAX];
-  struct string_search_data index;
+  struct mzx_string_search_data index;
   int line_number;
   int match_name_len;
   int match_string_len;
@@ -307,7 +307,7 @@ static void new_breakpoint(struct world *mzx_world)
        num_breakpoints_allocated * sizeof(struct breakpoint *));
     }
 
-    string_search_index(br->match_string, br->match_string_len,
+    mzx_string_search_index(br->match_string, br->match_string_len,
      &(br->index), true);
 
     breakpoints[num_breakpoints] = br;
@@ -526,7 +526,7 @@ void __debug_robot_config(struct world *mzx_world)
 
             if(!edit_breakpoint_dialog(mzx_world, br, "Edit Breakpoint"))
             {
-              string_search_index(br->match_string, br->match_string_len,
+              mzx_string_search_index(br->match_string, br->match_string_len,
                &(br->index), true);
             }
           }
@@ -1278,7 +1278,7 @@ int __debug_robot_break(context *ctx, struct robot *cur_robot,
 
         // Try to find the match pattern in the line
         if(b->match_string_len)
-          if(!string_search((void *)src_ptr, src_length,
+          if(!mzx_string_search((void *)src_ptr, src_length,
            (void *)b->match_string, b->match_string_len, &(b->index), true))
             continue;
 

@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-#include "../../src/editor/stringsearch.c"
+#include "../../src/algorithm/string_search.c"
 
 struct string_pair
 {
@@ -119,7 +119,7 @@ UNITTEST(Search)
     },
     { "abcdabc", "abceabcdabcdabceabc" },
   };
-  struct string_search_data data;
+  struct mzx_string_search_data data;
   const char *A;
   const char *B;
   const void *dest;
@@ -131,7 +131,7 @@ UNITTEST(Search)
       A = d.haystack;
       B = d.needle;
 
-      ASSERT(!string_search(A, strlen(A), B, strlen(B), nullptr, false), "%s", A);
+      ASSERT(!mzx_string_search(A, strlen(A), B, strlen(B), nullptr, false), "%s", A);
     }
 
     for(const string_pair_idx &d : haystack_once)
@@ -140,7 +140,7 @@ UNITTEST(Search)
       B = d.needle;
       ssize_t where = d.where;
 
-      dest = string_search(A, strlen(A), B, strlen(B), nullptr, false);
+      dest = mzx_string_search(A, strlen(A), B, strlen(B), nullptr, false);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + strlen(A), "%s", A);
       ASSERTEQ((const char *)dest - A, where, "%s", A);
@@ -151,7 +151,7 @@ UNITTEST(Search)
       A = d.haystack;
       B = d.needle;
 
-      dest = string_search(A, strlen(A), B, strlen(B), nullptr, false);
+      dest = mzx_string_search(A, strlen(A), B, strlen(B), nullptr, false);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + strlen(A), "%s", A);
     }
@@ -168,9 +168,9 @@ UNITTEST(Search)
       ssize_t a_len = strlen(A);
       ssize_t b_len = strlen(B);
 
-      string_search_index(B, b_len, &data, false);
+      mzx_string_search_index(B, b_len, &data, false);
 
-      dest = (const char *)string_search(A, a_len, B, b_len, &data, false);
+      dest = (const char *)mzx_string_search(A, a_len, B, b_len, &data, false);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + a_len, "%s", A);
       ASSERTEQ((const char *)dest - A, where, "%s", A);
@@ -178,7 +178,7 @@ UNITTEST(Search)
       a_len -= dest - A;
       A = dest;
 
-      ASSERT(!string_search(A, a_len, B, b_len, &data, false), "%s", A);
+      ASSERT(!mzx_string_search(A, a_len, B, b_len, &data, false), "%s", A);
     }
 
     for(const string_pair &d : haystack_twice)
@@ -189,23 +189,23 @@ UNITTEST(Search)
       ssize_t a_len = strlen(A);
       ssize_t b_len = strlen(B);
 
-      string_search_index(B, b_len, &data, false);
+      mzx_string_search_index(B, b_len, &data, false);
 
-      dest = (const char *)string_search(A, a_len, B, b_len, &data, false);
+      dest = (const char *)mzx_string_search(A, a_len, B, b_len, &data, false);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + a_len, "%s", A);
       dest++;
       a_len -= dest - A;
       A = dest;
 
-      dest = (const char *)string_search(A, a_len, B, b_len, &data, false);
+      dest = (const char *)mzx_string_search(A, a_len, B, b_len, &data, false);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + a_len, "%s", A);
       dest++;
       a_len -= dest - A;
       A = dest;
 
-      ASSERT(!string_search(A, a_len, B, b_len, &data, false), "%s", A);
+      ASSERT(!mzx_string_search(A, a_len, B, b_len, &data, false), "%s", A);
     }
   }
 }
@@ -275,7 +275,7 @@ UNITTEST(SearchCaseInsensitive)
     },
     { "abcdabc", "abceABCDabcDabceABC" },
   };
-  struct string_search_data data;
+  struct mzx_string_search_data data;
   const char *A;
   const char *B;
   const void *dest;
@@ -287,7 +287,7 @@ UNITTEST(SearchCaseInsensitive)
       A = d.haystack;
       B = d.needle;
 
-      ASSERT(!string_search(A, strlen(A), B, strlen(B), NULL, true), "%s", A);
+      ASSERT(!mzx_string_search(A, strlen(A), B, strlen(B), NULL, true), "%s", A);
     }
 
     for(const string_pair &d : haystack_once)
@@ -295,7 +295,7 @@ UNITTEST(SearchCaseInsensitive)
       A = d.haystack;
       B = d.needle;
 
-      dest = string_search(A, strlen(A), B, strlen(B), NULL, true);
+      dest = mzx_string_search(A, strlen(A), B, strlen(B), NULL, true);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + strlen(A), "%s", A);
     }
@@ -305,7 +305,7 @@ UNITTEST(SearchCaseInsensitive)
       A = d.haystack;
       B = d.needle;
 
-      dest = string_search(A, strlen(A), B, strlen(B), NULL, true);
+      dest = mzx_string_search(A, strlen(A), B, strlen(B), NULL, true);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + strlen(A), "%s", A);
     }
@@ -321,16 +321,16 @@ UNITTEST(SearchCaseInsensitive)
       ssize_t a_len = strlen(A);
       ssize_t b_len = strlen(B);
 
-      string_search_index(B, b_len, &data, true);
+      mzx_string_search_index(B, b_len, &data, true);
 
-      dest = (const char *)string_search(A, a_len, B, b_len, &data, true);
+      dest = (const char *)mzx_string_search(A, a_len, B, b_len, &data, true);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + a_len, "%s", A);
       dest++;
       a_len -= dest - A;
       A = dest;
 
-      ASSERT(!string_search(A, a_len, B, b_len, &data, true), "%s", A);
+      ASSERT(!mzx_string_search(A, a_len, B, b_len, &data, true), "%s", A);
     }
 
     for(const string_pair &d : haystack_twice)
@@ -341,23 +341,23 @@ UNITTEST(SearchCaseInsensitive)
       ssize_t a_len = strlen(A);
       ssize_t b_len = strlen(B);
 
-      string_search_index(B, b_len, &data, true);
+      mzx_string_search_index(B, b_len, &data, true);
 
-      dest = (const char *)string_search(A, a_len, B, b_len, &data, true);
+      dest = (const char *)mzx_string_search(A, a_len, B, b_len, &data, true);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + a_len, "%s", A);
       dest++;
       a_len -= dest - A;
       A = dest;
 
-      dest = (const char *)string_search(A, a_len, B, b_len, &data, true);
+      dest = (const char *)mzx_string_search(A, a_len, B, b_len, &data, true);
       ASSERT(dest, "%s", A);
       ASSERT(dest >= A && dest < A + a_len, "%s", A);
       dest++;
       a_len -= dest - A;
       A = dest;
 
-      ASSERT(!string_search(A, a_len, B, b_len, &data, true), "%s", A);
+      ASSERT(!mzx_string_search(A, a_len, B, b_len, &data, true), "%s", A);
     }
   }
 }

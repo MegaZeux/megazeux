@@ -24,7 +24,6 @@
 #include "char_ed.h"
 #include "pal_ed.h"
 #include "robo_debug.h"
-#include "stringsearch.h"
 #include "window.h"
 
 #include "../core.h"
@@ -39,6 +38,7 @@
 #include "../window.h"
 #include "../world.h"
 #include "../algorithm/string_compare.h"
+#include "../algorithm/string_search.h"
 #include "../io/vio.h"
 
 #include "../audio/audio.h"
@@ -1640,7 +1640,7 @@ static boolean select_debug_var(struct debug_node *node, char *var_name,
 /******************/
 
 static boolean search_match(const char *var_text, const size_t var_text_length,
- const char *match_text, const struct string_search_data *match_text_index,
+ const char *match_text, const struct mzx_string_search_data *match_text_index,
  const size_t match_length, int search_flags)
 {
   boolean ignore_case = (search_flags & VAR_SEARCH_CASESENS) == 0;
@@ -1662,7 +1662,7 @@ static boolean search_match(const char *var_text, const size_t var_text_length,
   }
   else
   {
-    if(string_search(var_text, var_text_length, match_text, match_length,
+    if(mzx_string_search(var_text, var_text_length, match_text, match_length,
      match_text_index, ignore_case))
       return true;
   }
@@ -1672,7 +1672,7 @@ static boolean search_match(const char *var_text, const size_t var_text_length,
 
 static boolean search_vars(struct world *mzx_world, struct debug_node *node,
  struct debug_var **res_var, struct debug_node **res_node, int *res_pos,
- const char *match_text, const struct string_search_data *match_text_index,
+ const char *match_text, const struct mzx_string_search_data *match_text_index,
  const size_t match_length, int search_flags, struct debug_var **stop_var)
 {
   boolean matched = false;
@@ -1775,7 +1775,7 @@ static boolean search_vars(struct world *mzx_world, struct debug_node *node,
 
 static boolean search_node(struct world *mzx_world, struct debug_node *node,
  struct debug_var **res_var, struct debug_node **res_node, int *res_pos,
- const char *match_text, const struct string_search_data *match_text_index,
+ const char *match_text, const struct mzx_string_search_data *match_text_index,
  const size_t match_length, int search_flags, struct debug_var **stop_var)
 {
   boolean r = false;
@@ -1873,12 +1873,12 @@ static boolean search_debug(struct world *mzx_world, struct debug_node *node,
   struct debug_var *stop_var = NULL;
   boolean matched = false;
 
-  struct string_search_data match_text_index;
+  struct mzx_string_search_data match_text_index;
   boolean ignore_case = (search_flags & VAR_SEARCH_CASESENS) == 0;
 
   // Generate an index to help speed up substring searches.
   if(!(search_flags & VAR_SEARCH_EXACT))
-    string_search_index(match_text, match_length, &match_text_index, ignore_case);
+    mzx_string_search_index(match_text, match_length, &match_text_index, ignore_case);
 
   if(search_flags & VAR_SEARCH_WRAP)
   {

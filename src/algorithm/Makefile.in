@@ -6,6 +6,7 @@ algo_src   = ${core_src}/algorithm
 algo_obj   = ${build_base}/${algo_src}
 algo_objs += \
   ${algo_obj}/string_compare.o    \
+  ${algo_obj}/string_search.o     \
   ${algo_obj}/string_sep.o        \
 
 -include ${algo_objs:.o=.d}
