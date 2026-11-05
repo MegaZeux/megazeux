@@ -22,10 +22,11 @@
 #define MEGAZEUX_SOCKET_HPP
 
 #include "../compat.h"
-#include "../util.h"
+#include "../platform/log.h"
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #ifndef _MSC_VER
 #include <unistd.h>

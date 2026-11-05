@@ -33,6 +33,7 @@ unit_objs := \
   ${unit_obj}/expr.o                   \
   ${unit_obj}/render.o                 \
   ${unit_obj_algo}/string_compare.o    \
+  ${unit_obj_algo}/string_sep.o        \
   ${unit_obj_io}/bitstream.o           \
   ${unit_obj_io}/image_file.o          \
   ${unit_obj_io}/memfile.o             \

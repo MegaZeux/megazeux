@@ -29,6 +29,7 @@
 #include "Scoped.hpp"
 #include "../util.h"
 #include "../algorithm/string_compare.h"
+#include "../algorithm/string_sep.h"
 #include "../io/vio.h"
 #include "../platform/log.h"
 
