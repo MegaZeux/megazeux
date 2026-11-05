@@ -35,6 +35,7 @@
 #include "../audio_players.h"
 #include "../audio_struct.h"
 #include "../../util.h"
+#include "../../algorithm/string_sep.h"
 #include "../../platform/djgpp/platform_djgpp.h"
 #include "../../platform/djgpp/interrupt.h"
 

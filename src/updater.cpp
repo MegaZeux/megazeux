@@ -27,6 +27,7 @@
 #include "updater.h"
 #include "util.h"
 #include "window.h"
+#include "algorithm/string_sep.h"
 #include "io/memfile.h"
 #include "io/path.h"
 #include "io/vio.h"

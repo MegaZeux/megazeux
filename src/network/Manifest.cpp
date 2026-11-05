@@ -22,6 +22,7 @@
 #include "HTTPHost.hpp"
 #include "Scoped.hpp"
 #include "../util.h"
+#include "../algorithm/string_sep.h"
 #include "../io/memfile.h"
 #include "../io/path.h"
 #include "../io/vio.h"
