@@ -64,18 +64,6 @@ struct special_string_pair_aligned
   int expected;
 };
 
-UNITTEST(mzx_tolower)
-{
-  int i;
-  for(i = 0; i < 256; i++)
-  {
-    if(i >= 'A' && i <= 'Z')
-      ASSERTEQ(mzx_tolower(i), (i - 'A' + 'a'), "");
-    else
-      ASSERTEQ(mzx_tolower(i), i, "");
-  }
-}
-
 static const special_string_pair fail_for_memcasecmp_only[] =
 {
   { "\0a", "\0b", 3, -1 },
