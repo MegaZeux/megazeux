@@ -168,6 +168,26 @@ public:
   }
 };
 
+/* Running a single function on an array of different input data with
+ * expected values is the most common format for unit test sections in
+ * many files. This version takes a function pointer: */
+template<typename T, int N, typename... args>
+static inline void test_data_set(
+ void (*fn)(const T &, args...), const T (&data)[N], args... fargs)
+{
+  for(const T &d : data)
+    fn(d, fargs...);
+}
+
+/* This version takes a lambda/functor/std::function: */
+template<typename FN, typename T, int N, typename... args>
+static inline void test_data_set(
+ FN &fn, const T (&data)[N], args... fargs)
+{
+  for(const T &d : data)
+    fn(d, fargs...);
+}
+
 /**
  * Unit test macros.
  */

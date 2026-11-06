@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "string_char.h"
 #include "string_compare.h"
 #include "string_search.h"
 #include "../util.h"
