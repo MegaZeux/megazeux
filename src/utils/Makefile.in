@@ -18,7 +18,7 @@ UTILS_LIBPNG_LDFLAGS ?= ${LIBPNG_LDFLAGS}
 
 zip_objs  := ${io_obj}/alloc.o ${io_obj}/path.o ${io_obj}/redirect.o \
              ${io_obj}/vio_no_vfs.o ${io_obj}/zip.o ${io_obj}/zip_stream.o \
-             ${algo_obj}/string_compare.o
+             ${algo_obj}/string_char.o ${algo_obj}/string_compare.o
 img_objs  := ${io_obj}/image_file.o ${io_obj}/image_gif.o ${io_obj}/image_png.o
 img_flags :=
 
@@ -55,7 +55,8 @@ emzip_objs := ${utils_obj}/emzip.o ${zip_objs}
 emzip_ldflags += ${UTILS_ZLIB_LDFLAGS}
 
 hlp2html := ${BINPRE}hlp2html${BINEXT}
-hlp2html_objs := ${utils_obj}/hlp2html.o ${algo_obj}/string_compare.o
+hlp2html_objs := ${utils_obj}/hlp2html.o ${algo_obj}/string_char.o \
+                 ${algo_obj}/string_compare.o
 
 hlp2txt := ${BINPRE}hlp2txt${BINEXT}
 hlp2txt_objs := ${utils_obj}/hlp2txt.o

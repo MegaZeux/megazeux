@@ -60,6 +60,7 @@ MEGAZEUX_BEGIN_DECLS
 #include <string.h>
 #include <limits.h>
 
+#include "algorithm/string_char.h"
 #include "algorithm/string_compare.h"
 #include "platform/platform_endian.h"
 

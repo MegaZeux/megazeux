@@ -55,6 +55,18 @@
 #endif
 
 /**
+ * (Attempt) compile-time NULL safety.
+ */
+#if (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 303)) || \
+ defined(__clang__)
+#define ATTRIBUTE_NONNULL __attribute__((nonnull))
+#define ATTRIBUTE_NONNULL_AT(args) __attribute__((nonnull args))
+#else
+#define ATTRIBUTE_NONNULL
+#define ATTRIBUTE_NONNULL_AT(args)
+#endif
+
+/**
  * Turn off sanitizer instrumentation for a particular location.
  */
 #if (defined(__GNUC__) && __GNUC__ >= 9) || \

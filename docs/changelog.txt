@@ -85,6 +85,7 @@ USERS
 + WAV files loaded by the SDL fallback now load the smpl chunk.
 + Fix program and SFX corruption when playing a string or SFX
   with an unterminated sample name.
++ Fix bugs and performance issues in string wildcard comparison.
 
 DEVELOPERS
 

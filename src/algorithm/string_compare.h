@@ -24,9 +24,6 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-UTILS_LIBSPEC extern const unsigned char mzx_tolower_table[256];
-
-#define mzx_tolower(d)  mzx_tolower_table[(unsigned char)(d)]
 #define memcasecmp      mzx_memcasecmp
 #define memcasecmp32    mzx_memcasecmp32
 
