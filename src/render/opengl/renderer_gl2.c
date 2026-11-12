@@ -27,7 +27,7 @@
 #include "../render_layer.h"
 #include "../renderers.h"
 
-#include "../../util.h"
+#include "../../algorithm/bitmath.h"
 #include "../../platform/platform_dso.h"
 
 #ifdef CONFIG_SDL
@@ -339,8 +339,8 @@ static boolean gl2_resize_callback(struct graphics_data *graphics,
   gl_check_error();
 
   gl_set_filter_method(CONFIG_GL_FILTER_NEAREST, gl2.glTexParameterf);
-  charset_width = round_to_power_of_two(CHARSET_COLS * CHAR_2W);
-  charset_height = round_to_power_of_two((CHARSET_ROWS + 1) * CHAR_H);
+  charset_width = mzx_round_to_power_of_two(CHARSET_COLS * CHAR_2W);
+  charset_height = mzx_round_to_power_of_two((CHARSET_ROWS + 1) * CHAR_H);
 
 #ifdef DEBUG
   if(charset_width != (int)TEX_CHARSET_WIDTH ||

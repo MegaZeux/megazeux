@@ -37,6 +37,7 @@
 #include "../configure.h"
 #include "../data.h"
 #include "../util.h"
+#include "../algorithm/bitmath.h"
 #include "../algorithm/string_compare.h"
 #include "../io/fsafeopen.h"
 #include "../platform/platform.h"
@@ -372,7 +373,7 @@ boolean audio_mixer_init(unsigned rate, unsigned frames, unsigned channels)
   if(frames == 0)
     frames = 1024;
   frames = CLAMP(frames, 8, 65536);
-  frames = round_to_power_of_two(frames);
+  frames = mzx_round_to_power_of_two(frames);
 
   if(channels == 0)
     channels = 2;

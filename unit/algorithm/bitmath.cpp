@@ -151,7 +151,7 @@ static uint32_t naive_round_to_power_of_two(uint32_t value)
 {
   uint32_t n;
   for(n = 1u; n; n <<= 1)
-    if(n > value)
+    if(n >= value)
       break;
   return n;
 }
