@@ -14,7 +14,7 @@ platform_x11_objs += \
 
 -include ${platform_x11_objs:.o=.d}
 ${platform_x11_objs}: \
- $(filter_out $(wildcard ${platform_x11_obj}), ${platform_x11_obj})
+ $(filter-out $(wildcard ${platform_x11_obj}), ${platform_x11_obj})
 
 build_dirs    += ${platform_x11_obj}
 platform_objs += ${platform_x11_objs}

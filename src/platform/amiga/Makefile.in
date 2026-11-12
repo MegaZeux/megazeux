@@ -10,7 +10,7 @@ platform_amiga_objs := \
 
 -include ${platform_amiga_objs:.o=.d}
 ${platform_amiga_objs}: \
- $(filter_out $(wildcard ${platform_amiga_obj}), ${platform_amiga_obj})
+ $(filter-out $(wildcard ${platform_amiga_obj}), ${platform_amiga_obj})
 
 build_dirs    += ${platform_amiga_obj}
 platform_objs += ${platform_amiga_objs}
