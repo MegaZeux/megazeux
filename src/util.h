@@ -98,17 +98,6 @@ uint64_t rng_get_seed(void);
 void rng_set_seed(uint64_t seed);
 unsigned int Random(uint64_t range);
 
-static inline size_t round_to_power_of_two(size_t v)
-{
-  v -= (v > 0);
-  v |= v >> 1;
-  v |= v >> 2;
-  v |= v >> 4;
-  v |= v >> 8;
-  v |= v >> 16;
-  return v + 1;
-}
-
 #if defined(__amigaos__)
 CORE_LIBSPEC extern long __stack_chk_guard[8];
 CORE_LIBSPEC void __stack_chk_fail(void);

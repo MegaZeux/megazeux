@@ -114,6 +114,7 @@ static inline int mzx_soft_ctz64(uint64_t x)
 
 static inline uint32_t mzx_round_to_power_of_two(uint32_t value)
 {
+  value -= (value > 0);
   value |= value >> 1;
   value |= value >> 2;
   value |= value >> 4;

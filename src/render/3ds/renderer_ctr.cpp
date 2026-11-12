@@ -23,7 +23,7 @@
 #include "../renderers.h"
 
 #include "../../graphics.h"
-#include "../../util.h"
+#include "../../algorithm/bitmath.h"
 #include "../../io/image_png.h"
 #include "../../io/vio.h"
 
@@ -1016,8 +1016,8 @@ static void ctr_render_layer(struct graphics_data *graphics,
     {
       layer->has_background_texture = true;
       layer->background.data = NULL;
-      C3D_TexInit(&(layer->background), round_to_power_of_two(layer->w),
-       round_to_power_of_two(layer->h), GPU_RGBA8);
+      C3D_TexInit(&(layer->background), mzx_round_to_power_of_two(layer->w),
+       mzx_round_to_power_of_two(layer->h), GPU_RGBA8);
       C3D_TexSetFilter(&(layer->background), GPU_NEAREST, GPU_NEAREST);
     }
     else

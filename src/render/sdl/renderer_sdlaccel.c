@@ -33,7 +33,7 @@
 #include "../renderers.h"
 #include "render_sdl.h"
 
-#include "../../util.h"
+#include "../../algorithm/bitmath.h"
 
 #include <stdlib.h>
 
@@ -312,8 +312,8 @@ static boolean sdlaccel_create_window(struct graphics_data *graphics,
   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 #endif
 
-  tex_chars_w = round_to_power_of_two(TEX_CHARS_PIX_W);
-  tex_chars_h = round_to_power_of_two(TEX_CHARS_PIX_H);
+  tex_chars_w = mzx_round_to_power_of_two(TEX_CHARS_PIX_W);
+  tex_chars_h = mzx_round_to_power_of_two(TEX_CHARS_PIX_H);
 
   // Don't use SDL_TEXTUREACCESS_STREAMING here right now.
   //
