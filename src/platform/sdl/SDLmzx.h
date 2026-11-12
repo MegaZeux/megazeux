@@ -42,6 +42,9 @@ MEGAZEUX_BEGIN_DECLS
 
 #if !SDL_VERSION_ATLEAST(2,0,0)
 
+/* Not included by very old versions of SDL (encountered in 1.2.7) */
+#include <SDL_loadso.h>
+
 // This block remaps anything that is EXACTLY equivalent to its new SDL 2.0
 // counterpart. More complex changes are handled with #ifdefs "in situ".
 

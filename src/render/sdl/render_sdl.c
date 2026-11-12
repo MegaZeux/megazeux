@@ -595,21 +595,23 @@ static png_bool icon_alloc_fn(uint32_t width, uint32_t height,
 #if SDL_VERSION_ATLEAST(2,0,0)
   s = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
 #else
-  Uint32 rmask, gmask, bmask, amask;
+  {
+    Uint32 rmask, gmask, bmask, amask;
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-  rmask = 0xff000000;
-  gmask = 0x00ff0000;
-  bmask = 0x0000ff00;
-  amask = 0x000000ff;
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
 #else
-  rmask = 0x000000ff;
-  gmask = 0x0000ff00;
-  bmask = 0x00ff0000;
-  amask = 0xff000000;
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
 #endif
 
-  s = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
+    s = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, rmask, gmask, bmask, amask);
+  }
 #endif
   if(!s)
     return IMAGE_FALSE;

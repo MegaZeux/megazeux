@@ -27,6 +27,7 @@
 MEGAZEUX_BEGIN_DECLS
 
 #include <stddef.h>
+#include <sys/types.h> /* ssize_t */
 
 // Most platforms allow / as a root.
 #define PATH_UNIX_STYLE_ROOTS
