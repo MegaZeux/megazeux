@@ -93,11 +93,6 @@ CORE_LIBSPEC int mzx_res_init(const char *argv0, boolean editor);
 CORE_LIBSPEC void mzx_res_free(void);
 CORE_LIBSPEC const char *mzx_res_get_by_id(enum resource_id id);
 
-CORE_LIBSPEC void rng_seed_init(void);
-uint64_t rng_get_seed(void);
-void rng_set_seed(uint64_t seed);
-unsigned int Random(uint64_t range);
-
 #if defined(__amigaos__)
 CORE_LIBSPEC extern long __stack_chk_guard[8];
 CORE_LIBSPEC void __stack_chk_fail(void);

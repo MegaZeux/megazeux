@@ -46,6 +46,8 @@
 #include "util.h"
 #include "world.h"
 #include "world_struct.h"
+#include "algorithm/bitmath.h"
+#include "algorithm/rng.h"
 #include "algorithm/string_char.h"
 #include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
@@ -1391,19 +1393,19 @@ static int random_seed_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
   int idx = strtol(name + 11, NULL, 10) % 2;
-  unsigned int seed = rng_get_seed() >> (32 * idx) & 0xFFFFFFFF;
-  return *((signed int *)&seed);
+  uint32_t seed = (uint32_t)(mzx_rng_get_seed(&(mzx_world->rng)) >> (32 * idx));
+  return mzx_bit_cast_u32_to_i32(seed);
 }
 
 static void random_seed_write(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int value, int id)
 {
   int idx = strtol(name + 11, NULL, 10) % 2;
-  uint64_t seed = rng_get_seed();
+  uint64_t seed = mzx_rng_get_seed(&(mzx_world->rng));
   uint64_t mask = ~(0xFFFFFFFFULL << (32 * idx));
-  uint64_t insert = *((unsigned int *)&value);
+  uint64_t insert = mzx_bit_cast_i32_to_u32(value);
   seed = (seed & mask) | (insert << (32 * idx));
-  rng_set_seed(seed);
+  mzx_rng_set_seed(&(mzx_world->rng), seed);
 }
 
 static int vch_read(struct world *mzx_world,

@@ -427,40 +427,6 @@ const char *mzx_res_get_by_id(enum resource_id id)
   return mzx_res[id].path;
 }
 
-// Random function, returns an integer [0-range)
-
-static uint64_t rng_state;
-
-// Seed the RNG from system time on startup
-void rng_seed_init(void)
-{
-  uint64_t seed = (((uint64_t)time(NULL)) << 32) | clock();
-  rng_set_seed(seed);
-}
-
-uint64_t rng_get_seed(void)
-{
-  return rng_state;
-}
-
-void rng_set_seed(uint64_t seed)
-{
-  rng_state = seed;
-}
-
-// xorshift*
-// Implementation from https://en.wikipedia.org/wiki/Xorshift
-unsigned int Random(uint64_t range)
-{
-  uint64_t x = rng_state;
-  if(x == 0) x = 1;
-  x ^= x >> 12; // a
-  x ^= x << 25; // b
-  x ^= x >> 27; // c
-  rng_state = x;
-  return (((x * 0x2545F4914F6CDD1D) >> 32) * range) >> 32;
-}
-
 #if defined(__amigaos__)
 
 long __stack_chk_guard[8];

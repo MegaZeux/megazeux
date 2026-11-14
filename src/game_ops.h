@@ -28,6 +28,9 @@ MEGAZEUX_BEGIN_DECLS
 
 #include "data.h"
 #include "world_struct.h"
+#include "algorithm/rng.h"
+
+#define Random(x) mzx_rng_get_random(&(mzx_world->rng), (x))
 
 void rotate(struct world *mzx_world, int x, int y, int dir);
 

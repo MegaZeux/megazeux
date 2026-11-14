@@ -334,6 +334,9 @@ namespace Unit
     explicit arg(long _op);
     explicit arg(long long _op);
 
+    explicit arg(float _op);
+    explicit arg(double _op);
+
     explicit arg(const void *_ptr, size_t length_bytes);
     explicit arg(const unsigned short *_ptr, size_t length_bytes);
     explicit arg(const unsigned int *_ptr, size_t length_bytes);

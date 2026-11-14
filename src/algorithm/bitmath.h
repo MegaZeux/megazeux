@@ -24,11 +24,65 @@
 
 MEGAZEUX_BEGIN_DECLS
 
+#include <stdint.h>
+
 #include "arch.h"
 
 #ifndef __has_builtin
 #define __has_builtin(x) 0
 #endif
+
+static inline uint32_t mzx_bit_cast_i32_to_u32(int32_t x)
+{
+  /* Casting theoretically allows implementation-defined behavior, so use type
+   * punning. Compiler should optimize this to something reasonable. */
+  return *((uint32_t *)&x);
+}
+
+static inline int32_t mzx_bit_cast_u32_to_i32(uint32_t x)
+{
+  return *((int32_t *)&x);
+}
+
+static inline uint64_t mzx_bit_cast_i64_to_u64(int64_t x)
+{
+  return *((uint64_t *)&x);
+}
+
+static inline int64_t mzx_bit_cast_u64_to_i64(uint64_t x)
+{
+  return *((int64_t *)&x);
+}
+
+static inline int64_t mzx_bit_cast_f64_to_i64(double x)
+{
+  int64_t y;
+  /* This is the only C++-sanctioned way to type pun float and int.
+   * Compiler should optimize this to something reasonable. */
+  memcpy(&y, &x, sizeof(int64_t));
+  return y;
+}
+
+static inline uint64_t mzx_bit_cast_f64_to_u64(double x)
+{
+  uint64_t y;
+  memcpy(&y, &x, sizeof(uint64_t));
+  return y;
+}
+
+static inline double mzx_bit_cast_i64_to_f64(int64_t x)
+{
+  double y;
+  memcpy(&y, &x, sizeof(double));
+  return y;
+}
+
+static inline double mzx_bit_cast_u64_to_f64(uint64_t x)
+{
+  double y;
+  memcpy(&y, &x, sizeof(double));
+  return y;
+}
 
 /* Note: these macros/functions should never be used in the case of x = 0. */
 #if (defined(__GNUC__) && !defined(__clang__) && \

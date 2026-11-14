@@ -45,6 +45,7 @@
 #include "util.h"
 #include "window.h"
 #include "world.h"
+#include "algorithm/rng.h"
 #include "io/path.h"
 #include "io/redirect.h"
 #include "io/vio.h"
@@ -274,8 +275,6 @@ __libspec int main(int argc, char *argv[])
 
   counter_fsg();
 
-  rng_seed_init();
-
   mouse_size(8, 14);
 
   init_event(conf);
@@ -291,6 +290,7 @@ __libspec int main(int argc, char *argv[])
   init_pledge();
 #endif
 
+  mzx_rng_init(&(mzx_world.rng));
   core_data = core_init(&mzx_world);
 
   if(network_layer_init(conf))

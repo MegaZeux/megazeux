@@ -5,6 +5,7 @@
 algo_src   = ${core_src}/algorithm
 algo_obj   = ${build_base}/${algo_src}
 algo_objs += \
+  ${algo_obj}/rng.o               \
   ${algo_obj}/string_char.o       \
   ${algo_obj}/string_compare.o    \
   ${algo_obj}/string_match.o      \
