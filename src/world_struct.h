@@ -34,6 +34,7 @@ MEGAZEUX_BEGIN_DECLS
 #include "sprite_struct.h"
 
 #include "sfx.h"
+#include "algorithm/rng_struct.h"
 #include "io/vfile.h"
 
 #define COMMAND_CACHE_CURRENT_TIME (1 << 0)
@@ -249,6 +250,9 @@ struct world
   // An array for game2.cpp
   char *update_done;
   int update_done_size;
+
+  // In-game random seed (initialized at startup, persists between worlds).
+  struct mzx_rng_state rng;
 
   // Cached time for the current robot command.
   struct tm current_time;

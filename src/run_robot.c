@@ -363,7 +363,7 @@ static void send_at_xy(struct world *mzx_world, int id, int x, int y,
   }
 }
 
-static int get_random_range(int min_value, int max_value)
+static int get_random_range(struct world *mzx_world, int min_value, int max_value)
 {
   int result;
   uint64_t difference;
@@ -3675,7 +3675,7 @@ void run_robot(context *ctx, int id, int x, int y)
         int result;
 
         tr_msg(mzx_world, cmd_ptr + 2, id, dest_buffer);
-        result = get_random_range(min_value, max_value);
+        result = get_random_range(mzx_world, min_value, max_value);
         inc_counter(mzx_world, dest_buffer, result, id);
         last_label = -1;
         break;
@@ -3691,7 +3691,7 @@ void run_robot(context *ctx, int id, int x, int y)
         int result;
 
         tr_msg(mzx_world, cmd_ptr + 2, id, dest_buffer);
-        result = get_random_range(min_value, max_value);
+        result = get_random_range(mzx_world, min_value, max_value);
         dec_counter(mzx_world, dest_buffer, result, id);
         last_label = -1;
         break;
@@ -3707,7 +3707,7 @@ void run_robot(context *ctx, int id, int x, int y)
         int result;
 
         tr_msg(mzx_world, cmd_ptr + 2, id, dest_buffer);
-        result = get_random_range(min_value, max_value);
+        result = get_random_range(mzx_world, min_value, max_value);
         set_counter(mzx_world, dest_buffer, result, id);
         last_label = -1;
         break;

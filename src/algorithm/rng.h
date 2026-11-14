@@ -27,12 +27,9 @@ MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 
-#define MZX_RNG_MAX ((uint64_t)UINT32_MAX + 1)
+#include "rng_struct.h"
 
-struct mzx_rng_state
-{
-  uint64_t state;
-};
+#define MZX_RNG_MAX ((uint64_t)UINT32_MAX + 1)
 
 UTILS_LIBSPEC void mzx_rng_init(struct mzx_rng_state *rng) ATTRIBUTE_NONNULL;
 UTILS_LIBSPEC uint64_t mzx_rng_get_seed(const struct mzx_rng_state *rng)
