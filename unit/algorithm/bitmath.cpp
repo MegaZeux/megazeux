@@ -111,6 +111,15 @@ static constexpr uint64_t values64[] =
   0x000000000000000fu, 0x0000000000000007u, 0x0000000000000003u, 0x0000000000000001u,
 };
 
+template<typename T, typename U>
+static inline T naive_bit_cast(U x)
+{
+  static_assert(sizeof(T) == sizeof(U), "");
+  T y;
+  memcpy(&y, &x, sizeof(y));
+  return y;
+}
+
 static int naive_clz(uint32_t value)
 {
   int count = 0;
@@ -154,6 +163,44 @@ static uint32_t naive_round_to_power_of_two(uint32_t value)
     if(n >= value)
       break;
   return n;
+}
+
+template<typename T, typename U, typename V>
+static void bit_cast_test(const V &d, T bit_cast_fn(U))
+{
+  U src = naive_bit_cast<U>(d);
+  T dest = bit_cast_fn(src);
+  ASSERTMEM(&dest, &d, sizeof(T), "");
+  /* round trip */
+  V chk = naive_bit_cast<V>(dest);
+  ASSERTEQ(chk, d, "");
+}
+
+UNITTEST(mzx_bit_cast)
+{
+  SECTION(i32_to_u32)
+    test_data_set(bit_cast_test<uint32_t, int32_t>, values32, mzx_bit_cast_i32_to_u32);
+
+  SECTION(u32_to_i32)
+    test_data_set(bit_cast_test<int32_t, uint32_t>, values32, mzx_bit_cast_u32_to_i32);
+
+  SECTION(i64_to_u64)
+    test_data_set(bit_cast_test<uint64_t, int64_t>, values64, mzx_bit_cast_i64_to_u64);
+
+  SECTION(u64_to_i64)
+    test_data_set(bit_cast_test<int64_t, uint64_t>, values64, mzx_bit_cast_u64_to_i64);
+
+  SECTION(f64_to_i64)
+    test_data_set(bit_cast_test<int64_t, double>, values64, mzx_bit_cast_f64_to_i64);
+
+  SECTION(f64_to_u64)
+    test_data_set(bit_cast_test<uint64_t, double>, values64, mzx_bit_cast_f64_to_u64);
+
+  SECTION(i64_to_f64)
+    test_data_set(bit_cast_test<double, int64_t>, values64, mzx_bit_cast_i64_to_f64);
+
+  SECTION(u64_to_f64)
+    test_data_set(bit_cast_test<double, uint64_t>, values64, mzx_bit_cast_u64_to_f64);
 }
 
 UNITTEST(mzx_clz32)

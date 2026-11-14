@@ -240,6 +240,20 @@ namespace Unit
     has_value = true;
   }
 
+  arg::arg(float _op)
+  {
+    snprintf(tmpbuf, sizeof(tmpbuf), "%.06f", _op);
+    op = tmpbuf;
+    has_value = true;
+  }
+
+  arg::arg(double _op)
+  {
+    snprintf(tmpbuf, sizeof(tmpbuf), "%.010f", _op);
+    op = tmpbuf;
+    has_value = true;
+  }
+
   template<class T, class E = std::enable_if<std::is_integral<T>::value>>
   char *_set_operand_integral_ptr(const T *_op, size_t length)
   {
@@ -863,6 +877,18 @@ namespace Unit
 
     Unit::arg lln(-9223372036854775807LL);
     if(!match("arg::long long", lln, "-9223372036854775807"))
+      return false;
+
+    if(!match("arg::float", Unit::arg(12345.25f), "12345.250000"))
+      return false;
+
+    if(!match("arg::float", Unit::arg(-0.12345f), "-0.123450"))
+      return false;
+
+    if(!match("arg::double", Unit::arg(12345.6789), "12345.6789000000"))
+      return false;
+
+    if(!match("arg::double", Unit::arg(-0.123456789), "-0.1234567890"))
       return false;
 
     int8_t values8s[] = { -1, -2, -3, -4, -5 };
