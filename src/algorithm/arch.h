@@ -78,6 +78,7 @@
 #if /* GNU */ defined(__mips__) || defined(__mips) || defined(__MIPS__)
 #define ARCHITECTURE_IS_MIPS 1
 #if /* GNU */ defined(_R4000) || defined(_R5900) || \
+    /* ? */ (defined(_MIPS_SIM) && defined(_ABI64) && _MIPS_SIM == _ABI64) || \
     /* ? */ (defined(_MIPS_ISA) && _MIPS_ISA >= _MIPS_ISA_MIPS3)
 #define ARCHITECTURE_IS_MIPS64 1
 #endif
@@ -110,7 +111,8 @@
 
 #if /* GNU */ defined(__sparc__) || /* Sun */ defined(__sparc)
 #define ARCHITECTURE_IS_SPARC 1
-#if /* GNU */ defined(__sparc_v9__) || /* Sun */ defined(__sparcv9)
+#if /* GNU */ defined(__sparc_v9__) || /* Sun */ defined(__sparcv9) || \
+    /* Sun */ defined(__arch64__)
 #define ARCHITECTURE_IS_SPARC64 1
 #endif
 #endif
@@ -118,21 +120,6 @@
 #if /* GNU */ defined(__sh__)
 #define ARCHITECTURE_IS_SUPERH 1
 #endif
-
-
-/* Integer alignment.
- * Some platforms allow misaligned integers with little or no penalty.
- * Most prefer to keep them aligned, though.
- */
-#ifndef ARCH_INT64_MODULO
-#define ARCH_INT64_MODULO 8
-#endif
-#ifndef ARCH_INT32_MODULO
-#define ARCH_INT32_MODULO 4
-#endif
-
-
-/* FIXME: deliberate misalignment */
 
 
 /* Integer/pointer endian. */
@@ -214,6 +201,12 @@
 #error Failed to determine endianness!
 #endif
 
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
+#define ARCH_LIL_OR_BIG(lil, big) (lil)
+#else
+#define ARCH_LIL_OR_BIG(lil, big) (big)
+#endif
+
 
 /* Floating point endian. */
 
@@ -270,18 +263,105 @@
 #endif
 
 
+/* Integer alignment.
+ *
+ * Some platforms allow misaligned integers with little or no penalty.
+ * Most prefer to keep them aligned, though. Unaligned pointers should ONLY
+ * be used on platforms that define ARCH_INT32/64_UNALIGN and ONLY on
+ * conventional memory (not MMIO like the PCI bus), and even then, sparingly.
+ * Both _MODULO and _UNALIGN defines should be treated as alignment modulos,
+ * i.e., a value of 2 means that pointer needs to be aligned to even bytes.
+ * _MODULO represents the "normal" alignment and _UNALIGN represents the
+ * smallest "safe" misalignment.
+ *
+ * Most architectures not listed here will SIGBUS on unaligned accesses.
+ * RISC-V allows them via a trap sent by the processor for software emulation,
+ * which is extremely slow and thus disregarded here.
+ */
+#define ARCH_INT16_MODULO 2
+
+/* Motorola 68000 family supports reading 32-bit integers at 16-bit offsets.
+ * This is not considered unaligned access. */
+#if defined(ARCHITECTURE_IS_M68K)
+#define ARCH_INT32_MODULO ARCH_INT16_MODULO
+#endif
+
+#ifndef ARCH_INT32_MODULO
+#define ARCH_INT32_MODULO 4
+#endif
+
+/* 32-bit platforms almost always allow 64-bit integers at 32-bit offsets.
+ * Note that this is NOT necessarily true for 64-bit floats. */
+#if ARCHITECTURE_BITS < 64
+#define ARCH_INT64_MODULO ARCH_INT32_MODULO
+#endif
+
+#ifndef ARCH_INT64_MODULO
+#define ARCH_INT64_MODULO 8
+#endif
+
+/* x86, AMD64, and Wasm allow unaligned integer pointers in conventional
+ * memory. This is slower than aligned access but useful for some cases. */
+#if defined(ARCHITECTURE_IS_X86) || defined(__EMSCRIPTEN__)
+#define ARCH_INT32_UNALIGN 1
+#if ARCHITECTURE_BITS >= 64
+#define ARCH_INT64_UNALIGN 1
+#endif
+#endif
+
+/* ARM may or may not allow unaligned accesses based on the revision used and
+ * whether or not it is allowed at runtime. __ARM_FEATURE_UNALIGNED is
+ * provided to indicate when this is possible, but it is not trustworthy for
+ * 32-bit ARM. This is almost always (but not necessarily) allowed on ARM64. */
+#if defined(ARCHITECTURE_IS_ARM64) && defined(__ARM_FEATURE_UNALIGNED)
+#define ARCH_INT32_UNALIGN 1
+#if ARCHITECTURE_BITS >= 64
+#define ARCH_INT64_UNALIGN 1
+#endif
+#endif
+
+/* Enable unaligned access codepaths for Motorola 68000 (see above). */
+#if defined(ARCHITECTURE_IS_M68K)
+#define ARCH_INT32_UNALIGN ARCH_INT32_MODULO
+#endif
+
+/* PowerPC can access 32-bit integers unaligned but not 64-bit integers.
+ * POWER8+ can access both unaligned. */
+#if defined(ARCHITECTURE_IS_PPC)
+#define ARCH_INT32_UNALIGN 1
+#if defined(_ARCH_PWR8)
+#define ARCH_INT64_UNALIGN 1
+#endif
+#endif
+
+
 /* Fast integer type defines. */
 #if ARCHITECTURE_BITS >= 64
 typedef uint64_t arch_uint;
 #define ARCH_UINT_MODULO        ARCH_INT64_MODULO
 #define ARCH_32_OR_64(x32,x64)  (x64)
+#ifdef ARCH_INT64_UNALIGN
+#define ARCH_UINT_UNALIGN       ARCH_INT64_UNALIGN
+#endif
 #else
 typedef uint32_t arch_uint;
 #define ARCH_UINT_MODULO        ARCH_INT32_MODULO
 #define ARCH_32_OR_64(x32,x64)  (x32)
+#ifdef ARCH_INT32_UNALIGN
+#define ARCH_UINT_UNALIGN       ARCH_INT32_UNALIGN
+#endif
 #endif
 
 #define ARCH_UINT_TRUNC_CAST(p) ((arch_uint *)((arch_uint)(p) & ~(sizeof(arch_uint) - 1)))
-#define ARCH_UINT_UNSAFE_CAST(p) ((arch_uint *)(p))
+
+#ifdef ARCH_INT32_UNALIGN
+#define ARCH_UINT32_UNALIGN_CAST(p) ((uint32_t *)((arch_uint)(p) & ~(ARCH_INT32_UNALIGN - 1)))
+#endif
+#ifdef ARCH_INT64_UNALIGN
+#define ARCH_UINT64_UNALIGN_CAST(p) ((uint64_t *)((arch_uint)(p) & ~(ARCH_INT64_UNALIGN - 1)))
+#endif
+#ifdef ARCH_UINT_UNALIGN
+#define ARCH_UINT_UNALIGN_CAST(p) ((arch_uint *)((arch_uint)(p) & ~(ARCH_UINT_UNALIGN - 1)))
+#endif
 
 #endif /* MEGAZEUX_ALGORITHM_ARCH_H */

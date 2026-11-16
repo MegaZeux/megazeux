@@ -164,37 +164,27 @@ UNITTEST(Machine)
 #endif
 }
 
-struct aligntest
-{
-  uint8_t pad1[2];
-  uint32_t a;
-  uint64_t b;
-  uint8_t pad2[3];
-  uint32_t c;
-  uint64_t d;
-};
-
-UNITTEST(Alignment)
-{
-  aligntest t{};
-
-  ASSERTEQ(((arch_uint)&t.a) % ARCH_INT32_MODULO, 0, "");
-  ASSERTEQ(((arch_uint)&t.b) % ARCH_INT64_MODULO, 0, "");
-  ASSERTEQ(((arch_uint)&t.c) % ARCH_INT32_MODULO, 0, "");
-  ASSERTEQ(((arch_uint)&t.d) % ARCH_INT64_MODULO, 0, "");
-
-  /* FIXME: misalignment */
-  UNIMPLEMENTED();
-}
-
 UNITTEST(IntEndian)
 {
-  uint8_t expected[4] = { 0x0a, 0x0b, 0x0c, 0x0d };
-  uint8_t result[4];
-  uint32_t value = ARCH_BYTE_ORDER;
+  SECTION(ByteOrder)
+  {
+    uint8_t expected[4] = { 0x0a, 0x0b, 0x0c, 0x0d };
+    uint8_t result[4];
+    uint32_t value = ARCH_BYTE_ORDER;
 
-  memcpy(result, &value, sizeof(value));
-  ASSERTMEM(result, expected, 4, "");
+    memcpy(result, &value, sizeof(value));
+    ASSERTMEM(result, expected, 4, "");
+  }
+
+  SECTION(LilOrBig)
+  {
+    uint8_t expected[4] = { 0x01, 0x02, 0x03, 0x04 };
+    uint8_t result[4];
+    uint32_t value = ARCH_LIL_OR_BIG(0x04030201, 0x01020304);
+
+    memcpy(result, &value, sizeof(value));
+    ASSERTMEM(result, expected, 4, "");
+  }
 }
 
 /* TODO: x87? */
@@ -221,6 +211,104 @@ UNITTEST(Bitwidth)
   ASSERTEQ(ARCHITECTURE_BITS, ARCH_32_OR_64(32, 64), "");
 }
 
+struct aligntest
+{
+  uint8_t pad1[2];
+  uint32_t a;
+  uint64_t b;
+  uint8_t pad2[3];
+  uint32_t c;
+  uint64_t d;
+  uint8_t pad3[1];
+  uint16_t e;
+};
+
+UNITTEST(Alignment)
+{
+#if defined(ARCH_INT32_UNALIGN) || defined(ARCH_INT64_UNALIGN)
+  uint8_t buf[24];
+  uint8_t *pos = buf;
+  size_t i;
+#endif
+
+  SECTION(Aligned)
+  {
+    aligntest t{};
+
+    ASSERTEQ(((arch_uint)&t.a) % ARCH_INT32_MODULO, 0, "");
+    ASSERTEQ(((arch_uint)&t.b) % ARCH_INT64_MODULO, 0, "");
+    ASSERTEQ(((arch_uint)&t.c) % ARCH_INT32_MODULO, 0, "");
+    ASSERTEQ(((arch_uint)&t.d) % ARCH_INT64_MODULO, 0, "");
+    ASSERTEQ(((arch_uint)&t.e) % ARCH_INT16_MODULO, 0, "");
+  }
+
+  SECTION(Unaligned32)
+  {
+#ifndef ARCH_INT32_UNALIGN
+    SKIP();
+#else
+    static_assert(ARCH_INT32_UNALIGN > 0, "");
+
+    static constexpr uint32_t expected[] =
+    {
+      ARCH_LIL_OR_BIG(0x04030201, 0x01020304),
+      ARCH_LIL_OR_BIG(0x05040302, 0x02030405),
+      ARCH_LIL_OR_BIG(0x06050403, 0x03040506),
+      ARCH_LIL_OR_BIG(0x07060504, 0x04050607),
+      ARCH_LIL_OR_BIG(0x08070605, 0x05060708),
+    };
+    const uint32_t *exp_pos = expected;
+
+    while((arch_uint)pos % ARCH_INT32_MODULO)
+      pos++;
+
+    for(i = 0; i < 8; i++)
+      pos[i] = i + 1;
+
+    for(i = 0; i <= 4; i += ARCH_INT32_UNALIGN, exp_pos++)
+    {
+      const uint32_t *check = ARCH_UINT32_UNALIGN_CAST(pos + i);
+      ASSERTEQ(*check, *exp_pos, "%zu", i);
+    }
+#endif
+  }
+
+  SECTION(Unaligned64)
+  {
+#ifndef ARCH_INT64_UNALIGN
+    SKIP();
+#else
+    static_assert(ARCH_INT64_UNALIGN > 0, "");
+
+    static constexpr uint64_t expected[] =
+    {
+      ARCH_LIL_OR_BIG(0x0807060504030201ull, 0x0102030405060708ull),
+      ARCH_LIL_OR_BIG(0x0908070605040302ull, 0x0203040506070809ull),
+      ARCH_LIL_OR_BIG(0x0a09080706050403ull, 0x030405060708090aull),
+      ARCH_LIL_OR_BIG(0x0b0a090807060504ull, 0x0405060708090a0bull),
+      ARCH_LIL_OR_BIG(0x0c0b0a0908070605ull, 0x05060708090a0b0cull),
+      ARCH_LIL_OR_BIG(0x0d0c0b0a09080706ull, 0x060708090a0b0c0dull),
+      ARCH_LIL_OR_BIG(0x0e0d0c0b0a090807ull, 0x0708090a0b0c0d0eull),
+      ARCH_LIL_OR_BIG(0x0f0e0d0c0b0a0908ull, 0x08090a0b0c0d0e0full),
+      ARCH_LIL_OR_BIG(0x100f0e0d0c0b0a09ull, 0x090a0b0c0d0e0f10ull),
+    };
+    const uint64_t *exp_pos = expected;
+
+    while((arch_uint)pos % ARCH_INT64_MODULO)
+      pos++;
+
+    for(i = 0; i < 16; i++)
+      pos[i] = i + 1;
+
+    for(i = 0; i <= 8; i += ARCH_INT64_UNALIGN, exp_pos++)
+    {
+      const uint64_t *check = ARCH_UINT64_UNALIGN_CAST(pos + i);
+      ASSERTEQ(*check, *exp_pos, "%zu", i);
+    }
+#endif
+  }
+}
+
 UNITTEST(ArchUint)
 {
   uint8_t buffer[256]{};
@@ -236,9 +324,10 @@ UNITTEST(ArchUint)
     pa = ARCH_UINT_TRUNC_CAST(p8);
     ASSERTEQ((arch_uint)pa, (arch_uint)p8 & ARCH_32_OR_64(~3, ~7), "%d", i);
 
-    /* ARCH_UINT_UNSAFE_CAST should only be used on architectures that can
-     * actually represent misaligned pointers and support accessing them,
-     * as this is technically undefined behavior. */
-    /* FIXME: misalignment and ARCH_UINT_UNSAFE_CAST */
+#ifdef ARCH_UINT_UNALIGN
+    static_assert(ARCH_UINT_UNALIGN > 0, "");
+    pa = ARCH_UINT_UNALIGN_CAST(p8);
+    ASSERTEQ((arch_uint)pa, (arch_uint)p8 & ~(ARCH_UINT_UNALIGN - 1), "%d", i);
+#endif
   }
 }
