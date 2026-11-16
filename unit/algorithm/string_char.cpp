@@ -400,6 +400,32 @@ static void check_memcasechr(const string_pos_test_data &d)
   check_memcasechr_inner(d2, " unalign");
 }
 
+static void check_carry(void (*fn)(const string_pos_test_data &))
+{
+  string_pos_test_data d = { nullptr, 8, '\0', NO, NO };
+  char data[8];
+  size_t i;
+
+  for(i = 1; i < 256; i++)
+  {
+    /* Carry left */
+    memset(data, i, sizeof(data));
+    data[7] = '\0';
+    d.haystack = data;
+    d.expected = 7;
+    d.expected_ignore_case = 7;
+    fn(d);
+
+    /* Carry right (should never be an issue?) */
+    memset(data, i, sizeof(data));
+    data[0] = '\0';
+    d.haystack = data;
+    d.expected = 0;
+    d.expected_ignore_case = 0;
+    fn(d);
+  }
+}
+
 UNITTEST(mzx_memchr)
 {
   SECTION(Match)
@@ -416,6 +442,9 @@ UNITTEST(mzx_memchr)
 
   SECTION(Inversions)
     test_data_set(check_memchr, inversions_data);
+
+  SECTION(Carry)
+    check_carry(check_memchr);
 }
 
 UNITTEST(mzx_memcasechr)
@@ -434,4 +463,7 @@ UNITTEST(mzx_memcasechr)
 
   SECTION(Inversions)
     test_data_set(check_memcasechr, inversions_data);
+
+  SECTION(Carry)
+    check_carry(check_memcasechr);
 }

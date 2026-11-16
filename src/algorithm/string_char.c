@@ -75,8 +75,10 @@ const unsigned char mzx_tolower_table[256] =
 
 #if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
 #define POSITION_OF_FIRST_ZERO(x) (arch_uint_ctz(x) >> 3)
+#define SUBTRACT_ALL_BYTES_01 ALL_BYTES_01
 #else
 #define POSITION_OF_FIRST_ZERO(x) (arch_uint_clz(x) >> 3)
+#define SUBTRACT_ALL_BYTES_01 (inv_maybe_zero & ALL_BYTES_01)
 #endif
 
 /* If any of the bytes of maybe_zero are zero, subtracting 1 from each
@@ -90,13 +92,20 @@ const unsigned char mzx_tolower_table[256] =
  * Non-matching bytes have 8 zero bits and matching bytes have 7 trailing
  * zero bits; either way, dividing the result by 8 gets the byte index.
  *
+ * On big endian architectures, 0100 - 0101 = FFFF will cause a false positive
+ * match on the higher order (earlier) byte in the word, so subtracting from
+ * these 01 bytes needs to be masked out. This is done by instead subtracting
+ * (inv_maybe_zero & all 01 bytes), which costs one extra operation per word.
+ *
  * For case-insensitive search, upper case and lower case source characters can
  * be checked at the same time by ORing bit 5 onto every byte. This requires
  * any needle that isn't A-Z or a-z to be redirected to memchr.
  */
 #define CHECK_WORD(value, offset) do { \
-  arch_uint maybe_zero = ((value) ^ all_lc); \
-  arch_uint has_zero = (maybe_zero - ALL_BYTES_01) & ~maybe_zero & ALL_BYTES_80; \
+  arch_uint maybe_zero = ((value) ^ all_needle); \
+  arch_uint inv_maybe_zero = ~maybe_zero; \
+  arch_uint has_zero = \
+   (maybe_zero - SUBTRACT_ALL_BYTES_01) & inv_maybe_zero & ALL_BYTES_80; \
   if(has_zero) \
     return (const uint8_t *)(offset) + POSITION_OF_FIRST_ZERO(has_zero); \
 } while(0)
@@ -121,7 +130,7 @@ const void *mzx_memchr(const void *_h, unsigned char needle, size_t len)
   const uint8_t *haystack_end;
   const arch_uint *hw;
   const arch_uint *hw_end;
-  arch_uint all_lc;
+  arch_uint all_needle;
   arch_uint word;
 
   haystack = (const uint8_t *)_h;
@@ -135,7 +144,7 @@ const void *mzx_memchr(const void *_h, unsigned char needle, size_t len)
     return NULL;
   }
 
-  all_lc = ALL_BYTES_01 * needle;
+  all_needle = ALL_BYTES_01 * needle;
   memcpy(&word, haystack, sizeof(word));
   CHECK_WORD(word, haystack);
 
@@ -174,7 +183,7 @@ const void *mzx_memcasechr(const void *_h, unsigned char needle, size_t len)
   const uint8_t *haystack_end;
   const arch_uint *hw;
   const arch_uint *hw_end;
-  arch_uint all_lc;
+  arch_uint all_needle;
   arch_uint word;
 
   haystack = (const uint8_t *)_h;
@@ -193,7 +202,7 @@ const void *mzx_memcasechr(const void *_h, unsigned char needle, size_t len)
     return NULL;
   }
 
-  all_lc = ALL_BYTES_01 * needle;
+  all_needle = ALL_BYTES_01 * needle;
   memcpy(&word, haystack, sizeof(word));
   CHECK_WORD(word | ALL_BYTES_20, haystack);
 
