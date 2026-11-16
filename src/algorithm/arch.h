@@ -22,9 +22,13 @@
 
 #include <stdint.h>
 
-/* FIXME: versions for this header? BSDs? POSIX version is 8 (2024)? */
 #if defined(__GLIBC__)
 #include <endian.h>
+#endif
+
+#if defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
+    defined(__DragonFly__) || defined(__APPLE__) || defined(__BIONIC__)
+#include <sys/endian.h>
 #endif
 
 /* Architecture-specific defines.
@@ -159,6 +163,14 @@
 #elif __BYTE_ORDER == __BIG_ENDIAN
 #define ARCH_BYTE_ORDER ARCH_BIG_ENDIAN
 #endif
+
+/* BSD */
+#elif defined(_BYTE_ORDER) && defined(_LITTLE_ENDIAN) && defined(_BIG_ENDIAN)
+#if _BYTE_ORDER == _LITTLE_ENDIAN
+#define ARCH_BYTE_ORDER ARCH_LIL_ENDIAN
+#elif _BYTE_ORDER == _BIG_ENDIAN
+#define ARCH_BYTE_ORDER ARCH_BIG_ENDIAN
+#endif
 #endif
 #endif /* libc macros */
 
@@ -227,14 +239,6 @@
 #if __FLOAT_WORD_ORDER == __LITTLE_ENDIAN
 #define ARCH_FLOAT_ORDER ARCH_LIL_ENDIAN
 #elif __FLOAT_WORD_ORDER == __BIG_ENDIAN
-#define ARCH_FLOAT_ORDER ARCH_BIG_ENDIAN
-#endif
-
-/* FIXME: POSIX doesn't have FLOAT_WORD_ORDER, do any of the BSDs? */
-#elif defined(FLOAT_WORD_ORDER) && defined(LITTLE_ENDIAN) && defined(BIG_ENDIAN)
-#if FLOAT_WORD_ORDER == LITTLE_ENDIAN
-#define ARCH_FLOAT_ORDER ARCH_LIL_ENDIAN
-#elif FLOAT_WORD_ORDER == BIG_ENDIAN
 #define ARCH_FLOAT_ORDER ARCH_BIG_ENDIAN
 #endif
 #endif

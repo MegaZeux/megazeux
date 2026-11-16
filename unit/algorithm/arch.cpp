@@ -101,11 +101,6 @@ struct machtest
 UNITTEST(Machine)
 {
 #ifdef HAS_UTSNAME
-  /* TODO: incomplete
-   * - more ARM
-   * - loong32/loongarch32?
-   * - riscv32?
-   */
   static constexpr machtest machines[] =
   {
     { "i386",         ARCHITECTURE_IS_X86 },
@@ -187,7 +182,6 @@ UNITTEST(IntEndian)
   }
 }
 
-/* TODO: x87? */
 UNITTEST(FloatEndian)
 {
 #define APPROX 3.255394079200307
