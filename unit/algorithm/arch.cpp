@@ -23,9 +23,12 @@
 
 #include <string.h>
 
-#if !defined(_WIN32)
+#ifdef _WIN32
+#include <windows.h>
+#else
 #define HAS_UTSNAME
 #include <sys/utsname.h>
+#endif
 
 #ifndef ARCHITECTURE_IS_X86
 #define ARCHITECTURE_IS_X86 0
@@ -90,7 +93,6 @@
 #ifndef ARCHITECTURE_IS_SUPERH
 #define ARCHITECTURE_IS_SUPERH 0
 #endif
-#endif /* utsname */
 
 struct machtest
 {
@@ -100,6 +102,86 @@ struct machtest
 
 UNITTEST(Machine)
 {
+  /* Should only have one architecture family detected... */
+  static constexpr machtest machine_families[] =
+  {
+    { "x86",        ARCHITECTURE_IS_X86 | ARCHITECTURE_IS_X86_64 },
+    { "alpha",      ARCHITECTURE_IS_ALPHA },
+    { "arm",        ARCHITECTURE_IS_ARM | ARCHITECTURE_IS_ARM64 },
+    { "hppa",       ARCHITECTURE_IS_HPPA | ARCHITECTURE_IS_HPPA64 },
+    { "loongarch",  ARCHITECTURE_IS_LOONGARCH | ARCHITECTURE_IS_LOONGARCH64 },
+    { "m68k",       ARCHITECTURE_IS_M68K },
+    { "mips",       ARCHITECTURE_IS_MIPS | ARCHITECTURE_IS_MIPS64 },
+    { "ppc",        ARCHITECTURE_IS_PPC | ARCHITECTURE_IS_PPC64 },
+    { "riscv",      ARCHITECTURE_IS_RISCV | ARCHITECTURE_IS_RISCV64 },
+    { "s390",       ARCHITECTURE_IS_S390 | ARCHITECTURE_IS_S390X },
+    { "sparc",      ARCHITECTURE_IS_SPARC | ARCHITECTURE_IS_SPARC64 },
+    { "sh",         ARCHITECTURE_IS_SUPERH },
+  };
+  char detected[128];
+  char *pos = detected;
+  char *end = detected + arraysize(detected);
+  int num = 0;
+  for(const machtest &m : machine_families)
+  {
+    if(!m.match)
+      continue;
+
+    if(pos < end)
+      pos += snprintf(pos, (size_t)(end - pos), " %s", m.machine);
+
+    num++;
+  }
+  /* Allow 0 for unknown architectures--arch.h should generally set
+   * sane defaults if no machine macros are set, and the only other use
+   * for these is to enable architecture-specific features. */
+  if(num > 0)
+    ASSERTEQ(num, 1, "architecture macros set for:%s", detected);
+
+#ifdef _WIN32
+  /* Note: most of these have not been tested. */
+  static constexpr machtest machines[] =
+  {
+    /* PROCESSOR_ARCHITECTURE_INTEL */
+    { "INTEL",          ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 },
+    /* PROCESSOR_ARCHITECTURE_MIPS */
+    { "MIPS",           ARCHITECTURE_IS_MIPS & ~ARCHITECTURE_IS_MIPS64 },
+    /* PROCESSOR_ARCHITECTURE_ALPHA */
+    { "ALPHA",          ARCHITECTURE_IS_ALPHA },
+    /* PROCESSOR_ARCHITECTURE_PPC */
+    { "PPC",            ARCHITECTURE_IS_PPC & ~ARCHITECTURE_IS_PPC64 },
+    /* PROCESSOR_ARCHITECTURE_SHX */
+    { "SHX",            ARCHITECTURE_IS_SUPERH },
+    /* PROCESSOR_ARCHITECTURE_ARM */
+    { "ARM",            ARCHITECTURE_IS_ARM & ~ARCHITECTURE_IS_ARM64 },
+    /* PROCESSOR_ARCHITECTURE_IA64 */
+    { "IA64",           0 },
+    /* PROCESSOR_ARCHITECTURE_ALPHA64 */
+    { "ALPHA64",        ARCHITECTURE_IS_ALPHA },
+    /* PROCESSOR_ARCHITECTURE_MSIL */
+    { "MSIL",           0 },
+    /* PROCESSOR_ARCHITECTURE_AMD64 */
+    { "AMD64",          ARCHITECTURE_IS_X86 & ARCHITECTURE_IS_X86_64 },
+    /* PROCESSOR_ARCHITECTURE_IA32_ON_WIN64 */
+    { "IA32_ON_WIN64",  ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 }, /* ? */
+    /* PROCESSOR_ARCHITECTURE_NEUTRAL */
+    { "NEUTRAL",        0 },
+    /* PROCESSOR_ARCHITECTURE_ARM64 */
+    { "ARM64",          ARCHITECTURE_IS_ARM & ARCHITECTURE_IS_ARM64 },
+    /* PROCESSOR_ARCHITECTURE_ARM32_ON_WIN64 */
+    { "ARM32_ON_WIN64", ARCHITECTURE_IS_ARM & ~ARCHITECTURE_IS_ARM64 }, /* ? */
+    /* PROCESSOR_ARCHITECTURE_IA32_ON_ARM64 */
+    { "IA32_ON_ARM64",  ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 }, /* ? */
+  };
+  SYSTEM_INFO sysinfo{};
+  GetSystemInfo(&sysinfo);
+
+  uint16_t arch = sysinfo.wProcessorArchitecture;
+  ASSERT((int)arch < arraysize(machines), "%04xh < %d", arch, arraysize(machines));
+  ASSERT(machines[arch].match, "missing one of more define for arch %s:%04xh",
+   machines[arch].machine, arch);
+#endif
+
 #ifdef HAS_UTSNAME
   static constexpr machtest machines[] =
   {
@@ -163,9 +245,6 @@ UNITTEST(Machine)
   }
   if(!has_match)
     warn("add machine for arch '%s'\n", u.machine);
-#else
-  /* TODO: way to query this at runtime for Windows etc? */
-  SKIP();
 #endif
 }
 
