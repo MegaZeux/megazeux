@@ -247,8 +247,15 @@
 #endif
 
 
-/* Native integer/pointer width. */
-#if defined(__LP64__) || defined(_LP64) || \
+/* Native integer/pointer width.
+ *
+ * LP64 builds are guaranteed to natively support fast 64-bit integers.
+ * Emscripten, while historically using a 32-bit data model, natively supports
+ * 64-bit integers and most likely isn't being run on a 32-bit host.
+ * Otherwise, go per architecture: some ABIs like Win32 and x32 use 32-bit
+ * pointers/long/size_t, but support fast 64-bit integers.
+ */
+#if defined(__LP64__) || defined(_LP64) || defined(__EMSCRIPTEN__) || \
     defined(ARCHITECTURE_IS_X86_64) || \
     defined(ARCHITECTURE_IS_ALPHA) || \
     defined(ARCHITECTURE_IS_ARM64) || \
