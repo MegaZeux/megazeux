@@ -20,6 +20,7 @@
 #include "../Unit.hpp"
 #include "../../src/algorithm/arch.h"
 #include "../../src/platform/log.h"
+#include "../../src/platform/platform_attribute.h" /* ATTRIBUTE_NO_SANITIZE */
 
 #include <string.h>
 
@@ -307,12 +308,87 @@ struct aligntest
   uint16_t e;
 };
 
-UNITTEST(Alignment)
+ATTRIBUTE_NO_SANITIZE("alignment")
+static void check_unaligned_32(void);
+ATTRIBUTE_NO_SANITIZE("alignment")
+static void check_unaligned_64(void);
+
+static void check_unaligned_32(void)
 {
-#if defined(ARCH_INT32_UNALIGN) || defined(ARCH_INT64_UNALIGN)
+#ifndef ARCH_INT32_UNALIGN
+  SKIP();
+#else
   uint8_t buf[24];
   uint8_t *pos = buf;
+  size_t i;
+
+  static_assert(ARCH_INT32_UNALIGN > 0, "");
+
+  static constexpr uint32_t expected[] =
+  {
+    ARCH_LIL_OR_BIG(0x04030201, 0x01020304),
+    ARCH_LIL_OR_BIG(0x05040302, 0x02030405),
+    ARCH_LIL_OR_BIG(0x06050403, 0x03040506),
+    ARCH_LIL_OR_BIG(0x07060504, 0x04050607),
+    ARCH_LIL_OR_BIG(0x08070605, 0x05060708),
+  };
+  const uint32_t *exp_pos = expected;
+
+  while(ARCH_PTR_MODULO(pos, ARCH_INT32_MODULO))
+    pos++;
+
+  for(i = 0; i < 8; i++)
+    pos[i] = i + 1;
+
+  for(i = 0; i <= 4; i += ARCH_INT32_UNALIGN, exp_pos++)
+  {
+    const uint32_t *check = ARCH_UINT32_UNALIGN_CAST(pos + i);
+    ASSERTEQ(*check, *exp_pos, "%zu", i);
+  }
 #endif
+}
+
+static void check_unaligned_64(void)
+{
+#ifndef ARCH_INT64_UNALIGN
+  SKIP();
+#else
+  uint8_t buf[24];
+  uint8_t *pos = buf;
+  size_t i;
+
+  static_assert(ARCH_INT64_UNALIGN > 0, "");
+
+  static constexpr uint64_t expected[] =
+  {
+    ARCH_LIL_OR_BIG(0x0807060504030201ull, 0x0102030405060708ull),
+    ARCH_LIL_OR_BIG(0x0908070605040302ull, 0x0203040506070809ull),
+    ARCH_LIL_OR_BIG(0x0a09080706050403ull, 0x030405060708090aull),
+    ARCH_LIL_OR_BIG(0x0b0a090807060504ull, 0x0405060708090a0bull),
+    ARCH_LIL_OR_BIG(0x0c0b0a0908070605ull, 0x05060708090a0b0cull),
+    ARCH_LIL_OR_BIG(0x0d0c0b0a09080706ull, 0x060708090a0b0c0dull),
+    ARCH_LIL_OR_BIG(0x0e0d0c0b0a090807ull, 0x0708090a0b0c0d0eull),
+    ARCH_LIL_OR_BIG(0x0f0e0d0c0b0a0908ull, 0x08090a0b0c0d0e0full),
+    ARCH_LIL_OR_BIG(0x100f0e0d0c0b0a09ull, 0x090a0b0c0d0e0f10ull),
+  };
+  const uint64_t *exp_pos = expected;
+
+  while(ARCH_PTR_MODULO(pos, ARCH_INT64_MODULO))
+    pos++;
+
+  for(i = 0; i < 16; i++)
+    pos[i] = i + 1;
+
+  for(i = 0; i <= 8; i += ARCH_INT64_UNALIGN, exp_pos++)
+  {
+    const uint64_t *check = ARCH_UINT64_UNALIGN_CAST(pos + i);
+    ASSERTEQ(*check, *exp_pos, "%zu", i);
+  }
+#endif
+}
+
+UNITTEST(Alignment)
+{
   size_t i;
 
   SECTION(Aligned)
@@ -364,70 +440,10 @@ UNITTEST(Alignment)
   }
 
   SECTION(Unaligned32)
-  {
-#ifndef ARCH_INT32_UNALIGN
-    SKIP();
-#else
-    static_assert(ARCH_INT32_UNALIGN > 0, "");
-
-    static constexpr uint32_t expected[] =
-    {
-      ARCH_LIL_OR_BIG(0x04030201, 0x01020304),
-      ARCH_LIL_OR_BIG(0x05040302, 0x02030405),
-      ARCH_LIL_OR_BIG(0x06050403, 0x03040506),
-      ARCH_LIL_OR_BIG(0x07060504, 0x04050607),
-      ARCH_LIL_OR_BIG(0x08070605, 0x05060708),
-    };
-    const uint32_t *exp_pos = expected;
-
-    while(ARCH_PTR_MODULO(pos, ARCH_INT32_MODULO))
-      pos++;
-
-    for(i = 0; i < 8; i++)
-      pos[i] = i + 1;
-
-    for(i = 0; i <= 4; i += ARCH_INT32_UNALIGN, exp_pos++)
-    {
-      const uint32_t *check = ARCH_UINT32_UNALIGN_CAST(pos + i);
-      ASSERTEQ(*check, *exp_pos, "%zu", i);
-    }
-#endif
-  }
+    check_unaligned_32();
 
   SECTION(Unaligned64)
-  {
-#ifndef ARCH_INT64_UNALIGN
-    SKIP();
-#else
-    static_assert(ARCH_INT64_UNALIGN > 0, "");
-
-    static constexpr uint64_t expected[] =
-    {
-      ARCH_LIL_OR_BIG(0x0807060504030201ull, 0x0102030405060708ull),
-      ARCH_LIL_OR_BIG(0x0908070605040302ull, 0x0203040506070809ull),
-      ARCH_LIL_OR_BIG(0x0a09080706050403ull, 0x030405060708090aull),
-      ARCH_LIL_OR_BIG(0x0b0a090807060504ull, 0x0405060708090a0bull),
-      ARCH_LIL_OR_BIG(0x0c0b0a0908070605ull, 0x05060708090a0b0cull),
-      ARCH_LIL_OR_BIG(0x0d0c0b0a09080706ull, 0x060708090a0b0c0dull),
-      ARCH_LIL_OR_BIG(0x0e0d0c0b0a090807ull, 0x0708090a0b0c0d0eull),
-      ARCH_LIL_OR_BIG(0x0f0e0d0c0b0a0908ull, 0x08090a0b0c0d0e0full),
-      ARCH_LIL_OR_BIG(0x100f0e0d0c0b0a09ull, 0x090a0b0c0d0e0f10ull),
-    };
-    const uint64_t *exp_pos = expected;
-
-    while(ARCH_PTR_MODULO(pos, ARCH_INT64_MODULO))
-      pos++;
-
-    for(i = 0; i < 16; i++)
-      pos[i] = i + 1;
-
-    for(i = 0; i <= 8; i += ARCH_INT64_UNALIGN, exp_pos++)
-    {
-      const uint64_t *check = ARCH_UINT64_UNALIGN_CAST(pos + i);
-      ASSERTEQ(*check, *exp_pos, "%zu", i);
-    }
-#endif
-  }
+    check_unaligned_64();
 }
 
 UNITTEST(ArchUint)
