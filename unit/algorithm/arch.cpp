@@ -103,21 +103,16 @@ UNITTEST(Machine)
 #ifdef HAS_UTSNAME
   static constexpr machtest machines[] =
   {
-    { "i386",         ARCHITECTURE_IS_X86 },
-    { "i486",         ARCHITECTURE_IS_X86 },
-    { "i586",         ARCHITECTURE_IS_X86 },
-    { "i686",         ARCHITECTURE_IS_X86 },
-    { "i786",         ARCHITECTURE_IS_X86 },
-    { "x86",          ARCHITECTURE_IS_X86 },
+    { "i386",         ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 },
+    { "i486",         ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 },
+    { "i586",         ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 },
+    { "i686",         ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 },
+    { "x86",          ARCHITECTURE_IS_X86 & ~ARCHITECTURE_IS_X86_64 },
     { "amd64",        ARCHITECTURE_IS_X86 & ARCHITECTURE_IS_X86_64 },
     { "x86_64",       ARCHITECTURE_IS_X86 & ARCHITECTURE_IS_X86_64 },
-    { "armel",        ARCHITECTURE_IS_ARM },
-    { "armhf",        ARCHITECTURE_IS_ARM },
-    { "armv6",        ARCHITECTURE_IS_ARM },
-    { "armv6eb",      ARCHITECTURE_IS_ARM },
-    { "armv7",        ARCHITECTURE_IS_ARM },
     { "arm64",        ARCHITECTURE_IS_ARM & ARCHITECTURE_IS_ARM64 },
     { "aarch64",      ARCHITECTURE_IS_ARM & ARCHITECTURE_IS_ARM64 },
+    { "arm*",         ARCHITECTURE_IS_ARM }, /* Too many to easily enumerate */
     { "alpha",        ARCHITECTURE_IS_ALPHA },
     { "hppa",         ARCHITECTURE_IS_HPPA },
     { "parisc",       ARCHITECTURE_IS_HPPA },
@@ -125,15 +120,16 @@ UNITTEST(Machine)
     { "loong64",      ARCHITECTURE_IS_LOONGARCH & ARCHITECTURE_IS_LOONGARCH64 },
     { "loongarch64",  ARCHITECTURE_IS_LOONGARCH & ARCHITECTURE_IS_LOONGARCH64 },
     { "m68k",         ARCHITECTURE_IS_M68K },
-    { "mips",         ARCHITECTURE_IS_MIPS },
+    { "mips",         ARCHITECTURE_IS_MIPS & ~ARCHITECTURE_IS_MIPS64 },
     { "mips64",       ARCHITECTURE_IS_MIPS & ARCHITECTURE_IS_MIPS64 },
-    { "ppc",          ARCHITECTURE_IS_PPC },
+    { "ppc",          ARCHITECTURE_IS_PPC & ~ARCHITECTURE_IS_PPC64 },
     { "ppc64",        ARCHITECTURE_IS_PPC & ARCHITECTURE_IS_PPC64 },
-    { "riscv",        ARCHITECTURE_IS_RISCV }, /* NetBSD: 64-bit; T2: 32-bit */
+    { "ppc64le",      ARCHITECTURE_IS_PPC & ARCHITECTURE_IS_PPC64 },
+    { "riscv32",      ARCHITECTURE_IS_RISCV & ~ARCHITECTURE_IS_RISCV64 },
     { "riscv64",      ARCHITECTURE_IS_RISCV & ARCHITECTURE_IS_RISCV64 },
-    { "s390",         ARCHITECTURE_IS_S390 },
+    { "s390",         ARCHITECTURE_IS_S390 & ~ARCHITECTURE_IS_S390X },
     { "s390x",        ARCHITECTURE_IS_S390 & ARCHITECTURE_IS_S390X },
-    { "sparc",        ARCHITECTURE_IS_SPARC },
+    { "sparc",        ARCHITECTURE_IS_SPARC & ~ARCHITECTURE_IS_SPARC64 },
     { "sparc64",      ARCHITECTURE_IS_SPARC & ARCHITECTURE_IS_SPARC64 },
     { "sh4",          ARCHITECTURE_IS_SUPERH },
   };
@@ -143,9 +139,23 @@ UNITTEST(Machine)
   int ret = uname(&u);
   ASSERT(ret >= 0, "");
 
+  char tmp[64];
   for(const machtest &m : machines)
   {
-    if(strcasecmp(m.machine, u.machine) == 0)
+    const char *wc = strchr(m.machine, '*');
+    const char *cmp = m.machine;
+    size_t len;
+    if(wc)
+    {
+      len = wc - m.machine;
+      memcpy(tmp, m.machine, len);
+      tmp[len] = '\0';
+      cmp = tmp;
+    }
+    else
+      len = strlen(m.machine) + 1;
+
+    if(strncasecmp(u.machine, cmp, len) == 0)
     {
       ASSERT(m.match, "missing one or more define for '%s'", m.machine);
       has_match = true;
@@ -201,7 +211,8 @@ UNITTEST(FloatEndian)
 
 UNITTEST(Bitwidth)
 {
-  ASSERTEQ(ARCHITECTURE_BITS >> 3, sizeof(void *), "");
+  ASSERT((ARCHITECTURE_BITS >> 3) >= sizeof(void *), "bits:%d, void *:%zu",
+   ARCHITECTURE_BITS, sizeof(void *) << 3);
   ASSERTEQ(ARCHITECTURE_BITS, ARCH_32_OR_64(32, 64), "");
 }
 
@@ -222,18 +233,55 @@ UNITTEST(Alignment)
 #if defined(ARCH_INT32_UNALIGN) || defined(ARCH_INT64_UNALIGN)
   uint8_t buf[24];
   uint8_t *pos = buf;
-  size_t i;
 #endif
+  size_t i;
 
   SECTION(Aligned)
   {
     aligntest t{};
 
-    ASSERTEQ(((arch_uint)&t.a) % ARCH_INT32_MODULO, 0, "");
-    ASSERTEQ(((arch_uint)&t.b) % ARCH_INT64_MODULO, 0, "");
-    ASSERTEQ(((arch_uint)&t.c) % ARCH_INT32_MODULO, 0, "");
-    ASSERTEQ(((arch_uint)&t.d) % ARCH_INT64_MODULO, 0, "");
-    ASSERTEQ(((arch_uint)&t.e) % ARCH_INT16_MODULO, 0, "");
+    ASSERTEQ(ARCH_PTR_MODULO(&t.a, ARCH_INT32_MODULO), 0, "");
+    ASSERTEQ(ARCH_PTR_MODULO(&t.b, ARCH_INT64_MODULO), 0, "");
+    ASSERTEQ(ARCH_PTR_MODULO(&t.c, ARCH_INT32_MODULO), 0, "");
+    ASSERTEQ(ARCH_PTR_MODULO(&t.d, ARCH_INT64_MODULO), 0, "");
+    ASSERTEQ(ARCH_PTR_MODULO(&t.e, ARCH_INT16_MODULO), 0, "");
+  }
+
+  SECTION(Modulo)
+  {
+    uint64_t t64[3];
+    uint8_t *p = reinterpret_cast<uint8_t *>(t64);
+
+    for(i = 0; i < 16; i++, p++)
+    {
+      size_t m16 = ARCH_PTR_MODULO(p, ARCH_INT16_MODULO);
+      size_t m32 = ARCH_PTR_MODULO(p, ARCH_INT32_MODULO);
+      size_t m64 = ARCH_PTR_MODULO(p, ARCH_INT64_MODULO);
+      ASSERT(m16 < ARCH_INT32_MODULO, "%zu: %zu %zu %zu", i, m16, m32, m64);
+      ASSERT(m32 < ARCH_INT32_MODULO, "%zu: %zu %zu %zu", i, m16, m32, m64);
+      ASSERT(m64 < ARCH_INT64_MODULO, "%zu: %zu %zu %zu", i, m16, m32, m64);
+      ASSERT(m16 <= m32, "%zu: %zu %zu %zu", i, m16, m32, m64);
+      ASSERT(m32 <= m64, "%zu: %zu %zu %zu", i, m16, m32, m64);
+
+      if(m16 == 0)
+      {
+        volatile uint16_t *p16 = (uint16_t *)p;
+        *p16 = 0xbeef;
+        ASSERTEQ(*p16, 0xbeef, "%zu", i);
+      }
+      if(m32 == 0)
+      {
+        volatile uint32_t *p32 = (uint32_t *)p;
+        *p32 = 0xb000b135;
+        ASSERTEQ(*p32, 0xb000b135, "%zu", i);
+      }
+      if(m64 == 0)
+      {
+        volatile uint64_t *p64 = (uint64_t *)p;
+        *p64 = 0x54f3baadbeef0123ull;
+        ASSERTEQ(*p64, 0x54f3baadbeef0123ull, "%zu", i);
+      }
+    }
   }
 
   SECTION(Unaligned32)
@@ -253,7 +301,7 @@ UNITTEST(Alignment)
     };
     const uint32_t *exp_pos = expected;
 
-    while((arch_uint)pos % ARCH_INT32_MODULO)
+    while(ARCH_PTR_MODULO(pos, ARCH_INT32_MODULO))
       pos++;
 
     for(i = 0; i < 8; i++)
@@ -288,7 +336,7 @@ UNITTEST(Alignment)
     };
     const uint64_t *exp_pos = expected;
 
-    while((arch_uint)pos % ARCH_INT64_MODULO)
+    while(ARCH_PTR_MODULO(pos, ARCH_INT64_MODULO))
       pos++;
 
     for(i = 0; i < 16; i++)
@@ -310,18 +358,21 @@ UNITTEST(ArchUint)
   arch_uint *pa;
 
   ASSERTEQ(ARCHITECTURE_BITS >> 3, sizeof(arch_uint), "");
+  ASSERT(sizeof(arch_uint) >= sizeof(void *), "arch_uint:%zu void *:%zu",
+   sizeof(arch_uint), sizeof(void *));
   ASSERTEQ(ARCH_UINT_MODULO, ARCH_32_OR_64(ARCH_INT32_MODULO, ARCH_INT64_MODULO), "");
+  ASSERTEQ(ARCH_UINT_MODULO, sizeof(arch_uint), "");
 
   for(int i = 0; i < arraysize(buffer); i++)
   {
     p8 = buffer + i;
     pa = ARCH_UINT_TRUNC_CAST(p8);
-    ASSERTEQ((arch_uint)pa, (arch_uint)p8 & ARCH_32_OR_64(~3, ~7), "%d", i);
+    ASSERTEQ((size_t)pa, (size_t)p8 & ARCH_32_OR_64(~3, ~7), "%d", i);
 
 #ifdef ARCH_UINT_UNALIGN
     static_assert(ARCH_UINT_UNALIGN > 0, "");
     pa = ARCH_UINT_UNALIGN_CAST(p8);
-    ASSERTEQ((arch_uint)pa, (arch_uint)p8 & ~(ARCH_UINT_UNALIGN - 1), "%d", i);
+    ASSERTEQ((size_t)pa, (size_t)p8 & ~(ARCH_UINT_UNALIGN - 1), "%d", i);
 #endif
   }
 }

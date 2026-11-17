@@ -589,6 +589,7 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 	esac
 
 	if [ "$MACH" = "x86_64" ] || [ "$MACH" = "amd64" ]; then
+		# Debian, T2 x32 also uses "x86_64"
 		ARCHNAME=amd64
 		#RAWLIBDIR=lib64
 		# FreeBSD amd64 hack
@@ -596,28 +597,26 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 	elif [ "$(echo "$MACH" | sed 's,i.86,x86,')" = "x86" ]; then
 		ARCHNAME=x86
 		#RAWLIBDIR=lib
-	elif [ "$MACH" = "x32" ]; then
-		ARCHNAME=x32
 	elif [ "$MACH" = "aarch64" ] || [ "$MACH" = "arm64" ]; then
 		ARCHNAME=aarch64
 	elif [ "$(echo "$MACH" | sed 's,^arm.*,arm,')" = "arm" ]; then
 		ARCHNAME=arm
 		#RAWLIBDIR=lib
 	elif [ "$MACH" = "ppc" ]; then
+		# Debian powerpc uses "ppc"
 		ARCHNAME=ppc
 		#RAWLIBDIR=lib
 	elif [ "$MACH" = "ppc64" ]; then
 		ARCHNAME=ppc64
-	elif [ "$MACH" = "ppc64le" ] || [ "$MACH" = "ppc64el" ]; then
+	elif [ "$MACH" = "ppc64le" ]; then
+		# Debian, T2 both use "ppc64le" instead of just "ppc64"
 		ARCHNAME=ppc64el
 	elif [ "$MACH" = "mips" ]; then
+		# Debian, T2 mips and mipsel use "mips"
 		ARCHNAME=mips
-	elif [ "$MACH" = "mipsel" ]; then
-		ARCHNAME=mipsel
 	elif [ "$MACH" = "mips64" ]; then
+		# Debian mips64el uses "mips64"
 		ARCHNAME=mips64
-	elif [ "$MACH" = "mips64el" ]; then
-		ARCHNAME=mips64el
 	elif [ "$MACH" = "m68k" ]; then
 		ARCHNAME=m68k
 	elif [ "$MACH" = "alpha" ]; then
@@ -630,8 +629,8 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 		ARCHNAME=sparc
 	elif [ "$MACH" = "sparc64" ]; then
 		ARCHNAME=sparc64
-	elif [ "$MACH" = "riscv" ]; then # 64-bit in NetBSD, 32-bit in T2...
-		ARCHNAME=riscv
+	elif [ "$MACH" = "riscv32" ]; then
+		ARCHNAME=riscv32
 	elif [ "$MACH" = "riscv64" ]; then
 		ARCHNAME=riscv64
 	elif [ "$MACH" = "s390" ]; then

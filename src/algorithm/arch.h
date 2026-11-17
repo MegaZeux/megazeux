@@ -81,9 +81,7 @@
 
 #if /* GNU */ defined(__mips__) || defined(__mips) || defined(__MIPS__)
 #define ARCHITECTURE_IS_MIPS 1
-#if /* GNU */ defined(_R4000) || defined(_R5900) || \
-    /* ? */ (defined(_MIPS_SIM) && defined(_ABI64) && _MIPS_SIM == _ABI64) || \
-    /* ? */ (defined(_MIPS_ISA) && _MIPS_ISA >= _MIPS_ISA_MIPS3)
+#if /* GNU/MIPSpro */ (defined(_MIPS_SIM) && defined(_ABI64) && _MIPS_SIM == _ABI64)
 #define ARCHITECTURE_IS_MIPS64 1
 #endif
 #endif
@@ -227,7 +225,7 @@
     defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
 #if __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define ARCH_FLOAT_ORDER ARCH_LIL_ENDIAN
-#elif __FLOAT_WORD_ORDER == __ORDER_BIG_ENDIAN__
+#elif __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
 #define ARCH_FLOAT_ORDER ARCH_BIG_ENDIAN
 #endif
 #endif /* compiler macros */
@@ -338,8 +336,13 @@
 #endif
 #endif
 
+/* Get the number of bytes of misalignment vs. _MODULO or _UNALIGN defines. */
+#define ARCH_PTR_MODULO(p, m) ((size_t)(p) & (size_t)((m) - 1))
 
-/* Fast integer type defines. */
+
+/* Fast integer type defines.
+ * arch_uint should be at least as big as void *. For 32-on-64 ABIs like x32,
+ * ARCHITECTURE_BITS is 64, so arch_uint will be larger than void *. */
 #if ARCHITECTURE_BITS >= 64
 typedef uint64_t arch_uint;
 #define ARCH_UINT_MODULO        ARCH_INT64_MODULO
@@ -356,16 +359,20 @@ typedef uint32_t arch_uint;
 #endif
 #endif
 
-#define ARCH_UINT_TRUNC_CAST(p) ((arch_uint *)((arch_uint)(p) & ~(sizeof(arch_uint) - 1)))
+#define ARCH_UINT_TRUNC_CAST(p) \
+ ((arch_uint *)((size_t)(p) & ~(size_t)(sizeof(arch_uint) - 1)))
 
 #ifdef ARCH_INT32_UNALIGN
-#define ARCH_UINT32_UNALIGN_CAST(p) ((uint32_t *)((arch_uint)(p) & ~(ARCH_INT32_UNALIGN - 1)))
+#define ARCH_UINT32_UNALIGN_CAST(p) \
+ ((uint32_t *)((size_t)(p) & ~(size_t)(ARCH_INT32_UNALIGN - 1)))
 #endif
 #ifdef ARCH_INT64_UNALIGN
-#define ARCH_UINT64_UNALIGN_CAST(p) ((uint64_t *)((arch_uint)(p) & ~(ARCH_INT64_UNALIGN - 1)))
+#define ARCH_UINT64_UNALIGN_CAST(p) \
+ ((uint64_t *)((size_t)(p) & ~(size_t)(ARCH_INT64_UNALIGN - 1)))
 #endif
 #ifdef ARCH_UINT_UNALIGN
-#define ARCH_UINT_UNALIGN_CAST(p) ((arch_uint *)((arch_uint)(p) & ~(ARCH_UINT_UNALIGN - 1)))
+#define ARCH_UINT_UNALIGN_CAST(p) \
+ ((arch_uint *)((size_t)(p) & ~(size_t)(ARCH_UINT_UNALIGN - 1)))
 #endif
 
 #endif /* MEGAZEUX_ALGORITHM_ARCH_H */

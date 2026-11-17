@@ -18,6 +18,7 @@
  */
 
 #include "../Unit.hpp"
+#include "../../src/algorithm/arch.h"
 #include "../../src/algorithm/string_compare.c"
 
 #include <string.h>
@@ -222,8 +223,8 @@ UNITTEST(Matching)
       a = p.a.c_str();
       b = p.b.c_str();
 
-      ASSERTEQ((size_t)a & (ALIGN_64_MODULO - 1), 0, "a not aligned");
-      ASSERTEQ((size_t)b & (ALIGN_64_MODULO - 1), 0, "b not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(a, ARCH_INT64_MODULO), 0, "a not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(b, ARCH_INT64_MODULO), 0, "b not aligned");
       ASSERTEQ(strlen(a), strlen(b), "%s", a);
       ASSERT(!memcasecmp(a, b, strlen(a)), "%s", a);
     }
@@ -244,8 +245,8 @@ UNITTEST(Matching)
       a = p.a.c_str();
       b = p.b.c_str();
 
-      ASSERTEQ((size_t)a & (ALIGN_32_MODULO - 1), 0, "a not aligned");
-      ASSERTEQ((size_t)b & (ALIGN_32_MODULO - 1), 0, "b not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(a, ARCH_INT32_MODULO), 0, "a not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(b, ARCH_INT32_MODULO), 0, "b not aligned");
       ASSERTEQ(strlen(a), strlen(b), "%s", a);
       ASSERT(!memcasecmp32(a, b, strlen(a)), "%s", a);
     }
@@ -354,8 +355,8 @@ UNITTEST(NoMatch)
       b = p.b.c_str();
       expected = p.expected;
 
-      ASSERTEQ((size_t)a & (ALIGN_64_MODULO - 1), 0, "a not aligned");
-      ASSERTEQ((size_t)b & (ALIGN_64_MODULO - 1), 0, "b not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(a, ARCH_INT64_MODULO), 0, "a not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(b, ARCH_INT32_MODULO), 0, "b not aligned");
       ASSERTEQ(strlen(a), strlen(b), "%s", a);
       ASSERTEQ(memcasecmp(a, b, strlen(a)), expected, "%s", a);
     }
@@ -374,8 +375,8 @@ UNITTEST(NoMatch)
       b = p.b.c_str();
       expected = p.expected;
 
-      ASSERTEQ((size_t)a & (ALIGN_64_MODULO - 1), 0, "a not aligned");
-      ASSERTEQ((size_t)b & (ALIGN_64_MODULO - 1), 0, "b not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(a, ARCH_INT64_MODULO), 0, "a not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(b, ARCH_INT64_MODULO), 0, "b not aligned");
       ASSERTEQ(memcasecmp(a, b, p.n), expected, "%s", a);
     }
   }
@@ -397,8 +398,8 @@ UNITTEST(NoMatch)
       b = p.b.c_str();
       expected = p.expected;
 
-      ASSERTEQ((size_t)a & (ALIGN_32_MODULO - 1), 0, "a not aligned");
-      ASSERTEQ((size_t)b & (ALIGN_32_MODULO - 1), 0, "b not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(a, ARCH_INT32_MODULO), 0, "a not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(b, ARCH_INT32_MODULO), 0, "b not aligned");
       ASSERTEQ(strlen(a), strlen(b), "%s", a);
       ASSERTEQ(memcasecmp32(a, b, strlen(a)), expected, "%s", a);
     }
@@ -417,8 +418,8 @@ UNITTEST(NoMatch)
       b = p.b.c_str();
       expected = p.expected;
 
-      ASSERTEQ((size_t)a & (ALIGN_64_MODULO - 1), 0, "a not aligned");
-      ASSERTEQ((size_t)b & (ALIGN_64_MODULO - 1), 0, "b not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(a, ARCH_INT64_MODULO), 0, "a not aligned");
+      ASSERTEQ(ARCH_PTR_MODULO(a, ARCH_INT64_MODULO), 0, "b not aligned");
       ASSERTEQ(memcasecmp32(a, b, p.n), expected, "%s", a);
     }
   }
