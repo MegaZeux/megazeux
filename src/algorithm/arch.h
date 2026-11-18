@@ -267,8 +267,8 @@
  * LP64 builds are guaranteed to natively support fast 64-bit integers.
  * Emscripten, while historically using a 32-bit data model, natively supports
  * 64-bit integers and most likely isn't being run on a 32-bit host.
- * Otherwise, go per architecture: some ABIs like Win32 and x32 use 32-bit
- * pointers/long/size_t, but support fast 64-bit integers.
+ * Otherwise, go per architecture: some ABIs use 32-bit long (Windows x64) or
+ * pointers/long/size_t (Linux x32, ARM64 ILP32), but support fast uint64_t.
  */
 #if defined(__LP64__) || defined(_LP64) || defined(__EMSCRIPTEN__) || \
     defined(ARCHITECTURE_IS_X86_64) || \
