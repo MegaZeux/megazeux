@@ -623,6 +623,8 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 		ARCHNAME=alpha
 	elif [ "$MACH" = "hppa" ] || [ "$MACH" = "parisc" ]; then
 		ARCHNAME=hppa
+	elif [ "$MACH" = "ia64" ]; then
+		ARCHNAME=ia64
 	elif [ "$MACH" = "sh4" ]; then
 		ARCHNAME=sh4
 	elif [ "$MACH" = "sparc" ]; then
