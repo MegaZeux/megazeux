@@ -32,7 +32,13 @@
 #endif
 
 /* Architecture-specific defines.
- * See https://github.com/cpredef/predef for more information. */
+ * See https://github.com/cpredef/predef for more information.
+ *
+ * The Pre-defined Compiler Macros wiki is missing several macros listed below,
+ * including some older MSVC defines for architectures like MIPS and SH-4
+ * as well as architecture-specific macros like _MIPS_SIM. These were
+ * added after some light digging to verify their existence.
+ */
 
 /* Machine defines. */
 
@@ -68,6 +74,11 @@
 #endif
 #endif
 
+#if /* GNU */ defined(__ia64__) || defined(_IA64) || defined(__IA64__) || \
+    /* MSVC */ defined(_M_IA64)
+#define ARCHITECTURE_IS_IA64 1
+#endif
+
 #if /* Official */ defined(__loongarch__)
 #define ARCHITECTURE_IS_LOONGARCH 1
 #if __loongarch_grlen >= 64
@@ -75,11 +86,13 @@
 #endif
 #endif
 
-#if /* GNU */ defined(__m68k__)
+#if /* GNU */ defined(__m68k__) || /* MSVC */ defined(_M_M68K) || \
+    /* Claimed by GCC 2.95 docs */ defined(mc68000) || defined(m68k)
 #define ARCHITECTURE_IS_M68K 1
 #endif
 
-#if /* GNU */ defined(__mips__) || defined(__mips) || defined(__MIPS__)
+#if /* GNU */ defined(__mips__) || defined(__mips) || defined(__MIPS__) || \
+    /* MSVC */ defined(_M_MIPS)
 #define ARCHITECTURE_IS_MIPS 1
 #if /* GNU/MIPSpro */ (defined(_MIPS_SIM) && defined(_ABI64) && _MIPS_SIM == _ABI64)
 #define ARCHITECTURE_IS_MIPS64 1
@@ -91,7 +104,7 @@
 #define ARCHITECTURE_IS_PPC64 1
 #endif
 #if /* GNU */ defined(__powerpc) || defined(__powerpc__) || defined(_ARCH_PPC) || \
-    /* MSVC */ defined(_M_PPC) || \
+    /* MSVC */ defined(_M_PPC) || defined(_M_MPPC) || \
     defined(ARCHITECTURE_IS_PPC64)
 #define ARCHITECTURE_IS_PPC 1
 #endif
@@ -119,7 +132,7 @@
 #endif
 #endif
 
-#if /* GNU */ defined(__sh__)
+#if /* GNU */ defined(__sh__) || /* MSVC */ defined(_M_SH)
 #define ARCHITECTURE_IS_SUPERH 1
 #endif
 
@@ -215,6 +228,8 @@
 #define ARCH_LIL_OR_BIG(lil, big) (lil)
 #else
 #define ARCH_LIL_OR_BIG(lil, big) (big)
+/* Libraries originally Autoconf-based (libxmp, libmodplug) rely on this. */
+#define WORDS_BIGENDIAN
 #endif
 
 
@@ -260,6 +275,7 @@
     defined(ARCHITECTURE_IS_ALPHA) || \
     defined(ARCHITECTURE_IS_ARM64) || \
     defined(ARCHITECTURE_IS_HPPA64) || \
+    defined(ARCHITECTURE_IS_IA64) || \
     defined(ARCHITECTURE_IS_LOONGARCH64) || \
     defined(ARCHITECTURE_IS_MIPS64) || \
     defined(ARCHITECTURE_IS_PPC64) || \
