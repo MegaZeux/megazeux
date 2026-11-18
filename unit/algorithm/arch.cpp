@@ -142,6 +142,8 @@ UNITTEST(Machine)
    * for these is to enable architecture-specific features. */
   if(num > 0)
     ASSERTEQ(num, 1, "architecture macros set for:%s", detected);
+  else
+    warn("no architecture macros set\n");
 
 #ifdef _WIN32
   /* Note: most of these have not been tested. */

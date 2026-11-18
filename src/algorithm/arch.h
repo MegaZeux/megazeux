@@ -66,9 +66,9 @@
 #define ARCHITECTURE_IS_ARM 1
 #endif
 
-#if /* GNU */ defined(__hppa__)
+#if /* GNU */ defined(__hppa__) || defined(__hppa) || defined(__HPPA__)
 #define ARCHITECTURE_IS_HPPA 1
-#if defined(_PA_RISC_2_0) || defined(__RISC2_0_) || \
+#if defined(_PA_RISC2_0) || defined(__RISC2_0__) || \
     defined(__HPPA20__) || defined(__PA8000__)
 #define ARCHITECTURE_IS_HPPA64 1
 #endif
@@ -81,7 +81,7 @@
 
 #if /* Official */ defined(__loongarch__)
 #define ARCHITECTURE_IS_LOONGARCH 1
-#if __loongarch_grlen >= 64
+#if defined(__loongarch_grlen) && __loongarch_grlen >= 64
 #define ARCHITECTURE_IS_LOONGARCH64 1
 #endif
 #endif
@@ -111,7 +111,7 @@
 
 #if /* Official */ defined(__riscv)
 #define ARCHITECTURE_IS_RISCV 1
-#if __riscv_xlen >= 64
+#if defined(__riscv_xlen) && __riscv_xlen >= 64
 #define ARCHITECTURE_IS_RISCV64 1
 #endif
 #endif
