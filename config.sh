@@ -32,6 +32,7 @@ usage() {
 	echo "  darwin         Mac OS X Unix-like install"
 	echo "  darwin-devel   Mac OS X running from current dir"
 	echo "  darwin-dist    Mac OS X multiarchitecture .app (see arch/darwin/README.md)"
+	echo " 	ps2 		   Experimental PS2 port"
 	echo "  psp            Experimental PSP port"
 	echo "  gp2x           Experimental GP2X port"
 	echo "  nds            Experimental NDS port"
@@ -1069,6 +1070,27 @@ case "$PLATFORM" in
 	ICON="false"
 
 	echo "Force-disabling getaddrinfo, poll, and IPv6 on PSP."
+	GETADDRINFO="false"
+	POLL="false"
+	IPV6="false"
+	;;
+	
+"ps2")
+	echo "Enabling PS2-specific hacks."
+	echo "#define CONFIG_PS2" >> src/config.h
+	echo "BUILD_PS2=1" >> platform.inc
+
+	echo "Force-disabling modular build on PS2."
+	MODULAR="false"
+
+	echo "Force-disabling OpenGL and overlay renderers on PS2."
+	GL="false"
+	OVERLAY="false"
+
+	echo "Force-disabling stack protector on PS2."
+	STACK_PROTECTOR="false"
+
+	echo "Force-disabling getaddrinfo, poll, and IPv6 on PS2."
 	GETADDRINFO="false"
 	POLL="false"
 	IPV6="false"

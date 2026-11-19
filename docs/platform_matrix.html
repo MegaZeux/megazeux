@@ -472,6 +472,32 @@ var archs =
     loadsave_meter:   yes,
   },
 
+  ps2:
+  {
+    platform:         "ps2",
+    description:      "PlayStation 2",
+    architecture:     "MIPS (ELF)",
+    endian:           "Little",
+    toolchain:        "gcc 15.2 <br> binutils 2.44.0",
+    packaged:         ZIP,
+    stack_protector:  _FAULTY(),
+    layer_rendering:  yes,
+    module_engine:    xmp,
+    adlib_engine:     rad,
+    ogg_vorbis:       libvorbis,
+    optimization:     size,
+    sdl:              sdl2,
+    editor:           no_low_memory,
+    helpsys:          no_low_memory,
+    audio:            yes,
+    software:         yes,
+    network:          _FAULTY(),
+    updater:          no_updater,
+    png:              yes,
+    hashtables:       yes,
+    loadsave_meter:   yes,
+  },
+
   psvita:
   {
     platform:         "psvita",
