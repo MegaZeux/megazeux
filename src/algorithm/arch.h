@@ -316,8 +316,12 @@
 #endif
 
 /* 32-bit platforms almost always allow 64-bit integers at 32-bit offsets.
- * Note that this is NOT necessarily true for 64-bit floats. */
-#if ARCHITECTURE_BITS < 64
+ * Note that this is NOT necessarily true for 64-bit floats.
+ *
+ * Notably, 32-bit SPARC does not support accessing 64-bit integers like this.
+ */
+#if ARCHITECTURE_BITS < 64 && \
+    !defined(ARCHITECTURE_IS_SPARC)
 #define ARCH_INT64_MODULO ARCH_INT32_MODULO
 #endif
 
