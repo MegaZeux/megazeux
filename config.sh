@@ -589,6 +589,7 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 	esac
 
 	if [ "$MACH" = "x86_64" ] || [ "$MACH" = "amd64" ]; then
+		# Debian, T2 x32 also uses "x86_64"
 		ARCHNAME=amd64
 		#RAWLIBDIR=lib64
 		# FreeBSD amd64 hack
@@ -602,13 +603,19 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 		ARCHNAME=arm
 		#RAWLIBDIR=lib
 	elif [ "$MACH" = "ppc" ]; then
+		# Debian powerpc uses "ppc"
 		ARCHNAME=ppc
 		#RAWLIBDIR=lib
 	elif [ "$MACH" = "ppc64" ]; then
 		ARCHNAME=ppc64
+	elif [ "$MACH" = "ppc64le" ]; then
+		# Debian, T2 both use "ppc64le" instead of just "ppc64"
+		ARCHNAME=ppc64el
 	elif [ "$MACH" = "mips" ]; then
+		# Debian, T2 mips and mipsel use "mips"
 		ARCHNAME=mips
 	elif [ "$MACH" = "mips64" ]; then
+		# Debian mips64el uses "mips64"
 		ARCHNAME=mips64
 	elif [ "$MACH" = "m68k" ]; then
 		ARCHNAME=m68k
@@ -616,12 +623,16 @@ elif [ "$PLATFORM" = "unix" ] || [ "$PLATFORM" = "unix-devel" ] ||
 		ARCHNAME=alpha
 	elif [ "$MACH" = "hppa" ] || [ "$MACH" = "parisc" ]; then
 		ARCHNAME=hppa
+	elif [ "$MACH" = "ia64" ]; then
+		ARCHNAME=ia64
 	elif [ "$MACH" = "sh4" ]; then
 		ARCHNAME=sh4
 	elif [ "$MACH" = "sparc" ]; then
 		ARCHNAME=sparc
 	elif [ "$MACH" = "sparc64" ]; then
 		ARCHNAME=sparc64
+	elif [ "$MACH" = "riscv32" ]; then
+		ARCHNAME=riscv32
 	elif [ "$MACH" = "riscv64" ]; then
 		ARCHNAME=riscv64
 	elif [ "$MACH" = "s390" ]; then

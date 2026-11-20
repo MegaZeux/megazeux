@@ -32,6 +32,7 @@ unit_objs := \
   ${unit_obj}/align.o                  \
   ${unit_obj}/expr.o                   \
   ${unit_obj}/render.o                 \
+  ${unit_obj_algo}/arch.o              \
   ${unit_obj_algo}/bitmath.o           \
   ${unit_obj_algo}/rng.o               \
   ${unit_obj_algo}/string_char.o       \

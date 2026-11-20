@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "arch.h"
 #include "string_char.h"
 #include "string_compare.h"
-#include "../platform/platform_endian.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -114,7 +114,7 @@ int mzx_memcasecmp(const void *a, const void *b, size_t n)
   const uint8_t *b8 = (const uint8_t *)b;
 
   /* Align a */
-  size_t align_m = (size_t)a8 % (ARCHITECTURE_BITS >> 3);
+  size_t align_m = ARCH_PTR_MODULO(a8, (ARCHITECTURE_BITS >> 3));
   size_t align = (ARCHITECTURE_BITS >> 3) - align_m;
 
   if(align > n)
@@ -132,7 +132,7 @@ int mzx_memcasecmp(const void *a, const void *b, size_t n)
   }
 
 #if ARCHITECTURE_BITS >= 64
-  if(n >= 8 && (size_t)b8 % ALIGN_64_MODULO == 0)
+  if(n >= 8 && ARCH_PTR_MODULO(b8, ARCH_INT64_MODULO) == 0)
   {
     /* Align 64 compare */
     const uint64_t *a64 = (const uint64_t *)a8;
@@ -154,7 +154,7 @@ int mzx_memcasecmp(const void *a, const void *b, size_t n)
   else
 #endif
 
-  if(n >= 4 && (size_t)b8 % ALIGN_32_MODULO == 0)
+  if(n >= 4 && ARCH_PTR_MODULO(b8, ARCH_INT32_MODULO) == 0)
   {
     /* Align 32 compare */
     const uint32_t *a32 = (const uint32_t *)a8;
@@ -196,7 +196,7 @@ int mzx_memcasecmp32(const void *a, const void *b, size_t n)
   const uint32_t *b32;
 
   /* Can't always guarantee correct alignment, so fall back in this edge case. */
-  if((size_t)a % 4 || (size_t)b % 4)
+  if(ARCH_PTR_MODULO(a, ARCH_INT32_MODULO) || ARCH_PTR_MODULO(b, ARCH_INT32_MODULO))
     return mzx_memcasecmp(a, b, n);
 
   a32 = (const uint32_t *)a;
