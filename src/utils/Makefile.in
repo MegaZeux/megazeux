@@ -43,7 +43,7 @@ utils_objs += \
   ${utils_obj}/pefix.o \
 
 checkres := ${BINPRE}checkres${BINEXT}
-checkres_objs := ${utils_obj}/checkres.o ${io_obj}/fsafeopen.o ${zip_objs}
+checkres_objs := ${utils_obj}/checkres.o ${zip_objs}
 checkres_ldflags := ${UTILS_ZLIB_LDFLAGS}
 
 downver := ${BINPRE}downver${BINEXT}

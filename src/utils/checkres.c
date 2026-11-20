@@ -95,6 +95,7 @@
 #include "../hashtable.h"
 #include "../world_format.h"
 #include "../algorithm/string_compare.h"
+#include "../io/path.h"
 #include "../io/memfile.h"
 #include "../io/vio.h"
 #include "../io/zip.h"
@@ -102,8 +103,7 @@
 
 // Contains some CORE_LIBSPEC functions, which should be fine if the object
 // is included in linking due to the CORE_LIBSPEC define above. Right now,
-// checkres needs fsafeopen.o.
-#include "../io/fsafeopen.h"
+// checkres only needs the defines from world.h.
 #include "../world.h"
 
 #include "utils_alloc.h"
@@ -567,17 +567,29 @@ static boolean check_wildcard_path(const char *path, const char *wildcard)
   return false;
 }
 
-static void strcpy_fsafe(char *dest, size_t dest_len, const char *src)
+static size_t path_safe_copy(char *dest, size_t dest_len, const char *src,
+ boolean is_wildcard)
 {
-  int result = fsafetranslate(src, dest, dest_len);
+  /* Check for most things that would cause path translation to fail in
+   * MegaZeux: roots, parent directories, and reserved DOS devices.
+   * If any of these are detected, throw out the string.
+   * TODO: Allow reserved DOS chars in wildcards, which rely on * and |.
+   */
+  enum path_safe_mask err;
+  size_t len = path_clean_copy_posixdos(dest, dest_len, src);
+#ifdef CONFIG_AMIGA
+  len = path_clean_current_tokens(dest, dest_len);
+#endif
 
-  // SUCCESS - file was actually found physically
-  // MATCH_FAILED - no file was found physically, which is fine here
-  // MATCHED_DIRECTORY - a physical directory was found, which is fine here
+  err = path_safety_check(dest, PATH_SAFE_ANY_ROOT | PATH_SAFE_UNIX_PARENT |
+   (!is_wildcard ? PATH_SAFE_DOS_CHARACTER : 0) | PATH_SAFE_DOS_DEVICE);
 
-  if(result != FSAFE_SUCCESS && result != -FSAFE_MATCH_FAILED &&
-   result != -FSAFE_MATCHED_DIRECTORY)
-    dest[0] = 0;
+  if(err != PATH_SAFE_OK)
+  {
+    dest[0] = '\0';
+    return 0;
+  }
+  return len;
 }
 
 static boolean path_search(const char *path_name, size_t base_len, int max_depth,
@@ -964,45 +976,44 @@ static struct resource *add_requirement_ext(const char *src,
 {
   // A resource file required by a world/board.
   struct resource *req = NULL;
-  char fsafe_buffer[MAX_PATH * 2];
+  char key_buffer[MAX_PATH * 2];
   char temporary_buffer[MAX_PATH];
   boolean is_wildcard = false;
-  int fsafe_len;
+  int key_len;
 
   // Offset the required file's path with the relative path of its parent
   // The file might require wildcard conversion first (if allowed)
   if(!is_simple_path(src, allow_expressions))
   {
-    if(!get_wildcard_path(fsafe_buffer, src))
+    if(!get_wildcard_path(key_buffer, src))
       return NULL;
 
-    join_path(temporary_buffer, file->relative_path, fsafe_buffer);
+    join_path(temporary_buffer, file->relative_path, key_buffer);
     is_wildcard = true;
   }
   else
     join_path(temporary_buffer, file->relative_path, src);
 
-  strcpy_fsafe(fsafe_buffer, MAX_PATH, temporary_buffer);
-  fsafe_len = strlen(fsafe_buffer);
+  key_len = path_safe_copy(key_buffer, MAX_PATH, temporary_buffer, is_wildcard);
 
   if(!display_first_only)
   {
     // add more info to the key.
-    snprintf(fsafe_buffer + fsafe_len + 1, MAX_PATH, "%04x%04x%08x%s",
+    snprintf(key_buffer + key_len + 1, MAX_PATH, "%04x%04x%08x%s",
      (int16_t)board_num, (int16_t)robot_num, line_num, file->file_name);
-    fsafe_len += 1 + strlen(fsafe_buffer + fsafe_len + 1);
+    key_len += 1 + strlen(key_buffer + key_len + 1);
   }
 
-  HASH_FIND(RESOURCE, requirement_table, fsafe_buffer, fsafe_len, req);
+  HASH_FIND(RESOURCE, requirement_table, key_buffer, key_len, req);
 
   if(!req)
   {
     req = cmalloc(sizeof(struct resource));
 
     // NOTE: might be copying data past the terminator, see key extension above
-    memcpy(req->path, fsafe_buffer, fsafe_len + 1);
-    req->path_len = strlen(fsafe_buffer);
-    req->key_len = fsafe_len;
+    memcpy(req->path, key_buffer, key_len + 1);
+    req->path_len = strlen(key_buffer);
+    req->key_len = key_len;
     req->board_num = board_num;
     req->robot_num = robot_num;
     req->line_num = line_num;
@@ -1060,36 +1071,35 @@ static struct resource *add_resource(const char *src, struct base_file *file)
 {
   // A filename found in Robotic code that may fulfill a requirement for a file.
   struct resource *res = NULL;
-  char fsafe_buffer[MAX_PATH];
+  char key_buffer[MAX_PATH];
   char temporary_buffer[MAX_PATH];
   boolean is_wildcard = false;
-  int fsafe_len;
+  int key_len;
 
   // Offset the required file's path with the relative path of its parent
   // The file might require wildcard conversion first (if allowed)
   if(!is_simple_path(src, true))
   {
-    if(!get_wildcard_path(fsafe_buffer, src))
+    if(!get_wildcard_path(key_buffer, src))
       return NULL;
 
-    join_path(temporary_buffer, file->relative_path, fsafe_buffer);
+    join_path(temporary_buffer, file->relative_path, key_buffer);
     is_wildcard = true;
   }
   else
     join_path(temporary_buffer, file->relative_path, src);
 
-  strcpy_fsafe(fsafe_buffer, MAX_PATH, temporary_buffer);
-  fsafe_len = strlen(fsafe_buffer);
+  key_len = path_safe_copy(key_buffer, MAX_PATH, temporary_buffer, is_wildcard);
 
-  HASH_FIND(RESOURCE, resource_table, fsafe_buffer, fsafe_len, res);
+  HASH_FIND(RESOURCE, resource_table, key_buffer, key_len, res);
 
   if(!res)
   {
     res = cmalloc(sizeof(struct resource));
 
-    snprintf(res->path, MAX_PATH, "%s", fsafe_buffer);
-    res->path_len = fsafe_len;
-    res->key_len = fsafe_len;
+    snprintf(res->path, MAX_PATH, "%s", key_buffer);
+    res->path_len = key_len;
+    res->key_len = key_len;
     res->board_num = -1;
     res->robot_num = -1;
     res->line_num = -1;
@@ -1102,7 +1112,7 @@ static struct resource *add_resource(const char *src, struct base_file *file)
     // However, if this changes, uncomment this.
     /*if(display_created)
     {
-      resource_max_len = MAX(resource_max_len, fsafe_len);
+      resource_max_len = MAX(resource_max_len, key_len);
       parent_max_len = MAX(parent_max_len, (int)strlen(file->file_name));
     }*/
     HASH_ADD(RESOURCE, resource_table, res);
@@ -1166,18 +1176,18 @@ static void build_zip_base_path_table(struct base_path *path,
   table_has_crc32 = true;
 }
 
-static void change_base_path_dir(struct base_path *current_path,
+static size_t change_base_path_dir(struct base_path *current_path,
  const char *new_relative_path)
 {
-  size_t len;
-  fsafetranslate(new_relative_path, current_path->relative_path, MAX_PATH);
+  size_t len = path_safe_copy(current_path->relative_path, MAX_PATH,
+   new_relative_path, false);
 
-  len = strlen(current_path->relative_path);
-  if(current_path->relative_path[len - 1] != '/' && len < MAX_PATH - 1)
+  if(len && current_path->relative_path[len - 1] != '/' && len < MAX_PATH - 1)
   {
     current_path->relative_path[len++] = '/';
     current_path->relative_path[len] = '\0';
   }
+  return len;
 }
 
 static struct base_path *add_base_path(const char *path_name,
@@ -3497,8 +3507,17 @@ int main(int argc, char *argv[])
           i++;
           if(i < argc)
           {
-            change_base_path_dir(current_path, argv[i]);
+            size_t len = change_base_path_dir(current_path, argv[i]);
             current_path = NULL;
+
+            if(len == 0 && strlen(argv[i]) != 0)
+            {
+              fprintf(stderr,
+               "ERROR: base path not relative, contains \"..\", "
+               "contains reserved DOS\n"
+               "       characters, or contains reserved DOS device name.\n");
+              return INVALID_ARGUMENTS;
+            }
           }
           else
           {
