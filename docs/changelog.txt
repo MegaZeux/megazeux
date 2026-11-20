@@ -74,6 +74,8 @@ USERS
   mode, and more. (Terryn)
 + Fixed checkres testing of 2.90X through 2.92X worlds with
   custom sound effects tables.
++ checkres now exits with an error if a dependency relative path
+  provided by -in fails MegaZeux's path safety checks.
 + Added file manager support for handling Amiga paths.
 + Added file manager support for listing volumes on Amiga.
 + The file manager now correctly ignores rename/delete when used
