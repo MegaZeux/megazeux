@@ -20,7 +20,27 @@
 #include "../Unit.hpp"
 
 #include "../../src/audio/audio_wav_load.c"
+#include "../../src/algorithm/arch.h"
 #include "../../src/network/sha256.h"
+
+/* SDL versions prior to 2.0.10 always output little endian from ADPCM.
+ * SDL versions prior to 2.0.12 MAY output little endian for big endian MIPS
+ * depending on how it was compiled. Test the former but not the latter for now.
+ *
+ * The WAV loader is immune to these quirks because SDL correctly reports the
+ * loaded PCM data endian; it only affects the test expected values here.
+ */
+#ifdef CONFIG_SDL
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN || !SDL_VERSION_ATLEAST(2,0,10)
+#define SAMPLE_S16_SDL SAMPLE_S16LE
+#else
+#define SAMPLE_S16_SDL SAMPLE_S16BE
+#endif
+#endif
+
+#ifndef SAMPLE_S16_SDL
+#define SAMPLE_S16_SDL SAMPLE_S16
+#endif
 
 #define DATA_BASE_DIR "unit/audio/wav"
 
@@ -88,14 +108,20 @@ static void check_wav_load(const char *filename, enum wav_format fmt, int chn,
   ASSERTEQ(wav.loop_end, loop_end, "%s", filename);
   ASSERTEQ(wav.enable_sam_frequency_hack, false, "%s", filename);
 
-  const char *expected_sha256;
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
-  expected_sha256 = sha256le;
-  (void)sha256be;
-#else
-  expected_sha256 = sha256be;
-  (void)sha256le;
-#endif
+  const char *expected_sha256 = nullptr;
+  switch(fmt)
+  {
+    case SAMPLE_U8:
+    case SAMPLE_S8:
+    case SAMPLE_S16LE:
+      expected_sha256 = sha256le;
+      break;
+    case SAMPLE_S16BE:
+      expected_sha256 = sha256be;
+      break;
+  }
+  ASSERT(expected_sha256, "%s", filename);
+
   check_sha256(&wav, filename, expected_sha256);
 
   audio_free_wav(&wav);
@@ -230,22 +256,22 @@ UNITTEST(ULaw)
 #endif
 
   SECTION(MonoULaw)
-    check_wav_load(DATA_BASE_DIR "/m_ulaw.wav", SAMPLE_S16, 1, 8000, 3200, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/m_ulaw.wav", SAMPLE_S16_SDL, 1, 8000, 3200, 0, 0,
      "771c9845180bba23a147b7d86e2d1aca6fa6f07222ddc34e40f14903ad3ab976",
      "610694769beca8aa55f23b6c1050cbdc9a2350c2cb17a263fedf5f7a0b8b4419");
 
   SECTION(StereoULaw)
-    check_wav_load(DATA_BASE_DIR "/s_ulaw.wav", SAMPLE_S16, 2, 8000, 6400, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/s_ulaw.wav", SAMPLE_S16_SDL, 2, 8000, 6400, 0, 0,
      "3886366672ceb11e98223e47d4f24f2efa77db5274fccca961beba5f5f905d45",
      "977e2ec4f0e78fb82320e4ae3cd4a6fd11e1462180da4b16470c02ac8d27b406");
 
   SECTION(MonoULaw_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_m_ulaw.wav", SAMPLE_S16, 1, 44100, 4008, 400, 3608,
+    check_wav_load(DATA_BASE_DIR "/loop_m_ulaw.wav", SAMPLE_S16_SDL, 1, 44100, 4008, 400, 3608,
      "86613075a0327a96adf4f488c6ed3e8017f8c8e20bb0ff1339f88966788238ab",
      "83265b810fad2e987f20ce7d4d6727d007eede6b88a0584f8f51567f8a0b97a4");
 
   SECTION(StereoULaw_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_s_ulaw.wav", SAMPLE_S16, 2, 44100, 8016, 800, 7216,
+    check_wav_load(DATA_BASE_DIR "/loop_s_ulaw.wav", SAMPLE_S16_SDL, 2, 44100, 8016, 800, 7216,
      "fc4de372c4dbc251bb0c67abcc6a82f25e26c68890b2ce85e1a563aadd73fdb2",
      "d04bc88774a4fca0df0cebbb15abb5e897f384b5cb94cf3c5225508485c66204");
 }
@@ -261,22 +287,22 @@ UNITTEST(ALaw)
 #endif
 
   SECTION(MonoALaw)
-    check_wav_load(DATA_BASE_DIR "/m_alaw.wav", SAMPLE_S16, 1, 8000, 3200, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/m_alaw.wav", SAMPLE_S16_SDL, 1, 8000, 3200, 0, 0,
      "9e1de6b18593786f14bfb3fb4476a28e9c22ebecb5204ce38dabfdf8de00dc5f",
      "83645b1bdebd1bcdd5fcbea2bae81c767691ba50aa453efd339f21d60a1e2cd8");
 
   SECTION(StereoALaw)
-    check_wav_load(DATA_BASE_DIR "/s_alaw.wav", SAMPLE_S16, 2, 8000, 6400, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/s_alaw.wav", SAMPLE_S16_SDL, 2, 8000, 6400, 0, 0,
      "565b1f2e8bec286d3d51e64547b8a71dee3663d5791062002a42b1c98f3b3360",
      "d2927259eba2871359c55add643376752386ed8f5704228ca4d3d7d50a43f3de");
 
   SECTION(MonoALaw_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_m_alaw.wav", SAMPLE_S16, 1, 44100, 4008, 400, 3608,
+    check_wav_load(DATA_BASE_DIR "/loop_m_alaw.wav", SAMPLE_S16_SDL, 1, 44100, 4008, 400, 3608,
      "cbd3410c8deecc74f377d6c9a5062428f1ff614a98a0e7a0063b1a626900fedd",
      "e4730f780903f770c805a436142dfe92acd55a120e9297d9ac07ea87bbf88883");
 
   SECTION(StereoALaw_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_s_alaw.wav", SAMPLE_S16, 2, 44100, 8016, 800, 7216,
+    check_wav_load(DATA_BASE_DIR "/loop_s_alaw.wav", SAMPLE_S16_SDL, 2, 44100, 8016, 800, 7216,
      "e49a4629ecc57753706f77da851d8ea1eeac0f8576022f1d3d97269b88d4f82b",
      "282df728adc3a5752dd7a65c4a94150bab2ff626875513983353b02156a7fc26");
 }
@@ -288,22 +314,22 @@ UNITTEST(IMA_ADPCM)
 #endif
 
   SECTION(MonoIMAADPCM)
-    check_wav_load(DATA_BASE_DIR "/m_ima_adpcm.wav", SAMPLE_S16, 1, 8000, 4040, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/m_ima_adpcm.wav", SAMPLE_S16_SDL, 1, 8000, 4040, 0, 0,
      "43b3e70e2eeb3cf96ff5c532bbb377305ae2b6c9485fc86dfb9a07182175f138",
      "641092095039535ee58559648da90e1753a5b540a43ed0e10ce28971c003cfc8");
 
   SECTION(StereoIMAADPCM)
-    check_wav_load(DATA_BASE_DIR "/s_ima_adpcm.wav", SAMPLE_S16, 2, 8000, 8080, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/s_ima_adpcm.wav", SAMPLE_S16_SDL, 2, 8000, 8080, 0, 0,
      "4036c0c18654614928d436f1936940520d6f5d15a0ba41e455247fdebd8791c7",
      "8ae078be6fb881953c2080b6ca5f361fb11a62e6eec7c033340489e2a8c7dd83");
 
   SECTION(MonoIMAADPCM_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_m_ima_adpcm.wav", SAMPLE_S16, 1, 44100, 8178, 400, 3608,
+    check_wav_load(DATA_BASE_DIR "/loop_m_ima_adpcm.wav", SAMPLE_S16_SDL, 1, 44100, 8178, 400, 3608,
      "125b58f1e7610caa4396710b1a4f7e3727d9b18b43938dabe74c76d3f6c1ce47",
      "a48ce845d272662a6ba488b44d1ffaf30c4b78768ecd5c9d415698576142aae2");
 
   SECTION(StereoIMAADPCM_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_s_ima_adpcm.wav", SAMPLE_S16, 2, 44100, 8164, 800, 7216,
+    check_wav_load(DATA_BASE_DIR "/loop_s_ima_adpcm.wav", SAMPLE_S16_SDL, 2, 44100, 8164, 800, 7216,
      "faf213999ff7ebf8efcc025ab964c55cd3ac5fb3dbff7607604ce6fd522b9f40",
      "cfcba051ae8e884c36fff91aea081dafa941f1084b0a0edeef531e71986e82b8");
 
@@ -316,22 +342,22 @@ UNITTEST(MS_ADPCM)
 #endif
 
   SECTION(MonoMSADPCM)
-    check_wav_load(DATA_BASE_DIR "/m_ms_adpcm.wav", SAMPLE_S16, 1, 8000, 4000, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/m_ms_adpcm.wav", SAMPLE_S16_SDL, 1, 8000, 4000, 0, 0,
      "d928beac8e3b3c296ce5edf94f5fdd2cb0cd686dc9783ef502c4d75d74a6e45d",
      "a7498d85745ce92b3d4f8cbb134e52ffc345b160fd70237717d2821c2c08b2f4");
 
   SECTION(StereoMSADPCM)
-    check_wav_load(DATA_BASE_DIR "/s_ms_adpcm.wav", SAMPLE_S16, 2, 8000, 8000, 0, 0,
+    check_wav_load(DATA_BASE_DIR "/s_ms_adpcm.wav", SAMPLE_S16_SDL, 2, 8000, 8000, 0, 0,
      "a4a611613955f145259c573501eb9363b22dd84541a134dcee51e4c1815d4240",
      "9b216e43a18c97611164ed79ec110738290407b99ab658f444ca83c9bf0fefc5");
 
   SECTION(MonoMSADPCM_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_m_ms_adpcm.wav", SAMPLE_S16, 1, 44100, 8168, 400, 3608,
+    check_wav_load(DATA_BASE_DIR "/loop_m_ms_adpcm.wav", SAMPLE_S16_SDL, 1, 44100, 8168, 400, 3608,
      "c3fdd9cd0237d9aaa8b252b67fd3bcee0b7adeb47da1c6223f7b42301dc21955",
      "5449a210b81ba32aab03553153a232257c1af5fd1129be0d6ea1c1669330f156");
 
   SECTION(StereoMSADPCM_smpl)
-    check_wav_load(DATA_BASE_DIR "/loop_s_ms_adpcm.wav", SAMPLE_S16, 2, 44100, 8144, 800, 7216,
+    check_wav_load(DATA_BASE_DIR "/loop_s_ms_adpcm.wav", SAMPLE_S16_SDL, 2, 44100, 8144, 800, 7216,
      "3e4befd105d74d72f9090404aaeea184529c44e06d85c02b2d683dfd146d25a7",
      "b56cdeab6bf7c485a1c0b076e5beb951a047a8c911ff034b7be888d0201ac19c");
 }

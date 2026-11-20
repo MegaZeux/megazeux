@@ -32,7 +32,9 @@ UNITTEST(audio_sfx_data)
   ASSERTEQ(offsetof(struct audio_sfx_note, duration), 0, "duration offset wrong");
   ASSERTEQ(offsetof(struct audio_sfx_note, freq), 2, "freq offset wrong");
 
-  ASSERTEQ(sizeof(struct audio_sfx_data), 16396, "sfx data size wrong");
+  /* This struct is not guaranteed to be 16396 on all architectures.
+   * Example: it is 16394 on m68k. Just make sure it can fit all members. */
+  ASSERT(sizeof(struct audio_sfx_data) >= 16393, "sfx data size wrong");
   ASSERTEQ(offsetof(struct audio_sfx_data, queue), 0, "queue offset wrong");
   ASSERTEQ(offsetof(struct audio_sfx_data, head_index), 16384, "head offset wrong");
   ASSERTEQ(offsetof(struct audio_sfx_data, tail_index), 16388, "tail offset wrong");
