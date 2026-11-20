@@ -22,6 +22,7 @@
 #include "SDLmzx.h"
 #include "../platform.h"
 #include "../../util.h"
+#include "../../algorithm/arch.h"
 
 #ifdef CONFIG_PSP
 #include <psppower.h>
@@ -36,11 +37,11 @@
 #include <fat.h>
 #endif
 
-/* Verify that SDL's endianness matches what platform_endian.h claims... */
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN && PLATFORM_BYTE_ORDER != PLATFORM_BIG_ENDIAN
+/* Verify that SDL's endianness matches what arch.h claims... */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN && ARCH_BYTE_ORDER != ARCH_BIG_ENDIAN
 #error Endian mismatch: SDL detected big, but MZX detected little. Report this!
 #endif
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN && PLATFORM_BYTE_ORDER != PLATFORM_LIL_ENDIAN
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN && ARCH_BYTE_ORDER != ARCH_LIL_ENDIAN
 #error Endian mismatch: SDL detected little, but MZX detected big. Report this!
 #endif
 

@@ -94,6 +94,7 @@
 #include "../const.h"
 #include "../hashtable.h"
 #include "../world_format.h"
+#include "../algorithm/arch.h"
 #include "../algorithm/string_compare.h"
 #include "../io/path.h"
 #include "../io/memfile.h"
@@ -2264,19 +2265,12 @@ static uint8_t get_pw_xor_code(char *password, int password_length, int pro_meth
   return work;
 }
 
-#if ARCHITECTURE_BITS == 64
-#define ALIGN_TYPE uint64_t
-#define ALIGN_XOR(x) ((x) | (x << 8) | (x << 16) | (x << 24) | \
- (x << 32) | (x << 40) | (x << 48) | (x << 56))
-#else
-#define ALIGN_TYPE uint32_t
-#define ALIGN_XOR(x) ((x) | (x << 8) | (x << 16) | (x << 24))
-#endif
-
 static void _decrypt_legacy_world(struct memfile *mf, struct base_file *file)
 {
-  ALIGN_TYPE xor = get_pw_xor_code(file->password, file->password_length, file->protection_method);
-  ALIGN_TYPE xor_w = ALIGN_XOR(xor);
+  arch_uint xor = get_pw_xor_code(file->password, file->password_length, file->protection_method);
+  arch_uint xor_w = xor * ARCH_32_OR_64(0x01010101, 0x0101010101010101ull);
+  arch_uint *pos_w;
+  arch_uint *end_w;
   unsigned char *pos = mf->current;
 
   if(!display_first_only)
@@ -2296,13 +2290,18 @@ static void _decrypt_legacy_world(struct memfile *mf, struct base_file *file)
     fflush(stderr);
   }
 
-  while(pos < mf->end && ((size_t)pos) % sizeof(ALIGN_TYPE))
+  while(pos < mf->end && ARCH_PTR_MODULO(pos, ARCH_UINT_MODULO))
     *(pos++) ^= xor;
 
-  while(mf->end - pos >= (ptrdiff_t)sizeof(ALIGN_TYPE))
+  if(pos < mf->end)
   {
-    *((ALIGN_TYPE *)pos) ^= xor_w;
-    pos += sizeof(ALIGN_TYPE);
+    pos_w = (arch_uint *)pos;
+    end_w = ARCH_UINT_TRUNC_CAST(mf->end);
+
+    while(pos_w < end_w)
+      *(pos_w++) ^= xor_w;
+
+    pos = (unsigned char *)pos_w;
   }
 
   while(pos < mf->end)

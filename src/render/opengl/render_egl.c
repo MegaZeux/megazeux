@@ -21,6 +21,7 @@
 #include "render_egl.h"
 
 #include "../../util.h"
+#include "../../platform/log.h"
 
 #include <assert.h>
 #include <dlfcn.h>

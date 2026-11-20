@@ -27,12 +27,12 @@
 
 #include "../graphics.h"
 #include "../util.h"
-#include "../platform/platform_endian.h"
+#include "../algorithm/arch.h"
 
 static void set_colors8_mzx(const struct graphics_data *graphics,
  uint32_t * RESTRICT char_colors, uint8_t bg, uint8_t fg)
 {
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   char_colors[0] = (bg << 24) | (bg << 16) | (bg << 8) | bg;
   char_colors[1] = (bg << 24) | (bg << 16) | (bg << 8) | fg;
   char_colors[2] = (bg << 24) | (bg << 16) | (fg << 8) | bg;
@@ -88,7 +88,7 @@ static void set_colors8_smzx(const struct graphics_data *graphics,
   fb |= fb << 8;
   ff |= ff << 8;
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   char_colors[0] = (bb << 16) | bb;
   char_colors[1] = (bb << 16) | bf;
   char_colors[2] = (bb << 16) | fb;
@@ -133,16 +133,16 @@ static void set_colors16_mzx(const struct graphics_data *graphics,
   cb_bg = graphics->flat_intensity_palette[bg];
   cb_fg = graphics->flat_intensity_palette[fg];
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
-        char_colors[0] = (cb_bg << 16) | cb_bg;
-        char_colors[1] = (cb_bg << 16) | cb_fg;
-        char_colors[2] = (cb_fg << 16) | cb_bg;
-        char_colors[3] = (cb_fg << 16) | cb_fg;
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
+  char_colors[0] = (cb_bg << 16) | cb_bg;
+  char_colors[1] = (cb_bg << 16) | cb_fg;
+  char_colors[2] = (cb_fg << 16) | cb_bg;
+  char_colors[3] = (cb_fg << 16) | cb_fg;
 #else
-        char_colors[0] = (cb_bg << 16) | cb_bg;
-        char_colors[1] = (cb_fg << 16) | cb_bg;
-        char_colors[2] = (cb_bg << 16) | cb_fg;
-        char_colors[3] = (cb_fg << 16) | cb_fg;
+  char_colors[0] = (cb_bg << 16) | cb_bg;
+  char_colors[1] = (cb_fg << 16) | cb_bg;
+  char_colors[2] = (cb_bg << 16) | cb_fg;
+  char_colors[3] = (cb_fg << 16) | cb_fg;
 #endif
 }
 

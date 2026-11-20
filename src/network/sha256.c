@@ -20,7 +20,7 @@
 #include "sha256.h"
 
 #include "../util.h"
-#include "../platform/platform_endian.h"
+#include "../algorithm/arch.h"
 
 #include <string.h>
 
@@ -60,7 +60,7 @@ static const uint32_t H_initial[] = {
   0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
 };
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
 
 static void convert_to_bigendian(void *data, int len)
 {

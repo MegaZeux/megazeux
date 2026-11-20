@@ -30,7 +30,8 @@ MEGAZEUX_BEGIN_DECLS
 #include "../../configure.h"
 #include "../../graphics.h"
 #include "../../util.h"
-#include "../../platform/platform.h"
+#include "../../algorithm/arch.h"
+#include "../../platform/platform_dso.h"
 
 #ifdef CONFIG_SDL
 # include "../../platform/sdl/SDLmzx.h"
@@ -101,7 +102,7 @@ enum gl_lib_type
   GL_LIB_PROGRAMMABLE,
 };
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
 /**
  * The GL renderers use GL_UNSIGNED_BYTE for 32-bit texture buffers for GLES 2
  * compatibility. This leads to some problems when packing bytes on big endian

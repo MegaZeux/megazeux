@@ -30,9 +30,9 @@
 
 #include "../graphics.h"
 #include "../util.h"
+#include "../algorithm/arch.h"
 #include "../platform/log.h"
 #include "../platform/platform_attribute.h"
-#include "../platform/platform_endian.h"
 
 #include <stdlib.h>
 
@@ -44,7 +44,7 @@
 #include <cstdio>
 #endif
 
-#if defined(PLATFORM_UNALIGN_32) || defined(PLATFORM_UNALIGN_64)
+#if defined(ARCH_INT32_UNALIGN) || defined(ARCH_INT64_UNALIGN)
 /* May be using intentional unaligned accesses; tell UBSan to calm down. */
 #define RENDER_EXTRA_ATTRIBUTES ATTRIBUTE_NO_SANITIZE("alignment")
 #else
@@ -347,7 +347,7 @@ static inline void render_layer_func(
 template<int BPP, int PPW, typename ALIGNTYPE>
 static inline void set_colors_mzx(ALIGNTYPE (&dest)[16], ALIGNTYPE bg, ALIGNTYPE fg)
 {
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
   switch(PPW)
   {
     case 1:
@@ -432,7 +432,7 @@ static inline void set_colors_smzx(ALIGNTYPE (&dest)[16], ALIGNTYPE (&cols)[4])
 
     case 4:
     case 8:
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
       dest[0]  = BPPx2(c0) | c0;
       dest[1]  = BPPx2(c1) | c0;
       dest[2]  = BPPx2(c2) | c0;
@@ -498,7 +498,7 @@ static inline ALIGNTYPE get_colors(ALIGNTYPE (&set_colors)[16], unsigned idx)
     {
       unsigned int left = (idx & 0xF0) >> 4;
       unsigned int right = (idx & 0x0F);
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
       return (set_colors[right] << sizeof(ALIGNTYPE) * 4) | set_colors[left];
 #else
       return (set_colors[left] << sizeof(ALIGNTYPE) * 4) | set_colors[right];
@@ -508,7 +508,7 @@ static inline ALIGNTYPE get_colors(ALIGNTYPE (&set_colors)[16], unsigned idx)
   return 0;
 }
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
 #define PIXEL_POS(i)      (BPP * (PPW - 1 - (i)))
 #define PIXEL_POS_PAIR(i) (BPP * (PPW - 2 - (i)))
 #else

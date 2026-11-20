@@ -31,8 +31,10 @@ MEGAZEUX_BEGIN_DECLS
 #include <stdint.h>
 
 #include "../configure.h"
+#include "../algorithm/arch.h"
 #include "../io/vfile.h"
-#include "../platform/platform.h"
+#include "../platform/log.h"
+#include "../platform/platform_thread.h"
 
 #define AUDIO_SFX_QUEUE_SIZE 4096
 
@@ -40,7 +42,7 @@ MEGAZEUX_BEGIN_DECLS
 #define AUDIO_GARBAGE_COLLECTOR
 #endif
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
 #define SAMPLE_S16 SAMPLE_S16BE
 #else
 #define SAMPLE_S16 SAMPLE_S16LE

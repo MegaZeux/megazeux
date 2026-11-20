@@ -20,6 +20,7 @@
 #include "Unit.hpp"
 #include "UnitIO.hpp"
 
+#include "../src/algorithm/arch.h"
 #include "../src/io/path.h"
 
 extern "C" {
@@ -210,7 +211,7 @@ inline uint32_t flat_color<FLAT16>(unsigned r, unsigned g, unsigned b)
   b = comp6to5(b);
 
   uint32_t val = 0x8000 | (r << 10u) | (g << 5u) | b;
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   val = ((val & 0xff) << 8) | (val >> 8);
 #endif
   return val;
@@ -224,7 +225,7 @@ inline uint32_t flat_color<FLAT32>(unsigned r, unsigned g, unsigned b)
   g = comp6to8(g);
   b = comp6to8(b);
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   return (b << 24u) | (g << 16u) | (r << 8u) | 0xffu;
 #else
   return 0xff000000u | (r << 16u) | (g << 8u) | b;
@@ -1171,7 +1172,7 @@ UNITTEST(render_layer_smzx32_aligned)
   SECTION(large)        test::large(DIR "32sxl.tga.gz");
 }
 
-#if defined(PLATFORM_UNALIGN_32) || defined(PLATFORM_UNALIGN_64)
+#if defined(ARCH_INT32_UNALIGN) || defined(ARCH_INT64_UNALIGN)
 /* Manual layer renderer dispatch to ensure every unaligned renderer is
  * used for every alignment combination. Calls to render_layer may instead
  * dispatch to vector renderers, so the regular tests aren't sufficient for
@@ -1299,7 +1300,7 @@ UNITTEST(render_layer_smzx32_unaligned)
   SECTION(misclip_tr)   test::misclip_tr(DIR "32stc.tga.gz");
   SECTION(large)        test::large(DIR "32sxl.tga.gz");
 }
-#endif /* PLATFORM_UNALIGN_32 || PLATFORM_UNALIGN_64 */
+#endif /* ARCH_INT32_UNALIGN || ARCH_INT64_UNALIGN */
 
 static void reference_renderer_wrap(void * RESTRICT pixels,
  size_t width_px, size_t height_px, size_t pitch, int bpp,

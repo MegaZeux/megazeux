@@ -27,25 +27,19 @@ MEGAZEUX_BEGIN_DECLS
 #include <inttypes.h>
 #include <stdio.h>
 
-#include "../platform/platform_endian.h"
+#include "../algorithm/arch.h"
 
 /**
  * Most zip compression methods require treating the input as a stream of
  * bits rather than bytes.
  */
 
-#if ARCHITECTURE_BITS >= 64
-#define BS_CAPACITY 64
-typedef uint64_t BS_BUFTYPE;
-#else
-#define BS_CAPACITY 32
-typedef uint32_t BS_BUFTYPE;
-#endif
+#define BS_CAPACITY ARCHITECTURE_BITS
 
 struct bitstream
 {
-  BS_BUFTYPE buf;
-  BS_BUFTYPE buf_left;
+  arch_uint buf;
+  arch_uint buf_left;
   const uint8_t *input;
   size_t input_left;
 };
@@ -54,31 +48,24 @@ static inline boolean bs_fill(struct bitstream *b)
 {
   if(b->input_left)
   {
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
-    size_t align = (size_t)b->input % ALIGN_64_MODULO;
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
 
 #if ARCHITECTURE_BITS >= 64
-    if(!align && b->buf_left == 0 && b->input_left >= 8)
+    if(ARCH_PTR_MODULO(b->input, ARCH_INT32_MODULO) == 0 &&
+     b->buf_left <= (BS_CAPACITY - 32) && b->input_left >= 4)
     {
-      b->buf = ((BS_BUFTYPE)*((uint64_t *)b->input));
-      b->buf_left += 64;
-      b->input += 8;
-      b->input_left -= 8;
-    }
-    else
-#endif
-    if(!(align % ALIGN_32_MODULO) && b->buf_left <= (BS_CAPACITY - 32) && b->input_left >= 4)
-    {
-      b->buf |= ((BS_BUFTYPE)*((uint32_t *)b->input)) << b->buf_left;
+      b->buf |= ((arch_uint)*((uint32_t *)b->input)) << b->buf_left;
       b->buf_left += 32;
       b->input += 4;
       b->input_left -= 4;
     }
     else
+#endif
 
-    if(!(align % ALIGN_16_MODULO) && b->buf_left <= (BS_CAPACITY - 16) && b->input_left >= 2)
+    if(ARCH_PTR_MODULO(b->input, ARCH_INT16_MODULO) == 0 &&
+     b->buf_left <= (BS_CAPACITY - 16) && b->input_left >= 2)
     {
-      b->buf |= ((BS_BUFTYPE)*((uint16_t *)b->input)) << b->buf_left;
+      b->buf |= ((arch_uint)*((uint16_t *)b->input)) << b->buf_left;
       b->buf_left += 16;
       b->input += 2;
       b->input_left -= 2;
@@ -87,7 +74,7 @@ static inline boolean bs_fill(struct bitstream *b)
 #endif
     while(b->buf_left <= (BS_CAPACITY - 8) && b->input_left)
     {
-      b->buf |= ((BS_BUFTYPE)*(b->input)) << b->buf_left;
+      b->buf |= ((arch_uint)*(b->input)) << b->buf_left;
       b->buf_left += 8;
       b->input++;
       b->input_left--;
@@ -101,9 +88,9 @@ static inline boolean bs_fill(struct bitstream *b)
   return false;
 }
 
-static inline int bs_read(struct bitstream *b, BS_BUFTYPE mask, BS_BUFTYPE bits)
+static inline int bs_read(struct bitstream *b, arch_uint mask, arch_uint bits)
 {
-  BS_BUFTYPE tmp;
+  arch_uint tmp;
   if(b->buf_left < bits)
     if(!bs_fill(b) || b->buf_left < bits)
       return EOF;

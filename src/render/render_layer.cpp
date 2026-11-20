@@ -24,7 +24,7 @@
 #include "render_layer.h"
 
 #include "../graphics.h"
-#include "../platform/platform_endian.h"
+#include "../algorithm/arch.h"
 
 // Skip unused variants to reduce compile time on these platforms.
 #if defined(CONFIG_WII) || defined(ANDROID) || defined(__EMSCRIPTEN__) || \
@@ -265,11 +265,11 @@ static inline void select_aligned_renderer(const void *pixels,
  */
 static inline void select_unaligned_renderer(int &align)
 {
-#if defined(PLATFORM_UNALIGN_64)
-  if(align >= PLATFORM_UNALIGN_64 * 8)
+#if defined(ARCH_INT64_UNALIGN)
+  if(align >= ARCH_INT64_UNALIGN * 8)
     align = 64;
-#elif defined(PLATFORM_UNALIGN_32)
-  if(align >= PLATFORM_UNALIGN_32 * 8 && align < 32)
+#elif defined(ARCH_INT32_UNALIGN)
+  if(align >= ARCH_INT32_UNALIGN * 8 && align < 32)
     align = 32;
 #endif
 }

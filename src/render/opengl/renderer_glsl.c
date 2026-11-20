@@ -31,6 +31,7 @@
 #include "../../util.h"
 #include "../../io/path.h"
 #include "../../io/vio.h"
+#include "../../platform/log.h"
 #include "../../platform/platform_dso.h"
 
 // Uncomment to enable GL debug output (requires OpenGL 4.3+).

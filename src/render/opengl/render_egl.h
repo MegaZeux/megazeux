@@ -25,6 +25,7 @@
 MEGAZEUX_BEGIN_DECLS
 
 #include "render_gl.h"
+#include "../../platform/platform_dso.h"
 
 #include <EGL/egl.h>
 
