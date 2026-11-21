@@ -25,6 +25,7 @@
 
 #include "../../util.h"
 #include "../../io/fsafeopen.h"
+#include "../../platform/platform.h"
 #include "../../platform/nds/platform_nds.h"
 
 #include <nds.h>

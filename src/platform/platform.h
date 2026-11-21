@@ -27,7 +27,6 @@ MEGAZEUX_BEGIN_DECLS
 #include "log.h"
 #include "platform_clipboard.h"
 #include "platform_dso.h"
-#include "platform_endian.h"
 #include "platform_main.h"
 #include "platform_thread.h"
 #include "platform_time.h"

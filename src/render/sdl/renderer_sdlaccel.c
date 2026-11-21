@@ -34,6 +34,7 @@
 #include "render_sdl.h"
 
 #include "../../algorithm/bitmath.h"
+#include "../../platform/log.h"
 
 #include <stdlib.h>
 

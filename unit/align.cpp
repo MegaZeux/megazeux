@@ -26,23 +26,23 @@
 
 #include "Unit.hpp"
 #include "../src/counter_struct.h"
+#include "../src/algorithm/arch.h"
 #include "../src/io/zip.h"
-#include "../src/platform/platform_endian.h"
 
 UNITTEST(counter_struct_name)
 {
-  static_assert((offsetof(struct counter, name) & (ALIGN_32_MODULO - 1)) == 0,
+  static_assert((offsetof(struct counter, name) & (ARCH_INT32_MODULO - 1)) == 0,
    "struct counter::name is not aligned to 4 bytes!");
 }
 
 UNITTEST(string_struct_name)
 {
-  static_assert((offsetof(struct string, name) & (ALIGN_32_MODULO - 1)) == 0,
+  static_assert((offsetof(struct string, name) & (ARCH_INT32_MODULO - 1)) == 0,
    "struct string::name is not aligned to 4 bytes!");
 }
 
 UNITTEST(zip_file_header_file_name)
 {
-  static_assert((offsetof(struct zip_file_header, file_name) & (ALIGN_32_MODULO - 1)) == 0,
+  static_assert((offsetof(struct zip_file_header, file_name) & (ARCH_INT32_MODULO - 1)) == 0,
    "struct zip_file_header::file_name is not aligned to 4 bytes!");
 }

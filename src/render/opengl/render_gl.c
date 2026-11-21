@@ -22,6 +22,7 @@
 #include "../render.h"
 
 #include "../../util.h"
+#include "../../platform/log.h"
 #include "../../platform/platform_dso.h"
 
 #ifdef CONFIG_SDL

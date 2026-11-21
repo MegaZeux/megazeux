@@ -97,6 +97,9 @@
 #ifndef ARCHITECTURE_IS_SUPERH
 #define ARCHITECTURE_IS_SUPERH 0
 #endif
+#ifndef ARCHITECTURE_IS_WASM
+#define ARCHITECTURE_IS_WASM 0
+#endif
 
 struct machtest
 {
@@ -122,6 +125,7 @@ UNITTEST(Machine)
     { "s390",       ARCHITECTURE_IS_S390 | ARCHITECTURE_IS_S390X },
     { "sparc",      ARCHITECTURE_IS_SPARC | ARCHITECTURE_IS_SPARC64 },
     { "sh",         ARCHITECTURE_IS_SUPERH },
+    { "wasm",       ARCHITECTURE_IS_WASM },
   };
   char detected[128];
   char *pos = detected;
@@ -339,7 +343,6 @@ static void check_unaligned_32(void)
     ARCH_LIL_OR_BIG(0x07060504, 0x04050607),
     ARCH_LIL_OR_BIG(0x08070605, 0x05060708),
   };
-  const uint32_t *exp_pos = expected;
 
   while(ARCH_PTR_MODULO(pos, ARCH_INT32_MODULO))
     pos++;
@@ -347,10 +350,10 @@ static void check_unaligned_32(void)
   for(i = 0; i < 8; i++)
     pos[i] = i + 1;
 
-  for(i = 0; i <= 4; i += ARCH_INT32_UNALIGN, exp_pos++)
+  for(i = 0; i <= 4; i += ARCH_INT32_UNALIGN)
   {
     const uint32_t *check = ARCH_UINT32_UNALIGN_CAST(pos + i);
-    ASSERTEQ(*check, *exp_pos, "%zu", i);
+    ASSERTEQ(*check, expected[i], "%zu", i);
   }
 #endif
 }
@@ -378,7 +381,6 @@ static void check_unaligned_64(void)
     ARCH_LIL_OR_BIG(0x0f0e0d0c0b0a0908ull, 0x08090a0b0c0d0e0full),
     ARCH_LIL_OR_BIG(0x100f0e0d0c0b0a09ull, 0x090a0b0c0d0e0f10ull),
   };
-  const uint64_t *exp_pos = expected;
 
   while(ARCH_PTR_MODULO(pos, ARCH_INT64_MODULO))
     pos++;
@@ -386,10 +388,10 @@ static void check_unaligned_64(void)
   for(i = 0; i < 16; i++)
     pos[i] = i + 1;
 
-  for(i = 0; i <= 8; i += ARCH_INT64_UNALIGN, exp_pos++)
+  for(i = 0; i <= 8; i += ARCH_INT64_UNALIGN)
   {
     const uint64_t *check = ARCH_UINT64_UNALIGN_CAST(pos + i);
-    ASSERTEQ(*check, *exp_pos, "%zu", i);
+    ASSERTEQ(*check, expected[i], "%zu", i);
   }
 #endif
 }
@@ -463,7 +465,8 @@ UNITTEST(ArchUint)
   ASSERT(sizeof(arch_uint) >= sizeof(void *), "arch_uint:%zu void *:%zu",
    sizeof(arch_uint), sizeof(void *));
   ASSERTEQ(ARCH_UINT_MODULO, ARCH_32_OR_64(ARCH_INT32_MODULO, ARCH_INT64_MODULO), "");
-  ASSERTEQ(ARCH_UINT_MODULO, sizeof(arch_uint), "");
+  ASSERT(ARCH_UINT_MODULO <= sizeof(arch_uint), "%d <= %zu",
+   ARCH_UINT_MODULO, sizeof(arch_uint));
 
   for(int i = 0; i < arraysize(buffer); i++)
   {

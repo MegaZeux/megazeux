@@ -21,6 +21,7 @@
 #include "../render.h"
 #include "../renderers.h"
 
+#include "../../algorithm/arch.h"
 #include "../../platform/platform.h"
 
 #include <stdlib.h>
@@ -54,7 +55,7 @@ static void gp2x_set_colors_mzx(const struct graphics_data *graphics,
     cb_mx = ((cb_bg >> 1) & render_data->halfmask) +
      ((cb_fg >> 1) & render_data->halfmask);
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   char_colors[0] = (cb_bg << 16) | cb_bg;
   char_colors[1] = (cb_bg << 16) | cb_mx;
   char_colors[2] = (cb_bg << 16) | cb_mx;
@@ -105,7 +106,7 @@ static void gp2x_set_colors_smzx(const struct graphics_data *graphics,
   fb = graphics->flat_intensity_palette[indices[2]];
   ff = graphics->flat_intensity_palette[indices[3]];
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   char_colors[0] = (bb << 16) | bb;
   char_colors[1] = (bb << 16) | bf;
   char_colors[2] = (bb << 16) | fb;

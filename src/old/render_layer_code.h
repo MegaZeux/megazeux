@@ -28,7 +28,7 @@
 
 #ifndef RENDERER_BPP
 
-#include "platform_endian.h"
+#include "../algorithm/arch.h"
 
 #define CONCAT(a,b,c,d,e,f,g,h,i,j,k,l,m) \
  a ## b ## c ## d ## e ## f ## g ## h ## i ## j ## k ## l ## m

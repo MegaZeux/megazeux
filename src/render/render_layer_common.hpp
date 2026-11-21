@@ -21,7 +21,6 @@
 #define MEGAZEUX_RENDER_LAYER_COMMON_HPP
 
 #include "../graphics.h"
-#include "../platform/platform_endian.h"
 
 /**
  * Select the real display character for a char element.

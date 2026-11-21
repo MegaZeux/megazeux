@@ -27,6 +27,7 @@ MEGAZEUX_BEGIN_DECLS
 #include "../render.h"
 #include "../../graphics.h"
 #include "../../platform/sdl/SDLmzx.h"
+#include "../../platform/platform_dso.h"
 
 struct sdl_render_data
 {

@@ -28,10 +28,10 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-#include "../platform/platform_endian.h"
+#include "../algorithm/arch.h"
 #include <stdint.h>
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
 
 #define YUY2_Y1_SHIFT 24
 #define YUY2_Y2_SHIFT  8
@@ -112,7 +112,7 @@ static inline uint32_t yuv_subsample_uv0(uint32_t a, uint32_t b,
 {
   uint32_t y1 = a & y1_mask;
   uint32_t y2 = b & y2_mask;
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   uint32_t uv = (((a & uv_mask) >> 1) + ((b & uv_mask) >> 1)) & uv_mask;
 #else
   uint32_t uv = (((a & uv_mask) + (b & uv_mask)) >> 1) & uv_mask;
@@ -126,7 +126,7 @@ static inline uint32_t yuv_subsample_y0(uint32_t a, uint32_t b,
 {
   uint32_t y1 = a & y1_mask;
   uint32_t y2 = b & y2_mask;
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
   uint32_t uv = (((a & uv_mask) + (b & uv_mask)) >> 1) & uv_mask;
 #else
   uint32_t uv = (((a & uv_mask) >> 1) + ((b & uv_mask) >> 1)) & uv_mask;

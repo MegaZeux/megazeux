@@ -28,6 +28,7 @@
 #include "../renderers.h"
 
 #include "../../algorithm/bitmath.h"
+#include "../../platform/log.h"
 #include "../../platform/platform_dso.h"
 
 #ifdef CONFIG_SDL

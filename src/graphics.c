@@ -37,6 +37,7 @@
 #include "error.h"
 #include "graphics.h"
 #include "world.h"
+#include "algorithm/arch.h"
 #include "io/image_png.h"
 #include "io/vio.h"
 
@@ -2568,13 +2569,13 @@ static void screenshot_init_palette(struct graphics_data *graphics,
   for(i = 0; i < palette_size; i++)
   {
     // PNG byte order: R, G, B, A
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
     graphics->flat_intensity_palette[i] = 0xff |
      (palette[i].b << 8) | (palette[i].g << 16) | (palette[i].r << 24);
 #else
     graphics->flat_intensity_palette[i] = 0xff000000u |
      (palette[i].b << 16) | (palette[i].g << 8) | (palette[i].r << 0);
-#endif /* PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN */
+#endif
   }
 }
 

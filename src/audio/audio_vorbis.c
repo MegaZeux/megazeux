@@ -146,7 +146,7 @@ static size_t audio_vorbis_handle_read(void * RESTRICT dest,
 
 // Tremor (as of r19494) doesn't use this, so suppress the warning...
 #ifndef CONFIG_TREMOR
-#if PLATFORM_BYTE_ORDER == PLATFORM_BIG_ENDIAN
+#if ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
 static const int ENDIAN_PACKING = 1;
 #else
 static const int ENDIAN_PACKING = 0;

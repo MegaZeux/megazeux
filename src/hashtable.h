@@ -62,7 +62,6 @@ MEGAZEUX_BEGIN_DECLS
 
 #include "algorithm/string_char.h"
 #include "algorithm/string_compare.h"
-#include "platform/platform_endian.h"
 
 #ifndef klib_unused
 #if (defined __clang__ && __clang_major__ >= 3) || (defined __GNUC__ && __GNUC__ >= 3)
@@ -93,10 +92,10 @@ static const double __ac_HASH_UPPER = 0.77;
  * In practice, tables over this size will probably never be used, since the
  * counters and strings lists are bounded to 2^31.
  */
-#if ARCHITECTURE_BITS >= 64
-static const uint64_t __ac_HASH_MAXIMUM = ((uint64_t)UINT32_MAX) + 1;
+#if SIZE_MAX > UINT32_MAX
+#define __ac_HASH_MAXIMUM ((uint64_t)1 << 32)
 #else
-static const size_t __ac_HASH_MAXIMUM = ((size_t)INT32_MAX) + 1;
+#define __ac_HASH_MAXIMUM ((size_t)1 << 31)
 #endif
 
 #define __KHASH_TYPE(name, khkey_t, khval_t) \

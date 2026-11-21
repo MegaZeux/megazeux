@@ -22,8 +22,8 @@
 #include "robot.h"
 #include "util.h"
 #include "world_struct.h"
+#include "algorithm/arch.h"
 #include "platform/log.h"
-#include "platform/platform_endian.h"
 
 #include <limits.h>
 #include <stdint.h>
@@ -756,7 +756,8 @@ static boolean extram_copy(void * RESTRICT dest, const void *src, size_t len)
   uint32_t *d32 = (uint32_t *)dest;
   size_t len32;
 
-  if(((size_t)src & 3) || ((size_t)dest & 3))
+  if(ARCH_PTR_MODULO(src, ARCH_INT32_MODULO) ||
+   ARCH_PTR_MODULO(dest, ARCH_INT32_MODULO))
   {
     debug("--EXTRAM-- bad copy parameters: %p %p %zu!\n", dest, src, len);
     return false;
@@ -769,16 +770,9 @@ static boolean extram_copy(void * RESTRICT dest, const void *src, size_t len)
   {
     const uint8_t *src8 = (const uint8_t *)src;
     uint32_t buffer = 0;
-    uint32_t pos;
-    size_t i = len & ~3;
 
-#if PLATFORM_BYTE_ORDER == PLATFORM_LIL_ENDIAN
-    for(pos = 0; i < len; i++, pos += 8)
-      buffer |= src8[i] << pos;
-#else
-    for(pos = 24; i < len; i++, pos -= 8)
-      buffer |= src8[i] << pos;
-#endif
+    /* Endian-independent partial-word copy */
+    memcpy(&buffer, src8 + (len & ~3), len & 3);
     d32[len32] = buffer;
   }
   return true;

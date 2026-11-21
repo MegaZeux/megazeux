@@ -136,6 +136,10 @@
 #define ARCHITECTURE_IS_SUPERH 1
 #endif
 
+#if /* clang */ defined(__EMSCRIPTEN__)
+#define ARCHITECTURE_IS_WASM 1
+#endif
+
 
 /* Integer/pointer endian. */
 #define ARCH_LIL_ENDIAN 0x0d0c0b0a
@@ -270,7 +274,7 @@
  * Otherwise, go per architecture: some ABIs use 32-bit long (Windows x64) or
  * pointers/long/size_t (Linux x32, ARM64 ILP32), but support fast uint64_t.
  */
-#if defined(__LP64__) || defined(_LP64) || defined(__EMSCRIPTEN__) || \
+#if defined(__LP64__) || defined(_LP64) || \
     defined(ARCHITECTURE_IS_X86_64) || \
     defined(ARCHITECTURE_IS_ALPHA) || \
     defined(ARCHITECTURE_IS_ARM64) || \
@@ -281,7 +285,8 @@
     defined(ARCHITECTURE_IS_PPC64) || \
     defined(ARCHITECTURE_IS_RISCV64) || \
     defined(ARCHITECTURE_IS_S390X) || \
-    defined(ARCHITECTURE_IS_SPARC64)
+    defined(ARCHITECTURE_IS_SPARC64) || \
+    defined(ARCHITECTURE_IS_WASM)
 #define ARCHITECTURE_BITS 64
 #else
 #define ARCHITECTURE_BITS 32
@@ -340,8 +345,12 @@
 
 /* ARM may or may not allow unaligned accesses based on the revision used and
  * whether or not it is allowed at runtime. __ARM_FEATURE_UNALIGNED is
- * provided to indicate when this is possible, but it is not trustworthy for
- * 32-bit ARM. This is almost always (but not necessarily) allowed on ARM64. */
+ * provided to indicate when this is possible. This is almost always (but not
+ * necessarily) allowed on ARM64.
+ *
+ * This is currently disabled for 32-bit ARM because clang -O3 (19 last tested)
+ * emits STM instructions that trap even if __ARM_FEATURE_UNALIGNED is defined.
+ */
 #if defined(ARCHITECTURE_IS_ARM64) && defined(__ARM_FEATURE_UNALIGNED)
 #define ARCH_INT32_UNALIGN 1
 #if ARCHITECTURE_BITS >= 64
