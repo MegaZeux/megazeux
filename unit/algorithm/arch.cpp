@@ -97,6 +97,9 @@
 #ifndef ARCHITECTURE_IS_SUPERH
 #define ARCHITECTURE_IS_SUPERH 0
 #endif
+#ifndef ARCHITECTURE_IS_WASM
+#define ARCHITECTURE_IS_WASM 0
+#endif
 
 struct machtest
 {
@@ -122,6 +125,7 @@ UNITTEST(Machine)
     { "s390",       ARCHITECTURE_IS_S390 | ARCHITECTURE_IS_S390X },
     { "sparc",      ARCHITECTURE_IS_SPARC | ARCHITECTURE_IS_SPARC64 },
     { "sh",         ARCHITECTURE_IS_SUPERH },
+    { "wasm",       ARCHITECTURE_IS_WASM },
   };
   char detected[128];
   char *pos = detected;
