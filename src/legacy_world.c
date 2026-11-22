@@ -44,6 +44,7 @@
 #include "window.h"
 #include "world.h"
 #include "algorithm/string_compare.h"
+#include "algorithm/string_xor.h"
 #include "io/path.h"
 #include "io/vio.h"
 #include "platform/log.h"
@@ -316,7 +317,6 @@ err:
 static boolean decrypt_block(struct decrypt_data *data, int block_len)
 {
   int len;
-  int i;
 
   while(block_len > 0)
   {
@@ -326,8 +326,7 @@ static boolean decrypt_block(struct decrypt_data *data, int block_len)
     if(!vfread(data->buffer, len, 1, data->source))
       return false;
 
-    for(i = 0; i < len; i++)
-      data->buffer[i] ^= data->xor_val;
+    mzx_memxorchr(data->buffer, data->xor_val, len);
 
     if(!vfwrite(data->buffer, len, 1, data->dest))
       return false;

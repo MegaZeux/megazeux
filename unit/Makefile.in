@@ -40,6 +40,7 @@ unit_objs := \
   ${unit_obj_algo}/string_match.o      \
   ${unit_obj_algo}/string_search.o     \
   ${unit_obj_algo}/string_sep.o        \
+  ${unit_obj_algo}/string_xor.o        \
   ${unit_obj_io}/bitstream.o           \
   ${unit_obj_io}/image_file.o          \
   ${unit_obj_io}/memfile.o             \

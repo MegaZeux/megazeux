@@ -96,6 +96,7 @@
 #include "../world_format.h"
 #include "../algorithm/arch.h"
 #include "../algorithm/string_compare.h"
+#include "../algorithm/string_xor.h"
 #include "../io/path.h"
 #include "../io/memfile.h"
 #include "../io/vio.h"
@@ -2267,11 +2268,7 @@ static uint8_t get_pw_xor_code(char *password, int password_length, int pro_meth
 
 static void _decrypt_legacy_world(struct memfile *mf, struct base_file *file)
 {
-  arch_uint xor = get_pw_xor_code(file->password, file->password_length, file->protection_method);
-  arch_uint xor_w = xor * ARCH_32_OR_64(0x01010101, 0x0101010101010101ull);
-  arch_uint *pos_w;
-  arch_uint *end_w;
-  unsigned char *pos = mf->current;
+  uint8_t xor = get_pw_xor_code(file->password, file->password_length, file->protection_method);
 
   if(!display_first_only)
   {
@@ -2290,22 +2287,7 @@ static void _decrypt_legacy_world(struct memfile *mf, struct base_file *file)
     fflush(stderr);
   }
 
-  while(pos < mf->end && ARCH_PTR_MODULO(pos, ARCH_UINT_MODULO))
-    *(pos++) ^= xor;
-
-  if(pos < mf->end)
-  {
-    pos_w = (arch_uint *)pos;
-    end_w = ARCH_UINT_TRUNC_CAST(mf->end);
-
-    while(pos_w < end_w)
-      *(pos_w++) ^= xor_w;
-
-    pos = (unsigned char *)pos_w;
-  }
-
-  while(pos < mf->end)
-    *(pos++) ^= xor;
+  mzx_memxorchr(mf->current, xor, mf->end - mf->current);
 }
 
 static enum status parse_legacy_robot_100(struct memfile *mf,
