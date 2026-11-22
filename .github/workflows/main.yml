@@ -173,12 +173,16 @@ jobs:
           msystem: MINGW64
           update: true
           install: >-
-            base-devel git zip
-            mingw-w64-x86_64-gcc    mingw-w64-x86_64-zlib      mingw-w64-x86_64-libpng
-            mingw-w64-x86_64-libogg mingw-w64-x86_64-libvorbis mingw-w64-x86_64-SDL2
+            base-devel git zip mingw-w64-x86_64-gcc mingw-w64-x86_64-pkgconf
       - uses: actions/checkout@v4
+      - name: Fetch dependencies
+        run: |
+          (cd scripts/deps;
+          wget https://github.com/AliceLR/megazeux-dependencies/releases/download/v2.93d/megazeux-dependencies-2.93d-r0-mingw.tar.xz;
+          tar -xJf megazeux-dependencies-*-mingw.tar.xz;
+          cp mingw/x64/bin/SDL3.dll ../..)
       - name: Configure x64
-        run: ./config.sh --platform win64 --enable-release
+        run: ./config.sh --platform win64 --prefix scripts/deps/mingw/x64 --enable-sdl3 --enable-release
       - name: Build x64
         run: $MZX_MAKE
       - name: Test x64
@@ -198,12 +202,16 @@ jobs:
           msystem: MINGW32
           update: true
           install: >-
-            base-devel git zip
-            mingw-w64-i686-gcc      mingw-w64-i686-zlib        mingw-w64-i686-libpng
-            mingw-w64-i686-libogg   mingw-w64-i686-libvorbis   mingw-w64-i686-SDL2
+            base-devel git zip mingw-w64-i686-gcc mingw-w64-i686-pkgconf
       - uses: actions/checkout@v4
+      - name: Fetch dependencies
+        run: |
+          (cd scripts/deps;
+          wget https://github.com/AliceLR/megazeux-dependencies/releases/download/v2.93d/megazeux-dependencies-2.93d-r0-mingw.tar.xz;
+          tar -xJf megazeux-dependencies-*-mingw.tar.xz;
+          cp mingw/x86/bin/SDL3.dll ../..)
       - name: Configure x86
-        run: ./config.sh --platform win32 --enable-release
+        run: ./config.sh --platform win32 --prefix scripts/deps/mingw/x86 --enable-sdl3 --enable-release
       - name: Build x86
         run: $MZX_MAKE
       - name: Test x86
@@ -355,8 +363,8 @@ jobs:
       - name: Fetch dependencies
         run: |
           (cd scripts/deps;
-          wget https://github.com/AliceLR/megazeux-dependencies/releases/download/v2.93c-r1/megazeux-dependencies-2.93c-r1-linux-msan-mint22.tar.xz;
-          tar -xJf megazeux-dependencies-*-linux-msan-mint22.tar.xz)
+          wget https://github.com/AliceLR/megazeux-dependencies/releases/download/v2.93d/megazeux-dependencies-2.93d-r0-linux-msan-noble.tar.xz;
+          tar -xJf megazeux-dependencies-*-linux-msan-noble.tar.xz)
       - name: Configure
         run: ./config.sh --platform unix-devel --prefix scripts/deps/linux-msan/x86_64 --enable-msan --disable-sdl --disable-libpng --disable-x11 --enable-extram
       - name: Build

@@ -33,9 +33,6 @@ ARCH_LIBS += ${LINK_STATIC_IF_MIXED} -lmingwex -lssp
 # OpenGL must be linked to MZX
 core_ldflags += -lopengl32
 
-# Windows needs PNG to be statically linked (inc. zlib)
-LIBPNG_LDFLAGS = $(shell libpng-config --static --ldflags)
-
 ifeq (${BUILD_SDL},1)
 SDL_DLL := SDL.dll
 endif

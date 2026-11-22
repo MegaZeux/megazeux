@@ -217,6 +217,7 @@ ifneq ($(and ${LIBPNG_PREFIX},$(wildcard ${LIBPNG_PREFIX}/bin/libpng-config)),)
 LIBPNG_CONFIG  := ${LIBPNG_PREFIX}/bin/libpng-config
 else
 ifneq ($(wildcard ${PREFIX}/bin/libpng-config),)
+LIBPNG_PREFIX  := ${PREFIX}
 LIBPNG_CONFIG  := ${PREFIX}/bin/libpng-config
 else
 LIBPNG_CONFIG  := libpng-config
@@ -229,6 +230,15 @@ LIBPNG_LDFLAGS ?= $(shell ${LIBPNG_CONFIG} --ldflags)
 # Make these immediate so the scripts run only once.
 LIBPNG_CFLAGS  := $(LIBPNG_CFLAGS)
 LIBPNG_LDFLAGS := $(LINK_STATIC_IF_MIXED) $(LIBPNG_LDFLAGS)
+
+ifneq (${LIBPNG_PREFIX},)
+# It seems to have never occurred to libpng that cross-compilation
+# may be a possibility; unlike SDL/SDL2, they do not detect the prefix
+# via dirname + pwd or allow overriding it. Fix it manually instead...
+LIBPNG_OLD_PREFIX := $(shell ${LIBPNG_CONFIG} --prefix)
+LIBPNG_CFLAGS  := $(subst ${LIBPNG_OLD_PREFIX},${LIBPNG_PREFIX},${LIBPNG_CFLAGS})
+LIBPNG_LDFLAGS := $(subst ${LIBPNG_OLD_PREFIX},${LIBPNG_PREFIX},${LIBPNG_LDFLAGS})
+endif
 endif
 
 #
