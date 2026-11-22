@@ -2,7 +2,7 @@
  *
  * Copyright (C) 1996 Alexis Janson
  * Copyright (C) 2004 Gilead Kutnick <exophase@adelphia.net>
- * Copyright (C) 2017-2019 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2017-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -264,12 +264,12 @@ void copy_board_to_board(struct world *mzx_world,
   // is a bit more complex than layer copying, so use buffers anyway.
   // The different boards case only affects the editor anyway.
 
-  char *buffer_id = cmalloc(block_width * block_height);
-  char *buffer_color = cmalloc(block_width * block_height);
-  char *buffer_param = cmalloc(block_width * block_height);
-  char *buffer_under_id = cmalloc(block_width * block_height);
-  char *buffer_under_color = cmalloc(block_width * block_height);
-  char *buffer_under_param = cmalloc(block_width * block_height);
+  char *buffer_id = (char *)cmalloc(block_width * block_height);
+  char *buffer_color = (char *)cmalloc(block_width * block_height);
+  char *buffer_param = (char *)cmalloc(block_width * block_height);
+  char *buffer_under_id = (char *)cmalloc(block_width * block_height);
+  char *buffer_under_color = (char *)cmalloc(block_width * block_height);
+  char *buffer_under_param = (char *)cmalloc(block_width * block_height);
 
   copy_board_to_board_buffer(mzx_world,
    src_board, src_offset, dest_board, block_width, block_height,
@@ -289,66 +289,122 @@ void copy_board_to_board(struct world *mzx_world,
   free(buffer_under_param);
 }
 
-static void copy_layer_to_layer_buffered(
- char *src_char, char *src_color, int src_width, int src_offset,
- char *dest_char, char *dest_color, int dest_width, int dest_offset,
- int block_width, int block_height)
+static inline boolean overlap(int src1, int src2, int dest1, int dest2)
 {
-  char *buffer_char = cmalloc(block_width * block_height);
-  char *buffer_color = cmalloc(block_width * block_height);
-  int buffer_offset = 0;
-
-  int src_skip = src_width - block_width;
-  int dest_skip = dest_width - block_width;
-
-  // Copying to the same layer; don't worry about char 32
-  int i, i2;
-
-  // Copy layer to buffer
-  for(i = 0; i < block_height; i++)
-  {
-    for(i2 = 0; i2 < block_width; i2++)
-    {
-      buffer_char[buffer_offset] = src_char[src_offset];
-      buffer_color[buffer_offset] = src_color[src_offset];
-
-      src_offset++;
-      buffer_offset++;
-    }
-
-    src_offset += src_skip;
-  }
-
-  buffer_offset = 0;
-
-  // Copy buffer back to layer
-  for(i = 0; i < block_height; i++)
-  {
-    for(i2 = 0; i2 < block_width; i2++)
-    {
-      dest_char[dest_offset] = buffer_char[buffer_offset];
-      dest_color[dest_offset] = buffer_color[buffer_offset];
-
-      dest_offset++;
-      buffer_offset++;
-    }
-
-    dest_offset += dest_skip;
-  }
-
-  free(buffer_char);
-  free(buffer_color);
+  return (src1 < dest2) && (dest1 < src2);
 }
 
-static void copy_layer_to_layer_direct(
- char *src_char, char *src_color, int src_width, int src_offset,
- char *dest_char, char *dest_color, int dest_width, int dest_offset,
+/* Same-layer copy blocks are not affected by char 32 masking, but
+ * require careful handling if the source and destination blocks overlap.
+ * However, this method is a lot faster than using an intermediate buffer.
+ */
+void copy_layer_to_layer_intralayer(
+ char * RESTRICT src_char, char * RESTRICT src_color, int src_width,
+ int src_offset, int src_x, int src_y,
+ int dest_offset, int dest_x, int dest_y,
+ int block_width, int block_height)
+{
+  int skip = src_width - block_width;
+  int x;
+  int y;
+
+  boolean x_overlap = overlap(src_x, src_x + block_width, dest_x, dest_x + block_width);
+  boolean y_overlap = overlap(src_y, src_y + block_height, dest_y, dest_y + block_height);
+
+  if(!x_overlap || !y_overlap || (dest_x <= src_x && dest_y <= src_y))
+  {
+    // Forward x, forward y copy
+    for(y = 0; y < block_height; y++)
+    {
+      for(x = 0; x < block_width; x++)
+      {
+        src_char[dest_offset] = src_char[src_offset];
+        src_color[dest_offset] = src_color[src_offset];
+        src_offset++;
+        dest_offset++;
+      }
+      src_offset += skip;
+      dest_offset += skip;
+    }
+  }
+  else
+
+  if(dest_x <= src_x)
+  {
+    // Forward x, backward y copy
+    src_offset += src_width * (block_height - 1);
+    dest_offset += src_width * (block_height - 1);
+    skip = src_width + block_width;
+
+    for(y = 0; y < block_height; y++)
+    {
+      for(x = 0; x < block_width; x++)
+      {
+        src_char[dest_offset] = src_char[src_offset];
+        src_color[dest_offset] = src_color[src_offset];
+        src_offset++;
+        dest_offset++;
+      }
+      src_offset -= skip;
+      dest_offset -= skip;
+    }
+  }
+  else
+
+  if(dest_y <= src_y)
+  {
+    // Backward x, forward y copy
+    src_offset += block_width - 1;
+    dest_offset += block_width - 1;
+    skip = src_width + block_width;
+
+    for(y = 0; y < block_height; y++)
+    {
+      for(x = 0; x < block_width; x++)
+      {
+        src_char[dest_offset] = src_char[src_offset];
+        src_color[dest_offset] = src_color[src_offset];
+        src_offset--;
+        dest_offset--;
+      }
+      src_offset += skip;
+      dest_offset += skip;
+    }
+  }
+  else
+  {
+    // Backward x, backward y copy
+    src_offset += src_width * (block_height - 1) + block_width - 1;
+    dest_offset += src_width * (block_height - 1) + block_width - 1;
+
+    for(y = 0; y < block_height; y++)
+    {
+      for(x = 0; x < block_width; x++)
+      {
+        src_char[dest_offset] = src_char[src_offset];
+        src_color[dest_offset] = src_color[src_offset];
+        src_offset--;
+        dest_offset--;
+      }
+      src_offset -= skip;
+      dest_offset -= skip;
+    }
+  }
+}
+
+/* Two different layers will never overlap, but when copying between different
+ * layers, character 32 in the source layer should be masked out of the copy.
+ */
+void copy_layer_to_layer_interlayer(
+ const char * RESTRICT src_char, const char * RESTRICT src_color,
+ int src_width, int src_offset,
+ char * RESTRICT dest_char, char * RESTRICT dest_color,
+ int dest_width, int dest_offset,
  int block_width, int block_height)
 {
   int src_skip = src_width - block_width;
   int dest_skip = dest_width - block_width;
 
-  // Copying to a different layer; track char 32s
   int src_char_cur;
   int i, i2;
 
@@ -367,29 +423,6 @@ static void copy_layer_to_layer_direct(
     }
     src_offset += src_skip;
     dest_offset += dest_skip;
-  }
-}
-
-void copy_layer_to_layer(
- char *src_char, char *src_color, int src_width, int src_offset,
- char *dest_char, char *dest_color, int dest_width, int dest_offset,
- int block_width, int block_height)
-{
-  // Same pointer? Use a buffer
-  if(src_char == dest_char || src_color == dest_color)
-  {
-    copy_layer_to_layer_buffered(
-     src_char, src_color, src_width, src_offset,
-     dest_char, dest_color, dest_width, dest_offset,
-     block_width, block_height);
-  }
-  // Otherwise, it's safe to just copy direct
-  else
-  {
-    copy_layer_to_layer_direct(
-     src_char, src_color, src_width, src_offset,
-     dest_char, dest_color, dest_width, dest_offset,
-     block_width, block_height);
   }
 }
 
@@ -502,12 +535,12 @@ void move_board_block(struct world *mzx_world,
  int block_width, int block_height,
  int clear_width, int clear_height)
 {
-  char *buffer_id = cmalloc(block_width * block_height);
-  char *buffer_color = cmalloc(block_width * block_height);
-  char *buffer_param = cmalloc(block_width * block_height);
-  char *buffer_under_id = cmalloc(block_width * block_height);
-  char *buffer_under_color = cmalloc(block_width * block_height);
-  char *buffer_under_param = cmalloc(block_width * block_height);
+  char *buffer_id = (char *)cmalloc(block_width * block_height);
+  char *buffer_color = (char *)cmalloc(block_width * block_height);
+  char *buffer_param = (char *)cmalloc(block_width * block_height);
+  char *buffer_under_id = (char *)cmalloc(block_width * block_height);
+  char *buffer_under_color = (char *)cmalloc(block_width * block_height);
+  char *buffer_under_param = (char *)cmalloc(block_width * block_height);
 
   // The source board needs to be cleared, so set that up too.
   // This is pretty much copied from clear_board_block, but I think

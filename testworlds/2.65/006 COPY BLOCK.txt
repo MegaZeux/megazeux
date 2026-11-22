@@ -1,0 +1,3 @@
+Title: COPY (OVERLAY) BLOCK Test
+Author: Alice Rowan
+Desc: Test basic functionality of COPY (OVERLAY) BLOCK. This only checks basic copies, edge/corner clipping, and stability of overwriting the source. The earliest version that can do this test is 2.60, but 2.65 has subroutines. board_id and board_param are useless because they weren't readable until 2.80d. Because of bugs, this requires a maximum-width board.
