@@ -11,6 +11,7 @@ algo_objs += \
   ${algo_obj}/string_match.o      \
   ${algo_obj}/string_search.o     \
   ${algo_obj}/string_sep.o        \
+  ${algo_obj}/string_xor.o        \
 
 -include ${algo_objs:.o=.d}
 ${algo_objs}: $(filter-out $(wildcard ${algo_obj}), ${algo_obj})
