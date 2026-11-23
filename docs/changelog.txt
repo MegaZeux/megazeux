@@ -20,6 +20,8 @@ USERS
 + Text values for :KEY# labels and the KEY counter <2.80 are now
   based on the US layout rather than the OS keyboard layout.
   This should mostly only affect shifted/symbol keys.
++ Improved the performance of COPY (OVERLAY) BLOCK from the
+  overlay to the overlay and from the vlayer to the vlayer.
 + DOS: added new LPT DAC and PC speaker pulse width modulation
   audio drivers. See config.txt for more information.
 + DOS: added hardware PC speaker support for PC speaker sound

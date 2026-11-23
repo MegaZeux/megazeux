@@ -122,7 +122,7 @@ static void flip_layer_block(
  char *dest_char, char *dest_color, int dest_width, int dest_offset,
  int block_width, int block_height)
 {
-  char *buffer = cmalloc(sizeof(char) * block_width);
+  char *buffer = (char *)cmalloc(sizeof(char) * block_width);
 
   int start_offset = dest_offset;
   int end_offset = dest_offset + dest_width * (block_height - 1);
@@ -153,7 +153,7 @@ static void flip_layer_block(
 static void flip_board_block(struct board *dest_board, int dest_offset,
  int block_width, int block_height)
 {
-  char *buffer = cmalloc(sizeof(char) * block_width);
+  char *buffer = (char *)cmalloc(sizeof(char) * block_width);
 
   char *level_id = dest_board->level_id;
   char *level_color = dest_board->level_color;
@@ -357,11 +357,13 @@ static void move_layer_block(
  int block_width, int block_height,
  int clear_width, int clear_height)
 {
-  // Similar to copy_layer_to_layer_buffered, but deletes the source
-  // after copying to the buffer.
+  // Copy source to buffer, delete source, copy buffer to destination.
+  // This could be done in-place like copy_layer_to_layer_intralayer,
+  // but it would be fairly complicated for little gain.
+  // TODO: that should be done anyway when/if this becomes a gameplay feature.
 
-  char *buffer_char = cmalloc(block_width * block_height);
-  char *buffer_color = cmalloc(block_width * block_height);
+  char *buffer_char = (char *)cmalloc(block_width * block_height);
+  char *buffer_color = (char *)cmalloc(block_width * block_height);
 
   // Copy source to buffer
   copy_layer_buffer_to_buffer(
@@ -661,10 +663,20 @@ void do_block_command(struct world *mzx_world, struct block_info *block,
 
           case EDIT_OVERLAY:
           case EDIT_VLAYER:
-            copy_layer_to_layer(
-             src_char, src_color, src_width, src_offset,
-             dest_char, dest_color, dest_width, dest_offset,
-             dest_block_width, dest_block_height);
+            if(block->src_mode == block->dest_mode)
+            {
+              copy_layer_to_layer_intralayer(
+               src_char, src_color, src_width,
+               src_offset, src_x, src_y, dest_offset, dest_x, dest_y,
+               dest_block_width, dest_block_height);
+            }
+            else
+            {
+              copy_layer_to_layer_interlayer(
+               src_char, src_color, src_width, src_offset,
+               dest_char, dest_color, dest_width, dest_offset,
+               dest_block_width, dest_block_height);
+            }
             break;
         }
         break;

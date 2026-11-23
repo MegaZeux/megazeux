@@ -2,7 +2,7 @@
  *
  * Copyright (C) 1996 Alexis Janson
  * Copyright (C) 2004 Gilead Kutnick <exophase@adelphia.net>
- * Copyright (C) 2017-2019 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2017-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -34,9 +34,17 @@ CORE_LIBSPEC void copy_board_to_board(struct world *mzx_world,
  struct board *dest_board, int dest_offset,
  int block_width, int block_height);
 
-CORE_LIBSPEC void copy_layer_to_layer(
- char *src_char, char *src_color, int src_width, int src_offset,
- char *dest_char, char *dest_color, int dest_width, int dest_offset,
+CORE_LIBSPEC void copy_layer_to_layer_intralayer(
+ char * RESTRICT src_char, char * RESTRICT src_color, int src_width,
+ int src_offset, int src_x, int src_y,
+ int dest_offset, int dest_x, int dest_y,
+ int block_width, int block_height);
+
+CORE_LIBSPEC void copy_layer_to_layer_interlayer(
+ const char * RESTRICT src_char, const char * RESTRICT src_color,
+ int src_width, int src_offset,
+ char * RESTRICT dest_char, char * RESTRICT dest_color,
+ int dest_width, int dest_offset,
  int block_width, int block_height);
 
 CORE_LIBSPEC void copy_board_to_layer(

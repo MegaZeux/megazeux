@@ -2,7 +2,7 @@
  *
  * Copyright (C) 1996 Alexis Janson
  * Copyright (C) 2004 Gilead Kutnick <exophase@adelphia.net>
- * Copyright (C) 2017-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2017-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -858,9 +858,9 @@ static void copy_block(struct world *mzx_world, int id, int x, int y,
     // Overlay to overlay
     case 5:
     {
-      copy_layer_to_layer(
-       src_board->overlay, src_board->overlay_color, src_width, src_offset,
-       src_board->overlay, src_board->overlay_color, dest_width, dest_offset,
+      copy_layer_to_layer_intralayer(
+       src_board->overlay, src_board->overlay_color, src_width,
+       src_offset, src_x, src_y, dest_offset, dest_x, dest_y,
        width, height);
 
       break;
@@ -868,7 +868,7 @@ static void copy_block(struct world *mzx_world, int id, int x, int y,
     // Vlayer to overlay
     case 6:
     {
-      copy_layer_to_layer(
+      copy_layer_to_layer_interlayer(
        mzx_world->vlayer_chars, mzx_world->vlayer_colors, src_width, src_offset,
        src_board->overlay, src_board->overlay_color, dest_width, dest_offset,
        width, height);
@@ -889,7 +889,7 @@ static void copy_block(struct world *mzx_world, int id, int x, int y,
     // Overlay to vlayer
     case 9:
     {
-      copy_layer_to_layer(
+      copy_layer_to_layer_interlayer(
        src_board->overlay, src_board->overlay_color, src_width, src_offset,
        mzx_world->vlayer_chars, mzx_world->vlayer_colors, dest_width, dest_offset,
        width, height);
@@ -899,9 +899,9 @@ static void copy_block(struct world *mzx_world, int id, int x, int y,
     // Vlayer to vlayer
     case 10:
     {
-      copy_layer_to_layer(
-       mzx_world->vlayer_chars, mzx_world->vlayer_colors, src_width, src_offset,
-       mzx_world->vlayer_chars, mzx_world->vlayer_colors, dest_width, dest_offset,
+      copy_layer_to_layer_intralayer(
+       mzx_world->vlayer_chars, mzx_world->vlayer_colors, src_width,
+       src_offset, src_x, src_y, dest_offset, dest_x, dest_y,
        width, height);
 
       break;
