@@ -24,8 +24,6 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-#include "../platform/platform_attribute.h"
-
 UTILS_LIBSPEC extern const unsigned char mzx_tolower_table[256];
 
 #define mzx_tolower(d)  mzx_tolower_table[(unsigned char)(d)]
@@ -39,9 +37,9 @@ UTILS_LIBSPEC extern const unsigned char mzx_tolower_table[256];
 #endif
 
 UTILS_LIBSPEC const void *mzx_memchr(const void *haystack,
- unsigned char needle, size_t len) ATTRIBUTE_NONNULL;
+ unsigned char needle, size_t len) MZX_ATTRIBUTE_NONNULL;
 UTILS_LIBSPEC const void *mzx_memcasechr(const void *haystack,
- unsigned char needle, size_t len) ATTRIBUTE_NONNULL;
+ unsigned char needle, size_t len) MZX_ATTRIBUTE_NONNULL;
 
 MEGAZEUX_END_DECLS
 

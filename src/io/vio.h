@@ -25,7 +25,6 @@
 MEGAZEUX_BEGIN_DECLS
 
 #include "vfile.h"
-#include "../platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -120,9 +119,9 @@ UTILS_LIBSPEC size_t vfwrite(const void *src, size_t size, size_t count, vfile *
 UTILS_LIBSPEC char *vfsafegets(char *dest, int size, vfile *vf);
 UTILS_LIBSPEC int vfputs(const char *src, vfile *vf);
 UTILS_LIBSPEC int vf_printf(vfile *vf, const char *fmt, ...)
- ATTRIBUTE_PRINTF(2, 3);
+ MZX_ATTRIBUTE_PRINTF(2, 3);
 UTILS_LIBSPEC int vf_vprintf(vfile *vf, const char *fmt, va_list args)
- ATTRIBUTE_PRINTF(2, 0);
+ MZX_ATTRIBUTE_PRINTF(2, 0);
 UTILS_LIBSPEC int vungetc(int ch, vfile *vf);
 UTILS_LIBSPEC int vfseek(vfile *vf, int64_t offset, int whence);
 UTILS_LIBSPEC int64_t vftell(vfile *vf);

@@ -23,7 +23,6 @@
 #include "algorithm/string_compare.h"
 #include "io/path.h"
 #include "io/vio.h"
-#include "platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
 
 #include <ctype.h>
 #include <zlib.h>
@@ -67,7 +66,7 @@ static char *png_version_string(char version_str[16], png_uint_32 version)
 }
 #endif
 
-ATTRIBUTE_PRINTF(1, 2)
+MZX_ATTRIBUTE_PRINTF(1, 2)
 static char *about_line(const char *fmt, ...)
 {
   va_list args;

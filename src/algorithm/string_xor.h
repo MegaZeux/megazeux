@@ -21,13 +21,12 @@
 #define MEGAZEUX_ALGORITHM_STRING_XOR_H
 
 #include "../compat.h"
-#include "../platform/platform_attribute.h"
 #include <stdint.h>
 
 MEGAZEUX_BEGIN_DECLS
 
 UTILS_LIBSPEC void mzx_memxorchr(void *dest, uint8_t xor_chr, size_t dest_len)
- ATTRIBUTE_NONNULL;
+ MZX_ATTRIBUTE_NONNULL;
 
 MEGAZEUX_END_DECLS
 

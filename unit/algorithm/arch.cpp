@@ -20,7 +20,6 @@
 #include "../Unit.hpp"
 #include "../../src/algorithm/arch.h"
 #include "../../src/platform/log.h"
-#include "../../src/platform/platform_attribute.h" /* ATTRIBUTE_NO_SANITIZE */
 
 #include <string.h>
 
@@ -319,9 +318,9 @@ struct aligntest
   uint16_t e;
 };
 
-ATTRIBUTE_NO_SANITIZE("alignment")
+MZX_ATTRIBUTE_NO_SANITIZE("alignment")
 static void check_unaligned_32(void);
-ATTRIBUTE_NO_SANITIZE("alignment")
+MZX_ATTRIBUTE_NO_SANITIZE("alignment")
 static void check_unaligned_64(void);
 
 static void check_unaligned_32(void)
