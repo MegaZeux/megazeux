@@ -31,7 +31,6 @@
 #include "graphics.h"
 #include "helpsys.h"
 #include "settings.h"
-#include "util.h"
 #include "world.h"
 #include "world_struct.h"
 
@@ -884,7 +883,7 @@ static void core_update(core_context *root)
   if(!key && has_unicode_input())
     key = IKEY_UNICODE;
 
-  if(update_count > (int)ARRAY_SIZE(_update_order))
+  if(update_count > (int)MZX_ARRAY_SIZE(_update_order))
     update_order = cmalloc(update_count * sizeof(context *));
 
   update_order[0] = ctx;

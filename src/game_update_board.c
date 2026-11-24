@@ -33,7 +33,6 @@
 #include "robot.h"
 #include "sfx.h"
 #include "world.h"
-#include "util.h"
 
 // For missile turning (directions)
 

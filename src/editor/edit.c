@@ -36,7 +36,6 @@
 #include "../robot.h"
 #include "../scrdisp.h"
 #include "../sfx.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world.h"
 #include "../algorithm/string_compare.h"
@@ -626,8 +625,8 @@ static void move_edit_cursor(struct editor_context *editor,
   if(move_x || move_y)
   {
     int offset = editor->cursor_x + (editor->cursor_y * editor->board_width);
-    int step_x = SGN(move_x);
-    int step_y = SGN(move_y);
+    int step_x = MZX_SGN(move_x);
+    int step_y = MZX_SGN(move_y);
     int width = abs(move_x) + 1;
     int height = abs(move_y) + 1;
 
@@ -809,8 +808,8 @@ static void view_board(struct editor_context *editor)
 
   vb->max_x = cur_board->board_width - cur_board->viewport_width;
   vb->max_y = cur_board->board_height - cur_board->viewport_height;
-  vb->x = CLAMP(editor->scroll_x, 0, vb->max_x);
-  vb->y = CLAMP(editor->scroll_y, 0, vb->max_y);
+  vb->x = MZX_CLAMP(editor->scroll_x, 0, vb->max_x);
+  vb->y = MZX_CLAMP(editor->scroll_y, 0, vb->max_y);
 
   memset(&spec, 0, sizeof(struct context_spec));
   spec.draw = view_board_draw;
@@ -853,8 +852,8 @@ static void flash_thing(struct editor_context *editor,
   editor->flash_char_a = flash_char_a;
   editor->flash_char_b = flash_char_b;
   editor->flash_timer = 0;
-  editor->flash_timer_swap = MAX(1, editor_conf->editor_show_thing_blink_speed);
-  editor->flash_timer_max = MAX(1, editor_conf->editor_show_thing_blink_speed * 2);
+  editor->flash_timer_swap = MZX_MAX(1, editor_conf->editor_show_thing_blink_speed);
+  editor->flash_timer_max = MZX_MAX(1, editor_conf->editor_show_thing_blink_speed * 2);
 }
 
 /**
@@ -1283,7 +1282,7 @@ static void mouse_draw(struct editor_context *editor, int x, int y)
     int mouse_last_y = editor->mouse_last_y;
     int x_diff = x - mouse_last_x;
     int y_diff = y - mouse_last_y;
-    int iter = MAX(abs(x_diff), abs(y_diff));
+    int iter = MZX_MAX(abs(x_diff), abs(y_diff));
     int i;
 
     if(x == mouse_last_x && y == mouse_last_y)
@@ -2483,8 +2482,8 @@ static boolean editor_key(context *ctx, int *key)
           case BLOCK_CMD_SAVE_ANSI:
           {
             // Save as ANSi.
-            char title[ARRAY_SIZE(editor->ansi_save_title)];
-            char author[ARRAY_SIZE(editor->ansi_save_author)];
+            char title[MZX_ARRAY_SIZE(editor->ansi_save_title)];
+            char author[MZX_ARRAY_SIZE(editor->ansi_save_author)];
             char export_name[MAX_PATH];
             int text_only = editor->ansi_save_text_only;
             int doorway_mode = editor->ansi_save_doorway_mode;
@@ -2499,26 +2498,28 @@ static boolean editor_key(context *ctx, int *key)
             };
             struct element *elements[] =
             {
-              construct_radio_button(4, 19, radio_strings, ARRAY_SIZE(radio_strings),
-               9, &text_only),
-              construct_input_box(23, 19, "Title (ANSi):", ARRAY_SIZE(title) - 1, title),
-              construct_input_box(22, 20, "Author (ANSi):", ARRAY_SIZE(author) - 1, author),
-              construct_check_box(58, 20, checkbox_strings, ARRAY_SIZE(checkbox_strings),
-               12, &doorway_mode),
+              construct_radio_button(4, 19,
+               radio_strings, MZX_ARRAY_SIZE(radio_strings), 9, &text_only),
+              construct_input_box(23, 19, "Title (ANSi):",
+               MZX_ARRAY_SIZE(title) - 1, title),
+              construct_input_box(22, 20, "Author (ANSi):",
+               MZX_ARRAY_SIZE(author) - 1, author),
+              construct_check_box(58, 20, checkbox_strings,
+               MZX_ARRAY_SIZE(checkbox_strings), 12, &doorway_mode),
             };
 
             memcpy(export_name, editor->mzm_name_buffer, MAX_PATH);
-            memcpy(title, editor->ansi_save_title, ARRAY_SIZE(title));
-            memcpy(author, editor->ansi_save_author, ARRAY_SIZE(author));
+            memcpy(title, editor->ansi_save_title, MZX_ARRAY_SIZE(title));
+            memcpy(author, editor->ansi_save_author, MZX_ARRAY_SIZE(author));
 
             if(!file_manager(mzx_world, ans_ext, NULL, export_name,
-             "Export ANSi or TXT", 1, 1, elements, ARRAY_SIZE(elements), 3))
+             "Export ANSi or TXT", 1, 1, elements, MZX_ARRAY_SIZE(elements), 3))
             {
               path_force_ext(export_name, sizeof(export_name),
                text_only ? ".txt" : ".ans");
               memcpy(editor->mzm_name_buffer, export_name, MAX_PATH);
-              memcpy(editor->ansi_save_title, title, ARRAY_SIZE(title));
-              memcpy(editor->ansi_save_author, author, ARRAY_SIZE(author));
+              memcpy(editor->ansi_save_title, title, MZX_ARRAY_SIZE(title));
+              memcpy(editor->ansi_save_author, author, MZX_ARRAY_SIZE(author));
               editor->ansi_save_text_only = text_only;
               editor->ansi_save_doorway_mode = doorway_mode;
 
@@ -2923,7 +2924,7 @@ static boolean editor_key(context *ctx, int *key)
               strcpy(import_name, editor->chr_name_buffer);
               if(!file_manager(mzx_world, chr_ext, NULL, import_name,
                "Choose character set to import", ALLOW_ALL_DIRS, NO_NEW_FILES,
-               elements, ARRAY_SIZE(elements), 2))
+               elements, MZX_ARRAY_SIZE(elements), 2))
               {
                 strcpy(editor->chr_name_buffer, import_name);
                 ec_load_set_var(import_name, char_offset, MZX_VERSION);
@@ -2981,7 +2982,7 @@ static boolean editor_key(context *ctx, int *key)
               strcpy(import_name, editor->mzm_name_buffer);
               if(!file_manager(mzx_world, ans_ext, NULL, import_name,
                "Choose ANSi or TXT file to import", 1, 0,
-               elements, ARRAY_SIZE(elements), 2))
+               elements, MZX_ARRAY_SIZE(elements), 2))
               {
                 int width = -1;
                 int height = -1;
@@ -3580,7 +3581,7 @@ static boolean editor_key(context *ctx, int *key)
               strcpy(export_name, editor->chr_name_buffer);
               if(!file_manager(mzx_world, chr_ext, NULL, export_name,
                "Export character set", ALLOW_ALL_DIRS, ALLOW_NEW_FILES,
-               elements, ARRAY_SIZE(elements), 2))
+               elements, MZX_ARRAY_SIZE(elements), 2))
               {
                 path_force_ext(export_name, MAX_PATH, ".chr");
                 ec_save_set_var(export_name, char_offset, char_size);

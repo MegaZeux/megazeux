@@ -34,7 +34,6 @@
 #include "string_char.h"
 #include "string_compare.h"
 #include "string_search.h"
-#include "../util.h"
 
 #if defined(CONFIG_EDITOR) || defined(MZX_UNIT_TESTS)
 #define ENABLE_STRING_SEARCH
@@ -168,7 +167,7 @@ void mzx_string_search_index(const void *B, const size_t b_len,
       if(prefix_check(start, b_len, i + 1, ignore_case))
         last_prefix_position = i + 1;
 
-      good_suffix[i] = MIN(b_len, b_len - 1 - i + last_prefix_position);
+      good_suffix[i] = MZX_MIN(b_len, b_len - 1 - i + last_prefix_position);
     }
 
     /**
@@ -270,7 +269,7 @@ const void *mzx_string_search(const void *A, const size_t a_len,
 
       idx = bad_char_index[a[i]];
       idx2 = has_good_suffix_table ? good_suffix_index[j] : b_len - j;
-      i += MAX(idx, idx2);
+      i += MZX_MAX(idx, idx2);
     }
   }
   else
@@ -290,7 +289,7 @@ const void *mzx_string_search(const void *A, const size_t a_len,
 
       idx = bad_char_index[a[i]];
       idx2 = has_good_suffix_table ? good_suffix_index[j] : b_len - j;
-      i += MAX(idx, idx2);
+      i += MZX_MAX(idx, idx2);
     }
   }
 

@@ -31,7 +31,6 @@
 #include "legacy_rasm.h"
 #include "rasm.h"
 #include "robot.h"
-#include "util.h"
 #include "world.h"
 #include "world_struct.h"
 #include "io/memfile.h"
@@ -258,7 +257,7 @@ void legacy_load_robot_from_memory(struct world *mzx_world,
       stack_size = 0;
 
     // Also don't allow stack positions beyond the size of the stack.
-    cur_robot->stack_pointer = CLAMP(cur_robot->stack_pointer, 0, stack_size);
+    cur_robot->stack_pointer = MZX_CLAMP(cur_robot->stack_pointer, 0, stack_size);
 
     cur_robot->stack = (int *)ccalloc(stack_size, sizeof(int));
     for(i = 0; i < stack_size; i += 2)

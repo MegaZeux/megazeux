@@ -19,7 +19,6 @@
 
 #include "sha256.h"
 
-#include "../util.h"
 #include "../algorithm/arch.h"
 
 #include <string.h>
@@ -158,7 +157,7 @@ void SHA256_update(struct SHA256_ctx *ctx, const void *vdata, size_t data_len)
 
   /* deal with first block */
 
-  use = MIN((size_t)(64 - ctx->mlen), data_len);
+  use = MZX_MIN((size_t)(64 - ctx->mlen), data_len);
   memcpy(ctx->M + ctx->mlen, data, use);
   ctx->mlen += use;
   data_len -= use;
@@ -168,7 +167,7 @@ void SHA256_update(struct SHA256_ctx *ctx, const void *vdata, size_t data_len)
   {
     convert_to_bigendian(ctx->M, 64);
     SHA256_transform(ctx);
-    use = MIN(64, data_len);
+    use = MZX_MIN(64, data_len);
     memcpy(ctx->M, data, use);
     ctx->mlen = use;
     data_len -= use;

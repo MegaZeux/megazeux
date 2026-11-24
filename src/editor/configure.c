@@ -23,7 +23,6 @@
 #include "../counter.h"
 #include "../configure.h"
 #include "../const.h"
-#include "../util.h"
 #include "../io/vio.h"
 #include "../platform/log.h"
 
@@ -324,7 +323,7 @@ static void config_macro(struct editor_config_info *conf,
   if(isdigit((int)macro_name[0]) && !macro_name[1] && !extended_data)
   {
     size_t macro_num = macro_name[0] - '1';
-    if(macro_num < ARRAY_SIZE(conf->default_macros))
+    if(macro_num < MZX_ARRAY_SIZE(conf->default_macros))
       config_string(conf->default_macros[macro_num], value);
   }
   else
@@ -538,7 +537,7 @@ static void config_board_viewport_w(struct editor_config_info *conf,
   int result;
   if(config_int(&result, value, 1, 80))
   {
-    conf->viewport_w = MIN(result, conf->board_width);
+    conf->viewport_w = MZX_MIN(result, conf->board_width);
     if(conf->viewport_x + conf->viewport_w > 80)
       conf->viewport_x = 80 - conf->viewport_w;
   }
@@ -550,7 +549,7 @@ static void config_board_viewport_h(struct editor_config_info *conf,
   int result;
   if(config_int(&result, value, 1, 25))
   {
-    conf->viewport_h = MIN(result, conf->board_height);
+    conf->viewport_h = MZX_MIN(result, conf->board_height);
     if(conf->viewport_y + conf->viewport_h > 25)
       conf->viewport_y = 25 - conf->viewport_h;
   }
@@ -561,7 +560,7 @@ static void config_board_viewport_x(struct editor_config_info *conf,
 {
   int result;
   if(config_int(&result, value, 0, 79))
-    conf->viewport_x = MIN(result, 80 - conf->viewport_w);
+    conf->viewport_x = MZX_MIN(result, 80 - conf->viewport_w);
 }
 
 static void config_board_viewport_y(struct editor_config_info *conf,
@@ -569,7 +568,7 @@ static void config_board_viewport_y(struct editor_config_info *conf,
 {
   int result;
   if(config_int(&result, value, 0, 24))
-    conf->viewport_y = MIN(result, 25 - conf->viewport_h);
+    conf->viewport_y = MZX_MIN(result, 25 - conf->viewport_h);
 }
 
 static void config_board_can_shoot(struct editor_config_info *conf,
@@ -814,7 +813,7 @@ static boolean editor_config_change_option(void *conf, const char *name,
  const char *value, const char *extended_data)
 {
   const struct editor_config_entry *current_option = find_editor_option(name,
-   editor_config_options, ARRAY_SIZE(editor_config_options));
+   editor_config_options, MZX_ARRAY_SIZE(editor_config_options));
 
   if(current_option)
   {

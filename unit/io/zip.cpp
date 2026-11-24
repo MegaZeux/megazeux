@@ -20,7 +20,6 @@
 #include "../Unit.hpp"
 #include "../UnitIO.hpp"
 
-#include "../../src/util.h"
 #include "../../src/io/memfile.h"
 #include "../../src/io/path.h"
 #include "../../src/io/zip.h"
@@ -417,12 +416,12 @@ static void decompress_boilerplate(pair zip_stream_test_data::*field)
       std::fill(buffer.begin(), buffer.end(), 0);
 
       SET_B(input, d.compressed_is_base64);
-      size_t size = MAX(b_len / 8, 1);
+      size_t size = MZX_MAX(b_len / 8, 1);
       if(size > a_len)
         continue;
 
-      size_t a_pos = MIN(a_len - size, j * size);
-      size_t b_pos = MIN(b_len - size, j * size);
+      size_t a_pos = MZX_MIN(a_len - size, j * size);
+      size_t b_pos = MZX_MIN(b_len - size, j * size);
       if(!memcmp(b + b_pos, a + a_pos, size))
         continue;
 
@@ -840,7 +839,7 @@ UNITTEST(ZipRead)
           const uint8_t *contents  = ZIP_GET_CONTENTS(df);
           for(size_t k = 0; k < real_length; k += sizeof(small_buffer))
           {
-            size_t n = MIN(sizeof(small_buffer), real_length - k);
+            size_t n = MZX_MIN(sizeof(small_buffer), real_length - k);
             result = zread(small_buffer, n, zp);
             ASSERTEQ(result, ZIP_SUCCESS, "%s file %zu", d.testname, j);
             cmp = memcmp(small_buffer, contents + k, n);
@@ -889,7 +888,7 @@ UNITTEST(ZipRead)
 
             for(size_t k = 0; k < real_length; k += sizeof(small_buffer))
             {
-              size_t n = MIN(sizeof(small_buffer), real_length - k);
+              size_t n = MZX_MIN(sizeof(small_buffer), real_length - k);
               cmp = mfread(small_buffer, n, 1, &mf);
               ASSERTEQ(cmp, 1, "%s file %zu", d.testname, j);
               cmp = memcmp(small_buffer, contents + k, n);
@@ -1018,7 +1017,7 @@ UNITTEST(ZipWrite)
           ASSERTEQ(result, ZIP_SUCCESS, "%s %s %zu", label, d.testname, j);
           for(size_t k = 0; k < df.uncompressed_size; k += 32)
           {
-            size_t size = MIN(df.uncompressed_size - k, 32);
+            size_t size = MZX_MIN(df.uncompressed_size - k, 32);
             result = zwrite(contents + k, size, zp);
             ASSERTEQ(result, ZIP_SUCCESS, "%s %s %zu", label, d.testname, j);
           }
@@ -1052,7 +1051,7 @@ UNITTEST(ZipWrite)
       for(size_t j = 0; j < d.num_files; j++)
       {
         ext_buffer_size += d.files[j].uncompressed_size;
-        max_name_size = MAX(max_name_size, strlen(d.files[j].filename));
+        max_name_size = MZX_MAX(max_name_size, strlen(d.files[j].filename));
       }
       ext_buffer_size += zip_bound_total_header_usage(d.num_files, max_name_size);
       ext_buffer = (char *)crealloc(ext_buffer, ext_buffer_size);

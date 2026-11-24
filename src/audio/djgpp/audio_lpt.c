@@ -27,7 +27,6 @@
 #include "../audio_players.h"
 #include "../audio_struct.h"
 
-#include "../../util.h"
 #include "../../platform/djgpp/platform_djgpp.h"
 #include "../../platform/djgpp/interrupt.h"
 
@@ -110,7 +109,7 @@ static uint16_t lpt_get_rate(int requested_rate)
   };
   size_t i;
 
-  for(i = 0; i < ARRAY_SIZE(supported_rates) - 1; i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(supported_rates) - 1; i++)
     if(requested_rate < ((int)supported_rates[i] + supported_rates[i + 1]) >> 1)
       break;
 
@@ -196,7 +195,7 @@ static boolean init_audio_driver_lpt(unsigned mix_rate, unsigned irq_rate,
 static boolean init_audio_driver_lpt_mono(struct config_info *conf)
 {
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
-  unsigned frames = MIN(conf->audio_buffer_samples, 32768);
+  unsigned frames = MZX_MIN(conf->audio_buffer_samples, 32768);
 
   if(!lpt_read_config(conf->audio_config_lpt, false))
     return false;
@@ -208,7 +207,7 @@ static boolean init_audio_driver_lpt_stereo1(struct config_info *conf)
 {
   /* Note: DOSBox Staging claims a maximum rate of 30kHz, which seems wrong. */
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
-  unsigned frames = MIN(conf->audio_buffer_samples, 16384);
+  unsigned frames = MZX_MIN(conf->audio_buffer_samples, 16384);
 
   if(!lpt_read_config(conf->audio_config_lpt, false))
     return false;
@@ -219,7 +218,7 @@ static boolean init_audio_driver_lpt_stereo1(struct config_info *conf)
 static boolean init_audio_driver_lpt_stereo2(struct config_info *conf)
 {
   unsigned rate = lpt_get_rate(conf->audio_sample_rate);
-  unsigned frames = MIN(conf->audio_buffer_samples, 16384);
+  unsigned frames = MZX_MIN(conf->audio_buffer_samples, 16384);
 
   if(!lpt_read_config(conf->audio_config_lpt, true))
     return false;
@@ -229,7 +228,7 @@ static boolean init_audio_driver_lpt_stereo2(struct config_info *conf)
 
 static boolean init_audio_driver_lpt_dss(struct config_info *conf)
 {
-  unsigned frames = MIN(conf->audio_buffer_samples, 32768);
+  unsigned frames = MZX_MIN(conf->audio_buffer_samples, 32768);
 
   if(!lpt_read_config(conf->audio_config_lpt, false))
     return false;
@@ -256,7 +255,7 @@ static uint16_t pcs_pwm_get_rate(int requested_rate)
   };
   size_t i;
 
-  for(i = 0; i < ARRAY_SIZE(supported_rates) - 1; i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(supported_rates) - 1; i++)
     if(requested_rate < ((int)supported_rates[i] + supported_rates[i + 1]) >> 1)
       break;
 
@@ -276,7 +275,7 @@ static void pcs_pwm_off(void)
 static boolean init_audio_driver_pcs_pwm(struct config_info *conf)
 {
   unsigned rate = pcs_pwm_get_rate(conf->audio_sample_rate);
-  unsigned frames = MIN(conf->audio_buffer_samples, 32768);
+  unsigned frames = MZX_MIN(conf->audio_buffer_samples, 32768);
 
   /* Channel 2 mode: low byte, mode 0 "interrupt on terminal count", binary */
   outportb(0x43, 0x90);

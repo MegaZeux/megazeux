@@ -40,7 +40,6 @@
 #include "sfx.h"
 #include "sprite.h"
 #include "str.h"
-#include "util.h"
 #include "window.h"
 #include "world.h"
 #include "algorithm/string_compare.h"
@@ -289,7 +288,7 @@ static long decrypt_backup(struct decrypt_data *data)
   left = file_length;
   while(left > 0)
   {
-    len = MIN(left, DECRYPT_BUFFER_SIZE);
+    len = MZX_MIN(left, DECRYPT_BUFFER_SIZE);
     left -= len;
 
     if(!vfread(data->buffer, len, 1, source))
@@ -320,7 +319,7 @@ static boolean decrypt_block(struct decrypt_data *data, int block_len)
 
   while(block_len > 0)
   {
-    len = MIN(block_len, DECRYPT_BUFFER_SIZE);
+    len = MZX_MIN(block_len, DECRYPT_BUFFER_SIZE);
     block_len -= len;
 
     if(!vfread(data->buffer, len, 1, data->source))
@@ -1442,7 +1441,7 @@ void legacy_load_world(struct world *mzx_world, vfile *vf, const char *file,
     mzx_world->commands = vfgetd(vf);
 
     vlayer_size = vfgetd(vf);
-    vlayer_size = CLAMP(vlayer_size, 1, MAX_BOARD_SIZE);
+    vlayer_size = MZX_CLAMP(vlayer_size, 1, MAX_BOARD_SIZE);
     mzx_world->vlayer_width = vfgetw(vf);
     mzx_world->vlayer_height = vfgetw(vf);
     mzx_world->vlayer_size = vlayer_size;

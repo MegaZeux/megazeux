@@ -32,7 +32,6 @@
 #include "world.h"
 #include "world_format.h"
 #include "world_struct.h"
-#include "util.h"
 
 #include "audio/audio.h"
 #include "audio/audio_sfx.h"
@@ -253,7 +252,7 @@ void sfx_play_string(const char *str, boolean sfx_play)
         if(audio_get_music_on())
         {
           char sample[ROBOT_MAX_TR];
-          int len = CLAMP(digi_end - digi_st, 0, ROBOT_MAX_TR - 1);
+          int len = MZX_CLAMP(digi_end - digi_st, 0, ROBOT_MAX_TR - 1);
           memcpy(sample, str + digi_st, len);
           sample[len] = '\0';
 
@@ -363,7 +362,7 @@ void sfx_play_string(const char *str, boolean sfx_play)
   if((digi_st > 0) && (digi_played == 0))
   {
     char sample[ROBOT_MAX_TR];
-    int len = CLAMP(digi_end - digi_st, 0, ROBOT_MAX_TR - 1);
+    int len = MZX_CLAMP(digi_end - digi_st, 0, ROBOT_MAX_TR - 1);
     memcpy(sample, str + digi_st, len);
     sample[len] = '\0';
 
@@ -427,7 +426,7 @@ static void legacy_convert_sfx(struct sfx_list *sfx_list)
 
 static size_t sfx_alloc_size(size_t src_len)
 {
-  return MAX(sizeof(struct custom_sfx),
+  return MZX_MAX(sizeof(struct custom_sfx),
    offsetof(struct custom_sfx, string) + src_len + 1);
 }
 
@@ -446,7 +445,7 @@ static boolean sfx_alloc_at_pos(struct sfx_list *sfx_list, int num,
     for(i = 0; i < 16 && num >= num_alloc; i++)
       num_alloc <<= 1;
 
-    num_alloc = MAX(num_alloc, NUM_BUILTIN_SFX);
+    num_alloc = MZX_MAX(num_alloc, NUM_BUILTIN_SFX);
     tmp = (struct custom_sfx **)
      crealloc(sfx_list->list, num_alloc * sizeof(struct custom_sfx *));
     if(!tmp)
@@ -505,7 +504,7 @@ boolean sfx_set_string(struct sfx_list *sfx_list, int num,
 
   sfx = sfx_list->list[num];
 
-  src_len = MIN(src_len, MAX_SFX_SIZE - 1);
+  src_len = MZX_MIN(src_len, MAX_SFX_SIZE - 1);
   memcpy(sfx->string, src, src_len);
   sfx->string[src_len] = '\0';
   return true;
@@ -522,7 +521,7 @@ boolean sfx_set_label(struct sfx_list *sfx_list, int num,
     return false;
 
   sfx = sfx_list->list[num];
-  src_len = MIN(src_len, sizeof(sfx->label) - 1);
+  src_len = MZX_MIN(src_len, sizeof(sfx->label) - 1);
   memcpy(sfx->label, src, src_len);
   sfx->label[src_len] = '\0';
   return true;
@@ -573,7 +572,7 @@ static void save_sfx_array(const struct sfx_list *sfx_list,
     if(sfx)
     {
       size_t len = strlen(sfx->string);
-      len = MIN(len, LEGACY_SFX_SIZE - 1);
+      len = MZX_MIN(len, LEGACY_SFX_SIZE - 1);
       memcpy(dest, sfx->string, len);
     }
   }

@@ -22,7 +22,6 @@
 #include "DNS.hpp"
 #include "Socket.hpp"
 
-#include "../util.h"
 #include "../platform/platform.h"
 
 #include <assert.h>
@@ -1309,7 +1308,7 @@ int Host::poll(int flags, uint32_t timeout_ms)
   uint32_t end = now + timeout_ms;
   while(now < end)
   {
-    int dur = MIN(end - now, 100);
+    int dur = MZX_MIN(end - now, 100);
     int ret = Socket::poll(&p, 1, dur);
     if(ret < 0)
       return -1;

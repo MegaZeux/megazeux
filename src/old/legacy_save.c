@@ -38,7 +38,6 @@
 #include "window.h"
 #include "world.h"
 #include "world_struct.h"
-#include "util.h"
 
 /* This file is a collection of the 2.84 file format saving functions.
  * Nothing here is guaranteed to work; this file exists mainly for reference.

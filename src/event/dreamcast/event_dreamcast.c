@@ -18,7 +18,6 @@
  */
 
 #include "../event.h"
-#include "../../util.h"
 #include "../../platform/platform.h"
 
 #include <kos.h>

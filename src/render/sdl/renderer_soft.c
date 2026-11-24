@@ -25,8 +25,6 @@
 #include "../render_layer.h"
 #include "../renderers.h"
 
-#include "../../util.h"
-
 #ifdef CONFIG_SDL
 #include "render_sdl.h"
 #endif

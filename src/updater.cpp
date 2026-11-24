@@ -25,7 +25,7 @@
 #include "graphics.h"
 #include "helpsys.h"
 #include "updater.h"
-#include "util.h"
+#include "util.h" /* mzx_res */
 #include "window.h"
 #include "algorithm/string_sep.h"
 #include "io/memfile.h"
@@ -172,7 +172,7 @@ static const char *ui_new_version_available(context *ctx,
   int buf_len = snprintf(widget_buf, WIDGET_BUF_LEN,
    "A new version is available (%s)", new_ver);
   widget_buf[WIDGET_BUF_LEN - 1] = 0;
-  buf_len = MAX(0, buf_len);
+  buf_len = MZX_MAX(0, buf_len);
 
   elements[0] = construct_label((55 - buf_len) >> 1, 2, widget_buf);
 
@@ -219,12 +219,12 @@ static enum new_version_opts ui_new_version_error(context *ctx,
   struct element *elements[7];
   struct dialog di;
   int result;
-  int num_elements = ARRAY_SIZE(elements) - 2;
+  int num_elements = MZX_ARRAY_SIZE(elements) - 2;
 
   int buf_len = snprintf(widget_buf, WIDGET_BUF_LEN,
    "A new version is available (%s)", new_ver);
   widget_buf[WIDGET_BUF_LEN - 1] = '\0';
-  buf_len = MAX(0, buf_len);
+  buf_len = MZX_MAX(0, buf_len);
 
   elements[0] = construct_label((55 - buf_len) >> 1, 2, widget_buf);
 
@@ -238,7 +238,7 @@ static enum new_version_opts ui_new_version_error(context *ctx,
   {
     int res = snprintf(reason + buf_len, LINE_BUF_LEN - buf_len,
      "* This platform does not support updates.\n");
-    buf_len += MAX(0, res);
+    buf_len += MZX_MAX(0, res);
     reason_lines += 1;
   }
   else
@@ -248,7 +248,7 @@ static enum new_version_opts ui_new_version_error(context *ctx,
       int res = snprintf(reason + buf_len, LINE_BUF_LEN - buf_len,
        "* The remote host does not have updates for your\n"
        "  platform (%s).\n", PLATFORM);
-      buf_len += MAX(0, res);
+      buf_len += MZX_MAX(0, res);
       reason_lines += 2;
     }
 
@@ -257,7 +257,7 @@ static enum new_version_opts ui_new_version_error(context *ctx,
       int res = snprintf(reason + buf_len, LINE_BUF_LEN - buf_len,
        "* The updater failed to initialize on startup:\n"
        "  %s.\n", UpdaterInit::status_string(UpdaterInit::status));
-      buf_len += MAX(0, res);
+      buf_len += MZX_MAX(0, res);
       reason_lines += 2;
     }
   }
@@ -340,14 +340,14 @@ static int ui_confirm_changes(context *ctx, const Manifest &removed,
   int i = 0;
 
   for(e = removed.first(); e; e = e->next, entries++)
-    list_entry_width = MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
+    list_entry_width = MZX_MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
   for(e = replaced.first(); e; e = e->next, entries++)
-    list_entry_width = MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
+    list_entry_width = MZ_MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
   for(e = added.first(); e; e = e->next, entries++)
-    list_entry_width = MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
+    list_entry_width = MZX_MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
 
   // We don't want the listbox to be too wide
-  list_entry_width = MIN(list_entry_width, 60);
+  list_entry_width = MZX_MIN(list_entry_width, 60);
 
   list_entries = (char **)cmalloc(entries * sizeof(char *));
 
@@ -924,8 +924,8 @@ static boolean __check_for_updates(context *ctx, boolean is_automatic)
        */
       if(status == HOST_FWRITE_FAILED)
       {
-        size_t new_size = MAX(request.content_length, updates_txt.size()) * 2;
-        if(!updates_txt.resize(MIN(new_size, UPDATES_TXT_MAX_SIZE)))
+        size_t new_size = MZX_MAX(request.content_length, updates_txt.size()) * 2;
+        if(!updates_txt.resize(MZX_MIN(new_size, UPDATES_TXT_MAX_SIZE)))
         {
           retries = MAX_RETRIES;
           break;

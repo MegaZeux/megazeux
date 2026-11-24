@@ -29,7 +29,6 @@
 #include "render_layer_common.hpp"
 
 #include "../graphics.h"
-#include "../util.h"
 #include "../algorithm/arch.h"
 #include "../platform/log.h"
 #include "../platform/platform_attribute.h"

@@ -26,7 +26,6 @@ MEGAZEUX_BEGIN_DECLS
 
 #include "io/memfile.h"
 #include "io/zip.h"
-#include "util.h" // CLAMP
 
 // Data and functions for the ZIP-based world/board/robot format.
 
@@ -880,7 +879,7 @@ static inline int load_prop_int(struct memfile *prop)
 static inline unsigned load_prop_int_u(struct memfile *prop, unsigned min, unsigned max)
 {
   unsigned tmp = load_prop_int(prop);
-  return CLAMP(tmp, min, max);
+  return MZX_CLAMP(tmp, min, max);
 }
 
 // Forces sign extension of byte and word values, signed clamp.
@@ -899,7 +898,7 @@ static inline int load_prop_int_s(struct memfile *prop, int min, int max)
       tmp = mfgetd(prop);
       break;
   }
-  return CLAMP(tmp, min, max);
+  return MZX_CLAMP(tmp, min, max);
 }
 
 // Forces sign extension of byte and word values, signed clamp.
@@ -921,7 +920,7 @@ static inline int64_t load_prop_int_s64(struct memfile *prop, int64_t min, int64
       tmp = mfgetq(prop);
       break;
   }
-  return CLAMP(tmp, min, max);
+  return MZX_CLAMP(tmp, min, max);
 }
 
 // All non-zero values -> 1.

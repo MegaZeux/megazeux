@@ -25,7 +25,6 @@
 #include "../data.h"
 #include "../graphics.h"
 #include "../helpsys.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world.h"
 #include "../io/path.h"
@@ -861,11 +860,11 @@ static int select_export_mode(struct world *mzx_world, const char *title)
   {
     construct_button( 5, 5, "  OK  ", 0),
     construct_button(19, 5, "Cancel", -1),
-    construct_radio_button(2, 2, choices, ARRAY_SIZE(choices), 24, &export_mode)
+    construct_radio_button(2, 2, choices, MZX_ARRAY_SIZE(choices), 24, &export_mode)
   };
 
   construct_dialog(&di, title, 24, 9, 32, 7,
-   elements, ARRAY_SIZE(elements), 2);
+   elements, MZX_ARRAY_SIZE(elements), 2);
 
   result = run_dialog(mzx_world, &di);
   destruct_dialog(&di);
@@ -975,7 +974,7 @@ static void char_import(struct world *mzx_world, int char_offset, int charset,
   strcpy(import_string, saved_import_string);
   if(!file_manager(mzx_world, chr_ext, NULL, import_string,
    "Import character set(s)", ALLOW_ALL_DIRS, ALLOW_WILDCARD_FILES,
-   elements, ARRAY_SIZE(elements), 2))
+   elements, MZX_ARRAY_SIZE(elements), 2))
   {
     int num_files_present = num_files;
 
@@ -1070,7 +1069,7 @@ static void char_export(struct world *mzx_world, int char_offset, int charset,
   strcpy(export_string, saved_export_string);
   if(!file_manager(mzx_world, chr_ext, ".chr", export_string,
    "Export character set(s)", ALLOW_ALL_DIRS, ALLOW_NEW_FILES,
-   elements, ARRAY_SIZE(elements), 2))
+   elements, MZX_ARRAY_SIZE(elements), 2))
   {
     int num_files_present = num_files;
 
@@ -1485,7 +1484,7 @@ int char_editor(struct world *mzx_world)
               int draw_x;
               int draw_y;
 
-              int mx = MAX(abs(dx), abs(dy));
+              int mx = MZX_MAX(abs(dx), abs(dy));
 
               for(i = 0; i <= mx; i++)
               {

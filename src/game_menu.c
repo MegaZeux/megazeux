@@ -29,7 +29,6 @@
 #include "game_player.h"
 #include "graphics.h"
 #include "settings.h"
-#include "util.h"
 #include "window.h"
 #include "world.h"
 #include "world_struct.h"
@@ -197,7 +196,7 @@ struct game_menu_context
   boolean *return_alt;
   enum keycode *return_key;
   const char *title;
-  struct menu_opt options[MAX((int)M_MAX_OPTS, (int)G_MAX_OPTS)];
+  struct menu_opt options[MZX_MAX((int)M_MAX_OPTS, (int)G_MAX_OPTS)];
   int num_options;
   int x;
   int y;

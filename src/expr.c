@@ -29,7 +29,6 @@
 #include "rasm.h"
 #include "robot.h"
 #include "str.h"
-#include "util.h"
 #include "world.h"
 #include "world_struct.h"
 #include "algorithm/string_compare.h"
@@ -1888,7 +1887,7 @@ int parse_string_expression(struct world *mzx_world, char **_expression,
         size_t len;
 
         next = find_non_identifier_char(expression);
-        len = MIN(ROBOT_MAX_TR - 1, next - expression);
+        len = MZX_MIN(next - expression, ROBOT_MAX_TR - 1);
 
         memcpy(name_translated, expression, len);
         name_translated[len] = '\0';

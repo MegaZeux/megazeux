@@ -28,7 +28,6 @@
 // Shut Up GCC
 #endif
 #include "../graphics.h"
-#include "../util.h"
 #include "../io/image_file.h"
 #include "../io/memfile.h"
 #include "../platform/platform_thread.h"
@@ -575,7 +574,7 @@ err_param:
   }
 
 #ifdef MAX_WORKERS
-  num_workers = CLAMP(num_workers, 0, MAX_WORKERS);
+  num_workers = MZX_CLAMP(num_workers, 0, MAX_WORKERS);
   num_queue = num_workers * 2;
 #else
   num_workers = 0;

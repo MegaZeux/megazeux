@@ -26,7 +26,6 @@
 #undef delay
 #include "../event.h"
 #include "../../graphics.h"
-#include "../../util.h"
 #include "../../platform/platform.h"
 #include "../../platform/djgpp/interrupt.h"
 
@@ -259,7 +258,7 @@ static void poll_keyboard_bios(void)
     ev.code = res >> 8;
     ev.ascii = res & 0xFF;
     trace("bioskey: %04xh -> %02x\n", res, convert_bios_xt(ev.code));
-    if(bios_pending_num < ARRAY_SIZE(bios_pending))
+    if(bios_pending_num < MZX_ARRAY_SIZE(bios_pending))
       bios_pending[bios_pending_num++] = ev;
   }
 }

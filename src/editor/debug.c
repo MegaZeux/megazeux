@@ -34,7 +34,6 @@
 #include "../scrdisp.h"
 #include "../sprite.h"
 #include "../str.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world.h"
 #include "../algorithm/string_compare.h"
@@ -463,14 +462,14 @@ static const char *sensor_var_list[] =
 
 static const char *scroll_text_var = "Scroll text*";
 
-static const int num_universal_vars = ARRAY_SIZE(universal_var_list);
-static const int num_world_vars = ARRAY_SIZE(world_var_list);
-static const int num_world_ram_vars = ARRAY_SIZE(world_ram_var_list);
-static const int num_board_vars = ARRAY_SIZE(board_var_list);
-static const int num_robot_vars = ARRAY_SIZE(robot_var_list);
-static const int num_sprite_parent_vars = ARRAY_SIZE(sprite_parent_var_list);
-static const int num_sprite_vars = ARRAY_SIZE(sprite_var_list);
-static const int num_sensor_vars = ARRAY_SIZE(sensor_var_list);
+static const int num_universal_vars = MZX_ARRAY_SIZE(universal_var_list);
+static const int num_world_vars = MZX_ARRAY_SIZE(world_var_list);
+static const int num_world_ram_vars = MZX_ARRAY_SIZE(world_ram_var_list);
+static const int num_board_vars = MZX_ARRAY_SIZE(board_var_list);
+static const int num_robot_vars = MZX_ARRAY_SIZE(robot_var_list);
+static const int num_sprite_parent_vars = MZX_ARRAY_SIZE(sprite_parent_var_list);
+static const int num_sprite_vars = MZX_ARRAY_SIZE(sprite_var_list);
+static const int num_sensor_vars = MZX_ARRAY_SIZE(sensor_var_list);
 
 enum debug_var_type
 {
@@ -2780,7 +2779,7 @@ static int counter_search_dialog(struct world *mzx_world, char *string,
   force_release_all_keys();
 
   construct_dialog_ext(&di, title, VAR_SEARCH_DIALOG_X, VAR_SEARCH_DIALOG_Y,
-   VAR_SEARCH_DIALOG_W, VAR_SEARCH_DIALOG_H, elements, ARRAY_SIZE(elements),
+   VAR_SEARCH_DIALOG_W, VAR_SEARCH_DIALOG_H, elements, MZX_ARRAY_SIZE(elements),
    0, 0, 0, counter_search_dialog_idle_function);
 
   result = run_dialog(mzx_world, &di);
@@ -2818,7 +2817,7 @@ static int new_counter_dialog(struct world *mzx_world, char *name)
 
   construct_dialog_ext(&di, "New Counter/String",
    VAR_ADD_DIALOG_X, VAR_ADD_DIALOG_Y, VAR_ADD_DIALOG_W, VAR_ADD_DIALOG_H,
-   elements, ARRAY_SIZE(elements), 0, 0, 0, NULL);
+   elements, MZX_ARRAY_SIZE(elements), 0, 0, 0, NULL);
 
   result = run_dialog(mzx_world, &di);
 
@@ -3060,7 +3059,7 @@ void __debug_counters(context *ctx)
       elements[7] = construct_label(VAR_LIST_X, VAR_LIST_Y - 1, label);
 
       construct_dialog_ext(&di, "Debug Variables", 0, 0,
-       80, 25, elements, ARRAY_SIZE(elements), 0, 0, window_focus,
+       80, 25, elements, MZX_ARRAY_SIZE(elements), 0, 0, window_focus,
        counter_debugger_idle_function);
 
       dialog_result = run_dialog(mzx_world, &di);

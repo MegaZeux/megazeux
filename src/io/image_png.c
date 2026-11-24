@@ -17,12 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "image_common.h"
 #include "image_png.h"
+
+#include <string.h>
 
 /* Fallbacks may be enabled even if libpng is enabled for e.g. unit tests. */
 enum png_error png_read_fallback(void *handle, png_read_function readfn,
- void *priv, png_read_alloc_function allocfn, png_bool skip_signature);
+ void *priv, png_read_alloc_function allocfn, mzx_bool skip_signature);
 
 enum png_error png_write_fallback(
  uint32_t width, uint32_t height, enum png_pixel_fmt fmt,
@@ -62,7 +63,7 @@ static void png_read_fn(png_struct *png, png_byte *dest, size_t count)
 }
 
 enum png_error png_read(void *handle, png_read_function readfn,
- void *priv, png_read_alloc_function allocfn, png_bool skip_signature)
+ void *priv, png_read_alloc_function allocfn, mzx_bool skip_signature)
 {
   struct png_rgba *pixels = NULL;
   size_t pixels_row_pitch = 0;
@@ -239,7 +240,7 @@ error:
 #else /* !IMAGE_FILE_LIBPNG */
 
 enum png_error png_read(void *handle, png_read_function readfn,
- void *priv, png_read_alloc_function allocfn, png_bool skip_signature)
+ void *priv, png_read_alloc_function allocfn, mzx_bool skip_signature)
 {
   /* png_read_fallback is currently not useful enough for this, just fail. */
   return PNG_ERROR_INIT;
@@ -290,7 +291,7 @@ enum png_error png_write(
 } while(0)
 
 #define READ_CHUNK() do { if(chunk_bytes) { \
-  in_bytes = IMAGE_MIN(chunk_bytes, sizeof(in_buffer)); \
+  in_bytes = MZX_MIN(chunk_bytes, sizeof(in_buffer)); \
   if(readfn(in_buffer, in_bytes, handle) < in_bytes) \
     goto error; \
   crc = crc32(crc, in_buffer, in_bytes); \
@@ -329,7 +330,7 @@ static inline uint8_t paeth_predictor(int a, int b, int c)
           (pb < pc)            ? (uint8_t)b : (uint8_t)c;
 }
 
-static inline png_bool filter_row(uint8_t * RESTRICT row_buffer,
+static inline mzx_bool filter_row(uint8_t * RESTRICT row_buffer,
  const uint8_t *row_prev, uint32_t width, unsigned pixel_pitch)
 {
   /* pixel_pitch extra bytes were allocated at the start of the row to allow
@@ -381,7 +382,7 @@ static inline png_bool filter_row(uint8_t * RESTRICT row_buffer,
   }
 }
 
-static png_bool convert_row(struct png_rgba * RESTRICT pixels,
+static mzx_bool convert_row(struct png_rgba * RESTRICT pixels,
  const uint8_t *row_buffer, uint32_t width, unsigned pixel_pitch,
  enum png_pixel_fmt fmt)
 {
@@ -411,7 +412,7 @@ static png_bool convert_row(struct png_rgba * RESTRICT pixels,
 }
 
 enum png_error png_read_fallback(void *handle, png_read_function readfn,
- void *priv, png_read_alloc_function allocfn, png_bool skip_signature)
+ void *priv, png_read_alloc_function allocfn, mzx_bool skip_signature)
 {
   uint8_t in_buffer[4096];
   struct png_rgba *dest;
@@ -706,7 +707,7 @@ enum png_error png_write_fallback(
 
     for(x = 1; x < width;)
     {
-      size_t num = IMAGE_MIN(width - x, buffer_max);
+      size_t num = MZX_MIN(width - x, buffer_max);
       x += num;
       // Prefilter: since it's always left filter RGB(A), delta with the
       // same component of the previous pixel (the value 4 bytes ago).

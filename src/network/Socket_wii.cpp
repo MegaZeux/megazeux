@@ -18,7 +18,6 @@
  */
 
 #include "Socket.hpp"
-#include "../util.h"
 
 #include <network.h>
 #include <errno.h>
@@ -102,7 +101,7 @@ void Socket::perror(const char *message)
   buf[0] = '\0';
 
   // NOTE: return value not portable.
-  strerror_r(errno, buf, ARRAY_SIZE(buf));
+  strerror_r(errno, buf, MZX_ARRAY_SIZE(buf));
   warn("--SOCKET-- %s: %s\n", message, buf);
 }
 

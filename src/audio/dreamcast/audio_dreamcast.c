@@ -21,7 +21,6 @@
 #include "../audio_drivers.h"
 #include "../audio_players.h"
 #include "../audio_struct.h"
-#include "../../util.h"
 
 #include <kos.h>
 #include <string.h>
@@ -36,7 +35,7 @@ static kthread_t *sound_thread;
 // `smp_req` and `smp_recv` are actually BYTES, not samples.
 static void *dc_audio_callback(snd_stream_hnd_t hnd, int smp_req, int *smp_recv)
 {
-  size_t frames = MAX(0, smp_req) / (sizeof(int16_t) * 2);
+  size_t frames = MZX_MAX(0, smp_req) / (sizeof(int16_t) * 2);
   if(frames > buffer_frames)
     frames = buffer_frames;
 

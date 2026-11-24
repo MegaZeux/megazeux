@@ -25,7 +25,6 @@
 #include "audio_players.h"
 #include "audio_struct.h"
 
-#include "../util.h"
 #include "../io/vio.h"
 
 static const struct audio_player * const available_players[] =
@@ -119,7 +118,7 @@ struct audio_stream *audio_construct_stream(const char *filename,
     }
   }
 
-  for(i = 0; i < ARRAY_SIZE(available_players) && available_players[i]; i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(available_players) && available_players[i]; i++)
   {
     stream = try_construct(available_players[i], vf, filename,
      frequency, volume, is_primary, repeat);

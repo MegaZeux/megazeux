@@ -19,7 +19,6 @@
 
 #include "audio_drivers.h"
 
-#include "../util.h"
 #include "../algorithm/string_compare.h"
 
 #ifdef CONFIG_SDL
@@ -79,7 +78,7 @@ const struct audio_driver *audio_init_driver(struct config_info *conf,
     if(!strcasecmp(name, "none"))
       return NULL;
 
-    for(i = 0; i < ARRAY_SIZE(available_drivers); i++)
+    for(i = 0; i < MZX_ARRAY_SIZE(available_drivers); i++)
     {
       const struct audio_driver *driver = available_drivers[i];
       if(!driver)
@@ -95,7 +94,7 @@ const struct audio_driver *audio_init_driver(struct config_info *conf,
   }
 
   /* Attempt every other driver in the list. */
-  for(i = 0; i < ARRAY_SIZE(available_drivers); i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(available_drivers); i++)
   {
     const struct audio_driver *driver = available_drivers[i];
     if(!driver)

@@ -20,14 +20,12 @@
 #ifndef MEGAZEUX_IO_IMAGE_FILE_H
 #define MEGAZEUX_IO_IMAGE_FILE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "../base.h"
+
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 #include <stdlib.h>
-
-#include "image_common.h"
 
 /* Read up to `num` bytes from `handle` into the buffer pointed to by `dest`.
  * Returns the number of bytes actually read from `handle`. */
@@ -110,7 +108,7 @@ struct image_raw_format
   uint32_t width;
   uint32_t height;
   uint32_t bytes_per_pixel;
-  image_bool force_raw;
+  mzx_bool force_raw;
 };
 
 enum image_error load_image_from_file(const char *filename,
@@ -127,8 +125,6 @@ void image_free(struct image_file *dest);
  */
 const char *image_error_string(enum image_error err);
 
-#ifdef __cplusplus
-}
-#endif
+MEGAZEUX_END_DECLS
 
 #endif /* MEGAZEUX_IO_IMAGE_FILE_H */

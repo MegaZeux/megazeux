@@ -18,7 +18,7 @@
  */
 
 #include "about.h"
-#include "util.h"
+#include "util.h" /* mzx_res */
 #include "window.h"
 #include "algorithm/string_compare.h"
 #include "io/path.h"

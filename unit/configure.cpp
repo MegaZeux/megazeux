@@ -25,7 +25,6 @@
 
 #include "../src/configure.h"
 #include "../src/const.h"
-#include "../src/util.h"
 #include "../src/io/vio.h"
 
 #include "../src/event/event.h"

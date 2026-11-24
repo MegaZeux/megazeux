@@ -35,7 +35,6 @@
 #include <sys/nearptr.h>
 #include <sys/segments.h>
 #undef delay
-#include "../../util.h"
 #include "../platform.h"
 #include "platform_djgpp.h"
 #include "interrupt.h"
@@ -210,7 +209,7 @@ static boolean rtc_set_handler(int divider, _go32_dpmi_seginfo *handler)
   int prev_a, prev_b;
 
   /* Dividers <2 cause hardware issues, see OSDev Wiki. */
-  divider = CLAMP(divider, 2, 15);
+  divider = MZX_CLAMP(divider, 2, 15);
 
   /* If present, release and free the old wrapper. */
   if(have_rtc_interrupt)

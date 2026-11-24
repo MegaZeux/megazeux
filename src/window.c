@@ -44,7 +44,6 @@
 #include "sfx.h"
 #include "window.h"
 #include "world.h"
-#include "util.h"
 #include "algorithm/string_compare.h"
 #include "io/path.h"
 #include "io/vio.h"
@@ -819,7 +818,7 @@ int input_window(struct world *mzx_world, const char *title,
   // Split label and input box onto separate lines if the box would be too wide.
   if(w > 74)
   {
-    w = MAX(title_len, max_len + 1) + 4;
+    w = MZX_MAX(title_len, max_len + 1) + 4;
     two_lines = true;
     h++;
   }
@@ -1549,7 +1548,7 @@ static void draw_list_box(struct world *mzx_world, struct dialog *di,
   int i, num_draw;
   int current_in_window = current_choice - scroll_offset;
   char name_buffer[MAX_NAME_BUFFER];
-  int draw_width = MIN(choice_length, MAX_NAME_BUFFER);
+  int draw_width = MZX_MIN(choice_length, MAX_NAME_BUFFER);
 
   num_draw = num_choices_visible;
 
@@ -2217,7 +2216,7 @@ static int click_number_box(struct world *mzx_world, struct dialog *di,
   {
     mouse_x += 7;
     if(mouse_x >= 0)
-      *(src->result) = CLAMP(mouse_x - 1 + src->lower_limit,
+      *(src->result) = MZX_CLAMP(mouse_x - 1 + src->lower_limit,
        src->lower_limit, src->upper_limit);
   }
   else
@@ -2257,7 +2256,7 @@ static int drag_number_box(struct world *mzx_world, struct dialog *di,
   {
     mouse_x += 7;
     if(mouse_x >= 0)
-      *(src->result) = CLAMP(mouse_x - 1 + src->lower_limit,
+      *(src->result) = MZX_CLAMP(mouse_x - 1 + src->lower_limit,
        src->lower_limit, src->upper_limit);
   }
   else

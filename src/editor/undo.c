@@ -35,7 +35,6 @@
 #include "../graphics.h"
 #include "../idarray.h"
 #include "../robot.h"
-#include "../util.h"
 #include "../world.h"
 #include "../world_struct.h"
 
@@ -612,7 +611,7 @@ static void apply_board_update(struct undo_frame *f)
     case POS_FRAME:
     {
       // Trim extra size off of the allocation
-      int size = MAX(current->prev_size, 1);
+      int size = MZX_MAX(current->prev_size, 1);
 
       current->prev_alloc = size;
       current->prev =
@@ -957,7 +956,7 @@ static void apply_layer_update(struct undo_frame *f)
     {
       // Shrink alloc to trim unused space.
       struct layer_undo_pos_frame *current = (struct layer_undo_pos_frame *)f;
-      int size = MAX(current->prev_size, 1);
+      int size = MZX_MAX(current->prev_size, 1);
 
       current->prev_alloc = size;
       current->prev =
@@ -1139,7 +1138,7 @@ static void add_text_undo_line(struct text_undo_line_list *list,
   struct text_undo_line *tl;
   if(list->count >= list->allocated)
   {
-    list->allocated = MAX(4, list->allocated);
+    list->allocated = MZX_MAX(4, list->allocated);
     while(list->count >= list->allocated)
       list->allocated *= 2;
 

@@ -55,7 +55,6 @@
 
 #include "../const.h"
 #include "../graphics.h"
-#include "../util.h"
 #include "../world.h"
 #include "../world_format.h"
 #include "../algorithm/string_compare.h"
@@ -108,7 +107,7 @@ static inline void save_prop_s_to_asciiz(int ident, size_t len,
  struct memfile *prop, struct memfile *mf)
 {
   char buf[BOARD_NAME_SIZE];
-  len = MIN(len, BOARD_NAME_SIZE - 1);
+  len = MZX_MIN(len, BOARD_NAME_SIZE - 1);
 
   len = mfread(buf, 1, len, prop);
   buf[len] = '\0';
@@ -193,7 +192,7 @@ static void convert_293_to_292_status_counters(struct downver_state *dv,
         if(num < NUM_STATUS_COUNTERS)
         {
           char *pos = counters + num * COUNTER_NAME_SIZE;
-          len = MIN(len, COUNTER_NAME_SIZE - 1);
+          len = MZX_MIN(len, COUNTER_NAME_SIZE - 1);
           len = mfread(pos, 1, len, &prop);
           pos[len] = '\0';
         }
@@ -369,7 +368,7 @@ static void convert_293_to_292_sfx(struct downver_state *dv,
         case SFXPROP_STRING:
           if(num >= 0 && num < NUM_BUILTIN_SFX)
           {
-            len = MIN(len, LEGACY_SFX_SIZE - 1);
+            len = MZX_MIN(len, LEGACY_SFX_SIZE - 1);
             mfseek(dest, num * LEGACY_SFX_SIZE, SEEK_SET);
             mfread(dest->current, len, 1, &prop);
           }

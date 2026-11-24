@@ -26,7 +26,6 @@
 #include "../robot.h"
 #include "../world.h"
 #include "../world_format.h"
-#include "../util.h"
 #include "../io/vio.h"
 #include "../io/zip.h"
 

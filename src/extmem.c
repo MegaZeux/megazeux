@@ -20,7 +20,6 @@
 #include "error.h"
 #include "extmem.h"
 #include "robot.h"
-#include "util.h"
 #include "world_struct.h"
 #include "algorithm/arch.h"
 #include "platform/log.h"
@@ -487,7 +486,7 @@ static size_t RLE3_pack(uint8_t * RESTRICT data, size_t data_len,
     // Emit block run.
     while(block_repeats)
     {
-      size_t pack_count = MIN(RLE3_MAX_BLOCK, block_repeats);
+      size_t pack_count = MZX_MIN(RLE3_MAX_BLOCK, block_repeats);
       block_repeats -= pack_count;
       RLE3_PACK_RUN_BLOCK(pack_count);
       //trace("--RLE3--     repeat block x %zu\n", pack_count);
@@ -496,7 +495,7 @@ static size_t RLE3_pack(uint8_t * RESTRICT data, size_t data_len,
     // Emit char run.
     while(prev_repeats)
     {
-      size_t pack_count = MIN(RLE3_MAX_BLOCK, prev_repeats);
+      size_t pack_count = MZX_MIN(RLE3_MAX_BLOCK, prev_repeats);
       prev_repeats -= pack_count;
       RLE3_PACK_RUN_CHAR(pack_count);
       //trace("--RLE3--     repeat %02Xh x %zu\n", (int)prev_chr, pack_count);
@@ -688,7 +687,7 @@ static uint32_t extram_checksum(const void *src, size_t len)
   uint32_t checksum = adler32(0L, NULL, 0);
   while(len > 0)
   {
-    unsigned int blocklen = MIN(len, UINT_MAX);
+    unsigned int blocklen = MZX_MIN(len, UINT_MAX);
     checksum = adler32(checksum, src, blocklen);
     len -= blocklen;
   }
@@ -1049,7 +1048,7 @@ static boolean retrieve_buffer_from_extram(struct extram_data *data,
 
     while((res == Z_OK || res == Z_BUF_ERROR) && left)
     {
-      size_t sz = MIN(left, sizeof(extram_deflate_buffer));
+      size_t sz = MZX_MIN(left, sizeof(extram_deflate_buffer));
       size_t sz_ext = extram_alloc_size(sz);
       left -= sz;
       if(!extram_copy(extram_deflate_buffer, pos, sz_ext))
@@ -1234,7 +1233,8 @@ void real_store_board_to_extram(struct board *board, const char *file, int line)
 err:
   {
     char msg[81];
-    snprintf(msg, ARRAY_SIZE(msg), "Failed to store board to extram at %s:%d", file, line);
+    snprintf(msg, MZX_ARRAY_SIZE(msg),
+     "Failed to store board to extram at %s:%d", file, line);
     error(msg, ERROR_T_FATAL, ERROR_OPT_EXIT | ERROR_OPT_NO_HELP, 0);
   }
 }
@@ -1334,7 +1334,8 @@ void real_retrieve_board_from_extram(struct board *board, boolean free_data,
 err:
   {
     char msg[81];
-    snprintf(msg, ARRAY_SIZE(msg), "Failed to load board from extram at %s:%d", file, line);
+    snprintf(msg, MZX_ARRAY_SIZE(msg),
+     "Failed to load board from extram at %s:%d", file, line);
     error(msg, ERROR_T_FATAL, ERROR_OPT_EXIT | ERROR_OPT_NO_HELP, 0);
   }
 }

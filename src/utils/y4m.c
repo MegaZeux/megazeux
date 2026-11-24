@@ -26,8 +26,6 @@
 
 #include "y4m.h"
 
-#define Y4M_CLAMP(v, min, max) ((v) < (min) ? (min) : ((v) > (max) ? (max) : (v)))
-
 static boolean unsigned_value(uint32_t *v, const char *buf)
 {
   char *end;
@@ -389,9 +387,9 @@ void y4m_convert_frame_rgba(const struct y4m_data *y4m,
         b = (b - 16) * 255 / 224;
       }
 
-      dest->r = Y4M_CLAMP(r, 0, 255);
-      dest->g = Y4M_CLAMP(g, 0, 255);
-      dest->b = Y4M_CLAMP(b, 0, 255);
+      dest->r = MZX_CLAMP(r, 0, 255);
+      dest->g = MZX_CLAMP(g, 0, 255);
+      dest->b = MZX_CLAMP(b, 0, 255);
       dest->a = aval;
       dest++;
     }

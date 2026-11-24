@@ -29,7 +29,6 @@ MEGAZEUX_BEGIN_DECLS
 
 #include "../../configure.h"
 #include "../../graphics.h"
-#include "../../util.h"
 #include "../../algorithm/arch.h"
 #include "../../platform/platform_dso.h"
 

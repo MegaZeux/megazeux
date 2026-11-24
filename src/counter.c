@@ -43,7 +43,6 @@
 #include "robot.h"
 #include "sprite.h"
 #include "str.h"
-#include "util.h"
 #include "world.h"
 #include "world_struct.h"
 #include "algorithm/bitmath.h"
@@ -88,8 +87,8 @@ static unsigned int get_board_x_board_y_offset(struct world *mzx_world, int id)
   int board_x = get_counter(mzx_world, "board_x", id);
   int board_y = get_counter(mzx_world, "board_y", id);
 
-  board_x = CLAMP(board_x, 0, mzx_world->current_board->board_width - 1);
-  board_y = CLAMP(board_y, 0, mzx_world->current_board->board_height - 1);
+  board_x = MZX_CLAMP(board_x, 0, mzx_world->current_board->board_width - 1);
+  board_y = MZX_CLAMP(board_y, 0, mzx_world->current_board->board_height - 1);
 
   return board_y * mzx_world->current_board->board_width + board_x;
 }
@@ -1205,7 +1204,7 @@ static void key_write(struct world *mzx_world,
   // In DOS versions key was a board counter
   if(mzx_world->version < VERSION_PORT)
   {
-    mzx_world->current_board->last_key = CLAMP(value, 0, 255);
+    mzx_world->current_board->last_key = MZX_CLAMP(value, 0, 255);
   }
   force_last_key(keycode_internal, toupper(value));
 }
@@ -1315,7 +1314,7 @@ static int timereset_read(struct world *mzx_world,
 static void timereset_write(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int value, int id)
 {
-  mzx_world->current_board->time_limit = CLAMP(value, 0, 32767);
+  mzx_world->current_board->time_limit = MZX_CLAMP(value, 0, 32767);
 }
 
 static void refresh_time(struct world *mzx_world)
@@ -1775,8 +1774,8 @@ static int pixel_read(struct world *mzx_world,
   char sub_x, sub_y, current_byte, current_char;
   int pixel_mask;
 
-  pixel_x = CLAMP(pixel_x, 0, 255);
-  pixel_y = CLAMP(pixel_y, 0, 111);
+  pixel_x = MZX_CLAMP(pixel_x, 0, 255);
+  pixel_y = MZX_CLAMP(pixel_y, 0, 111);
 
   sub_x = pixel_x % 8;
   sub_y = pixel_y % 14;
@@ -1794,8 +1793,8 @@ static void pixel_write(struct world *mzx_world,
   int pixel_y = get_counter(mzx_world, "CHAR_Y", id);
   char sub_x, sub_y, current_byte, current_char;
 
-  pixel_x = CLAMP(pixel_x, 0, 255);
-  pixel_y = CLAMP(pixel_y, 0, 111);
+  pixel_x = MZX_CLAMP(pixel_x, 0, 255);
+  pixel_y = MZX_CLAMP(pixel_y, 0, 111);
 
   sub_x = pixel_x & 7;
   sub_y = pixel_y % 14;
@@ -2052,7 +2051,7 @@ static int fread_pos_read(struct world *mzx_world,
   if(!mzx_world->input_is_dir && mzx_world->input_file)
   {
     int64_t pos = vftell(mzx_world->input_file);
-    return CLAMP(pos, -1, INT_MAX);
+    return MZX_CLAMP(pos, -1, INT_MAX);
   }
   else
 
@@ -2090,7 +2089,7 @@ static int fread_length_read(struct world *mzx_world,
   if(mzx_world->input_file)
   {
     int64_t len = vfilelength(mzx_world->input_file, false);
-    return CLAMP(len, -1, INT_MAX);
+    return MZX_CLAMP(len, -1, INT_MAX);
   }
 
   return -1;
@@ -2114,7 +2113,7 @@ static int fwrite_pos_read(struct world *mzx_world,
   if(mzx_world->output_file)
   {
     int64_t pos = vftell(mzx_world->output_file);
-    return CLAMP(pos, -1, INT_MAX);
+    return MZX_CLAMP(pos, -1, INT_MAX);
   }
   else
     return -1;
@@ -2157,7 +2156,7 @@ static int fwrite_length_read(struct world *mzx_world,
   if(mzx_world->output_file)
   {
     int64_t len = vfilelength(mzx_world->output_file, false);
-    return CLAMP(len, -1, INT_MAX);
+    return MZX_CLAMP(len, -1, INT_MAX);
   }
   return -1;
 }
@@ -2597,7 +2596,7 @@ static void max_samples_write(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int value, int id)
 {
   // -1 for unlimited samples, or 0+ for an explicit number of samples
-  value = MAX(-1, value);
+  value = MZX_MAX(-1, value);
 
   mzx_world->max_samples = value;
   audio_set_max_samples(value);
@@ -2814,7 +2813,7 @@ static const struct function_counter builtin_counters[] =
   { "vlayer_width",     V269c,  vlayer_width_read,    vlayer_width_write },
 };
 
-static const int num_builtin_counters = ARRAY_SIZE(builtin_counters);
+static const int num_builtin_counters = MZX_ARRAY_SIZE(builtin_counters);
 static int counter_first_letter[512];
 
 void counter_fsg(void)
@@ -3694,14 +3693,14 @@ static int score_gateway(struct world *mzx_world, struct counter *counter,
 static int time_gateway(struct world *mzx_world, struct counter *counter,
  const char *name, int value, int id, boolean is_dec)
 {
-  return CLAMP(value, 0, 32767);
+  return MZX_CLAMP(value, 0, 32767);
 }
 
 static int builtin_gateway(struct world *mzx_world, struct counter *counter,
  const char *name, int value, int id, boolean is_dec)
 {
   // The other builtins simply can't go below 0
-  return MAX(value, 0);
+  return MZX_MAX(value, 0);
 }
 
 enum gateway_function_id
@@ -3755,7 +3754,7 @@ void initialize_gateway_functions(struct world *mzx_world)
 static size_t get_counter_alloc_size(int name_length)
 {
   // Attempt to reclaim any padding bytes at the end of the struct...
-  return MAX(sizeof(struct counter),
+  return MZX_MAX(sizeof(struct counter),
    offsetof(struct counter, name) + name_length + 1);
 }
 

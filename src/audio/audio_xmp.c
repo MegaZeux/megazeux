@@ -25,7 +25,6 @@
 #include "sampled_stream.h"
 
 #include "../const.h"
-#include "../util.h"
 #include "../io/vio.h"
 
 //#ifdef __WIN32__

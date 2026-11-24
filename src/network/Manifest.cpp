@@ -21,7 +21,6 @@
 #include "Manifest.hpp"
 #include "HTTPHost.hpp"
 #include "Scoped.hpp"
-#include "../util.h"
 #include "../algorithm/string_sep.h"
 #include "../io/memfile.h"
 #include "../io/path.h"
@@ -42,7 +41,7 @@ void ManifestEntry::init(const uint32_t (&_sha256)[8], size_t _size,
 {
   size_t name_len = strlen(name);
   this->size = _size;
-  for(size_t i = 0; i < ARRAY_SIZE(sha256); i++)
+  for(size_t i = 0; i < MZX_ARRAY_SIZE(sha256); i++)
     this->sha256[i] = _sha256[i];
 
   this->name = new char[name_len + 1];
@@ -85,7 +84,7 @@ boolean ManifestEntry::compute_sha256(SHA256_ctx &ctx, vfile *vf, size_t len)
 
   while(pos < len)
   {
-    unsigned long block_size = MIN(BLOCK_SIZE, len - pos);
+    unsigned long block_size = MZX_MIN(BLOCK_SIZE, len - pos);
 
     if(vfread(block, block_size, 1, vf) != 1)
       return false;

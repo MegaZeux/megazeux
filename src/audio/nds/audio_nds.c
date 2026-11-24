@@ -23,7 +23,6 @@
 #include "../audio_sfx.h"
 #include "../audio_struct.h"
 
-#include "../../util.h"
 #include "../../io/fsafeopen.h"
 #include "../../platform/platform.h"
 #include "../../platform/nds/platform_nds.h"
@@ -38,7 +37,7 @@ static u8 nds_vol_table[] =
 	0, 8, 16, 26, 36, 48, 61, 75, 91, 108, 127
 };
 
-#define NDS_VOLUME(vol) nds_vol_table[CLAMP((vol), 0, 10)]
+#define NDS_VOLUME(vol) nds_vol_table[MZX_CLAMP((vol), 0, 10)]
 
 // FIFO calls
 
@@ -86,7 +85,7 @@ static inline void nds_pcs_tick(int duration)
         pcs_duration = 1;
     }
 
-    ticked = MIN(duration - ticks, pcs_duration);
+    ticked = MZX_MIN(duration - ticks, pcs_duration);
     ticks += ticked;
     pcs_duration -= ticked;
   }
@@ -165,7 +164,7 @@ void audio_set_module_frequency(int frequency)
   if(frequency == 0)
     frequency = 44100;
   maxmod_effective_frequency = frequency;
-  mm_freq = CLAMP(div32(frequency * 0x400, 44100), 0x200, 0x800);
+  mm_freq = MZX_CLAMP(div32(frequency * 0x400, 44100), 0x200, 0x800);
 
   mmSetModuleTempo(mm_freq);
   mmSetModulePitch(mm_freq);
@@ -448,7 +447,7 @@ void audio_play_sample(const char *filename, boolean safely, int period)
 
   // play sample
   sfx.id = 0;
-  sfx.rate = CLAMP(divf32(freq_desired << 12, freq_real << 12) >> 2, 0, 0xFFFF);
+  sfx.rate = MZX_CLAMP(divf32(freq_desired << 12, freq_real << 12) >> 2, 0, 0xFFFF);
   sfx.handle = 0;
   sfx.volume = NDS_VOLUME(audio_get_sound_volume()) << 1;
   sfx.panning = 128;

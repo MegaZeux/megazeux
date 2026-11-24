@@ -42,7 +42,7 @@
 #include "helpsys.h"
 #include "idput.h"
 #include "sfx.h"
-#include "util.h"
+#include "util.h" /* mzx_res */
 #include "window.h"
 #include "world.h"
 #include "algorithm/rng.h"

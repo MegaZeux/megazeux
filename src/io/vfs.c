@@ -33,7 +33,6 @@
 #include "../platform/platform.h"
 #endif
 
-#include "../util.h"
 #include "../algorithm/string_compare.h"
 #include "path.h"
 #include "vio.h"
@@ -2711,7 +2710,7 @@ enum vfs_error vfs_invalidate_at_least(vfilesystem *vfs, size_t *_amount_to_free
   if(!targets)
   {
     targets = fallback;
-    max_targets = ARRAY_SIZE(fallback);
+    max_targets = MZX_ARRAY_SIZE(fallback);
   }
 
   num_targets = 0;
@@ -3027,7 +3026,7 @@ size_t vfs_get_total_memory_usage(vfilesystem *vfs)
       if(!n)
         continue;
 
-      sz += MAX(sizeof(struct vfs_inode), sizeof(struct vfs_inode_name_alloc));
+      sz += MZX_MAX(sizeof(struct vfs_inode), sizeof(struct vfs_inode_name_alloc));
       if(n->flags & VFS_INODE_NAME_ALLOC)
         sz += n->name_length + 1;
 

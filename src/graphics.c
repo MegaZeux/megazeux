@@ -51,7 +51,7 @@
 #include "platform/sdl/SDLmzx.h"
 #endif // CONFIG_SDL
 
-#include "util.h"
+#include "util.h" /* mzx_res */
 
 #define CURSOR_BLINK_RATE 115
 
@@ -271,7 +271,7 @@ void ec_mem_load_set_var(const void *buffer, size_t len, uint16_t first_chr,
 void ec_mem_save_set_var(void *buffer, size_t len, uint16_t first_chr)
 {
   size_t offset = first_chr * CHAR_SIZE;
-  size_t size = MIN(PROTECTED_CHARSET_POSITION * CHAR_SIZE - offset, len);
+  size_t size = MZX_MIN(PROTECTED_CHARSET_POSITION * CHAR_SIZE - offset, len);
 
   if(first_chr < PROTECTED_CHARSET_POSITION)
     memcpy(buffer, graphics.charset + offset, size);
@@ -726,12 +726,12 @@ void load_palette(const char *filename)
   {
     // Regular text mode, 16 colors
     case 0:
-      file_size = MIN(file_size, 16 * 3);
+      file_size = MZX_MIN(file_size, 16 * 3);
       break;
 
     // SMZX modes, up to 256 colors
     default:
-      file_size = MIN(file_size, 256 * 3);
+      file_size = MZX_MIN(file_size, 256 * 3);
       break;
   }
 
@@ -755,12 +755,12 @@ void load_palette_mem(const void *buffer, size_t len)
   {
     // Regular text mode
     case 0:
-      size = MIN(len, 16*3);
+      size = MZX_MIN(len, 16 * 3);
       break;
 
     // SMZX
     default:
-      size = MIN(len, 256*3);
+      size = MZX_MIN(len, 256 * 3);
       break;
   }
 
@@ -2266,7 +2266,7 @@ void write_number(int number, uint8_t color, unsigned int x, unsigned int y,
  int minlen, boolean rightalign, int base)
 {
   char temp[12];
-  minlen = CLAMP(minlen, 0, 11);
+  minlen = MZX_CLAMP(minlen, 0, 11);
 
   if(base == 10)
     snprintf(temp, 12, "%0*d", minlen, number);

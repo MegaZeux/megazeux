@@ -20,7 +20,6 @@
 
 #include "Socket.hpp"
 
-#include "../util.h"
 #include "../platform/log.h"
 #include "../platform/platform_dso.h"
 #include "../platform/platform_thread.h"
@@ -216,7 +215,7 @@ int Socket::poll_alt(struct pollfd *fds, size_t nfds, int timeout_ms)
     }
 #endif
 
-    maxfd = MAX(maxfd, (int)p.fd);
+    maxfd = MZX_MAX(maxfd, (int)p.fd);
     p.revents = 0;
     if(p.events & POLLIN)
       FD_SET(p.fd, &readfds);

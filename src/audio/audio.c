@@ -36,7 +36,6 @@
 
 #include "../configure.h"
 #include "../data.h"
-#include "../util.h"
 #include "../algorithm/bitmath.h"
 #include "../algorithm/string_compare.h"
 #include "../io/fsafeopen.h"
@@ -86,7 +85,7 @@ static unsigned int volume_function(int input, int volume_setting)
   double setting_exp = (exp(setting_f) - 1.0) / (M_E - 1.0);
   int output = (int)((double)input * setting_exp + 0.5);
 
-  return CLAMP(output, 0, 255);
+  return MZX_CLAMP(output, 0, 255);
 }
 
 // Disable most of the standard audio implementation on NDS, where
@@ -372,7 +371,7 @@ boolean audio_mixer_init(unsigned rate, unsigned frames, unsigned channels)
 
   if(frames == 0)
     frames = 1024;
-  frames = CLAMP(frames, 8, 65536);
+  frames = MZX_CLAMP(frames, 8, 65536);
   frames = mzx_round_to_power_of_two(frames);
 
   if(channels == 0)

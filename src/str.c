@@ -30,7 +30,6 @@
 #include "graphics.h"
 #include "rasm.h"
 #include "robot.h"
-#include "util.h"
 #include "world.h"
 #include "world_struct.h"
 #include "algorithm/string_char.h"
@@ -65,8 +64,8 @@ static unsigned int get_board_x_board_y_offset(struct world *mzx_world, int id)
   int board_x = get_counter(mzx_world, "board_x", id);
   int board_y = get_counter(mzx_world, "board_y", id);
 
-  board_x = CLAMP(board_x, 0, mzx_world->current_board->board_width - 1);
-  board_y = CLAMP(board_y, 0, mzx_world->current_board->board_height - 1);
+  board_x = MZX_CLAMP(board_x, 0, mzx_world->current_board->board_width - 1);
+  board_y = MZX_CLAMP(board_y, 0, mzx_world->current_board->board_height - 1);
 
   return board_y * mzx_world->current_board->board_width + board_x;
 }
@@ -130,7 +129,7 @@ static struct string *find_string(struct string_list *string_list,
 static size_t get_string_alloc_size(size_t name_length)
 {
   // Attempt to reclaim any padding bytes at the end of the struct...
-  return MAX(sizeof(struct string),
+  return MZX_MAX(sizeof(struct string),
    offsetof(struct string, name) + name_length + 1);
 }
 
@@ -143,7 +142,7 @@ static struct string *allocate_new_string(const char *name, size_t name_length,
  size_t length)
 {
   struct string *dest = (struct string *)cmalloc(get_string_alloc_size(name_length));
-  char *value = (char *)cmalloc(MAX(length, 1));
+  char *value = (char *)cmalloc(MZX_MAX(length, 1));
   if(!dest || !value)
   {
     free(dest);
@@ -229,7 +228,7 @@ static struct string *add_string_preallocate(struct string_list *string_list,
 static struct string *reallocate_string(struct string_list *string_list,
  struct string *src, int pos, size_t length)
 {
-  char *value = (char *)crealloc(src->value, MAX(length, 1));
+  char *value = (char *)crealloc(src->value, MZX_MAX(length, 1));
   if(!value)
     return NULL;
 
@@ -383,7 +382,7 @@ static void get_string_dot_value(char *dot_ptr, int *index,
     {
       int result = strtoul(error + 1, &error, 10);
 
-      *size = CLAMP(result, 1, 4);
+      *size = MZX_CLAMP(result, 1, 4);
     }
 
     if(!error[0])
@@ -892,7 +891,7 @@ int set_string(struct world *mzx_world, char *name, struct string *src,
       long current_pos, file_size;
       size_t actual_read = 0;
 
-      read_count = MIN(read_count, MAX_STRING_LEN);
+      read_count = MZX_MIN(read_count, MAX_STRING_LEN);
 
       file_size = vfilelength(input_file, false);
       current_pos = vftell(input_file);
@@ -938,9 +937,9 @@ int set_string(struct world *mzx_world, char *name, struct string *src,
 
         // Preemtively constrain the read to the string maximum limits.
         if(offset_specified)
-          max_read = MIN(max_read, MAX_STRING_LEN - MIN(offset, MAX_STRING_LEN));
+          max_read = MZX_MIN(max_read, MAX_STRING_LEN - MZX_MIN(offset, MAX_STRING_LEN));
         if(size_specified)
-          max_read = MIN(max_read, size);
+          max_read = MZX_MIN(max_read, size);
 
         if(offset_specified && offset >= MAX_STRING_LEN)
           return 0;
@@ -1538,7 +1537,7 @@ void dec_string_int(struct world *mzx_world, const char *name, int value,
 int compare_strings(struct string *A, struct string *B, boolean exact_case,
  boolean allow_wildcards)
 {
-  size_t cmp_length = MIN(A->length, B->length);
+  size_t cmp_length = MZX_MIN(A->length, B->length);
   int res = 0;
 
   if(!allow_wildcards)
@@ -1581,7 +1580,7 @@ int compare_strings(struct string *A, struct string *B, boolean exact_case,
  */
 int compare_strings_null_terminated(struct string *A, struct string *B)
 {
-  size_t cmp_length = MIN(A->length, B->length);
+  size_t cmp_length = MZX_MIN(A->length, B->length);
   int res;
 
   res = strncasecmp(A->value, B->value, cmp_length);

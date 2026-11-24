@@ -21,7 +21,6 @@
 
 #include "SDLmzx.h"
 #include "../platform.h"
-#include "../../util.h"
 #include "../../algorithm/arch.h"
 
 #ifdef CONFIG_PSP

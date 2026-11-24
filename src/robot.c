@@ -40,7 +40,6 @@
 #include "rasm.h"
 #include "scrdisp.h"
 #include "str.h"
-#include "util.h"
 #include "window.h"
 #include "world.h"
 #include "world_format.h"
@@ -148,7 +147,7 @@ static int load_robot_from_memory(struct world *mzx_world, struct robot *cur_rob
         break;
 
       case RPROP_ROBOT_NAME:
-        size = MIN(size, ROBOT_NAME_SIZE - 1);
+        size = MZX_MIN(size, ROBOT_NAME_SIZE - 1);
         mfread(cur_robot->robot_name, size, 1, &prop);
         cur_robot->robot_name[size] = '\0';
         break;
@@ -235,7 +234,7 @@ static int load_robot_from_memory(struct world *mzx_world, struct robot *cur_rob
         // over ROBOT_MAX_STACK is invalid.
         if(cur_robot->stack)
           break;
-        size = MIN((size / 4) & ~1, ROBOT_MAX_STACK);
+        size = MZX_MIN((size / 4) & ~1, ROBOT_MAX_STACK);
         cur_robot->stack_size = size;
         cur_robot->stack = cmalloc(size * sizeof(int));
         for(i = 0; i < size; i++)
@@ -540,7 +539,7 @@ struct scroll *load_scroll_allocate(struct zip_archive *zp)
           goto err;
 
         // TODO: return value (scroll display doesn't support NULL here)
-        size = MIN(size, MAX_OBJ_SIZE);
+        size = MZX_MIN(size, MAX_OBJ_SIZE);
         cur_scroll->mesg_size = size;
         cur_scroll->mesg = (char *)cmalloc(size);
         mfread(cur_scroll->mesg, size, 1, &prop);
@@ -608,7 +607,7 @@ struct sensor *load_sensor_allocate(struct zip_archive *zp)
         break;
 
       case SENPROP_SENSOR_NAME:
-        size = MIN(size, ROBOT_NAME_SIZE - 1);
+        size = MZX_MIN(size, ROBOT_NAME_SIZE - 1);
         mfread(cur_sensor->sensor_name, size, 1, &prop);
         cur_sensor->sensor_name[size] = '\0';
         break;
@@ -618,7 +617,7 @@ struct sensor *load_sensor_allocate(struct zip_archive *zp)
         break;
 
       case SENPROP_ROBOT_TO_MESG:
-        size = MIN(size, ROBOT_NAME_SIZE - 1);
+        size = MZX_MIN(size, ROBOT_NAME_SIZE - 1);
         mfread(cur_sensor->robot_to_mesg, size, 1, &prop);
         cur_sensor->robot_to_mesg[size] = '\0';
         break;

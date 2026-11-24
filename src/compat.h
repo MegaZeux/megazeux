@@ -23,21 +23,9 @@
 #define MEGAZEUX_COMPAT_H
 
 #include "config.h"
+#include "base.h"
 
 #ifdef __cplusplus
-
-#define MEGAZEUX_BEGIN_DECLS extern "C" {
-#define MEGAZEUX_END_DECLS   }
-
-/**
- * Compatibility define for restrict in C++, where it is a (commonly supported)
- * compiler extension. This has to be defined as 'RESTRICT' because defining
- * 'restrict' conflicts with MSVC's __declspec(restrict) attribute.
- */
-#ifndef RESTRICT
-#define RESTRICT __restrict
-#endif
-
 #if __cplusplus >= 201103
 #define IS_CXX_11 1
 #define maybe_constexpr constexpr
@@ -61,9 +49,6 @@
 #endif
 
 #else
-
-#define MEGAZEUX_BEGIN_DECLS
-#define MEGAZEUX_END_DECLS
 
 #if !defined(CONFIG_WII) && !defined(CONFIG_NDS) && !defined(CONFIG_3DS) && \
  !defined(CONFIG_DREAMCAST)
@@ -130,9 +115,6 @@ typedef unsigned char boolean;
 
 #ifdef _MSC_VER
 #include "msvc.h"
-#ifndef RESTRICT
-#define RESTRICT __restrict
-#endif
 #endif
 
 #ifdef __APPLE__
@@ -160,11 +142,6 @@ typedef unsigned char boolean;
 #endif
 
 #ifdef __OpenBSD__
-#include <sys/param.h>
-// These macros conflict with internally-defined MZX macros
-#undef MIN
-#undef MAX
-
 // unveil added in OpenBSD 6.3
 #ifdef OpenBSD
 #if OpenBSD >= 201805
@@ -179,7 +156,7 @@ typedef unsigned char boolean;
 #endif
 
 #ifndef RESTRICT
-#define RESTRICT restrict
+#define RESTRICT MZX_RESTRICT
 #endif
 
 #if defined(CONFIG_MODULAR) && defined(__WIN32__)

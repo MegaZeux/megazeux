@@ -23,7 +23,6 @@
 #include "core_task.h"
 
 #include "graphics.h"
-#include "util.h"
 #include "window.h"
 #include "event/event.h"
 #include "platform/platform.h"
@@ -176,7 +175,7 @@ boolean core_task_tick(context *ctx,
   if(!task_lock(task))
     return false;
 
-  task->progress = MIN(progress, progress_max);
+  task->progress = MZX_MIN(progress, progress_max);
   task->progress_max = progress_max;
   if(status)
   {

@@ -25,7 +25,6 @@
 #include "../error.h"
 #include "../graphics.h"
 #include "../idput.h"
-#include "../util.h"
 
 #include <string.h>
 

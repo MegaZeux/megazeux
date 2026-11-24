@@ -49,7 +49,6 @@
 #include "sfx.h"
 #include "sprite.h"
 #include "str.h"
-#include "util.h"
 #include "window.h"
 #include "io/fsafeopen.h"
 #include "io/memfile.h"
@@ -635,9 +634,9 @@ static inline void load_status_counter_info(struct world *mzx_world,
           break;
 
         case STATCTRPROP_NAME:
-          if(num < ARRAY_SIZE(mzx_world->status_counters_shown))
+          if(num < MZX_ARRAY_SIZE(mzx_world->status_counters_shown))
           {
-            len = MIN((size_t)len, sizeof(mzx_world->status_counters_shown[num]) - 1);
+            len = MZX_MIN((size_t)len, sizeof(mzx_world->status_counters_shown[num]) - 1);
             len = mfread(mzx_world->status_counters_shown[num], 1, len, &prop);
             mzx_world->status_counters_shown[num][len] = '\0';
           }
@@ -700,7 +699,7 @@ static inline void load_world_info(struct world *mzx_world,
 
       // Header redundant properties
       case WPROP_WORLD_NAME:
-        size = MIN(size, BOARD_NAME_SIZE - 1);
+        size = MZX_MIN(size, BOARD_NAME_SIZE - 1);
         mfread(mzx_world->name, size, 1, prop);
         mzx_world->name[size] = '\0';
         break;
@@ -859,7 +858,7 @@ static inline void load_world_info(struct world *mzx_world,
         if_savegame_or_291
 
         vlayer_size = load_prop_int(prop);
-        vlayer_size = CLAMP(vlayer_size, 1, MAX_BOARD_SIZE);
+        vlayer_size = MZX_CLAMP(vlayer_size, 1, MAX_BOARD_SIZE);
 
         mzx_world->vlayer_size = vlayer_size;
 
@@ -871,7 +870,7 @@ static inline void load_world_info(struct world *mzx_world,
       // Save properties
       case WPROP_REAL_MOD_PLAYING:
         if_savegame
-        size = MIN(size, MAX_PATH-1);
+        size = MZX_MIN(size, MAX_PATH - 1);
         mfread(mzx_world->real_mod_playing, size, 1, prop);
         mzx_world->real_mod_playing[size] = 0;
         break;
@@ -1011,7 +1010,7 @@ static inline void load_world_info(struct world *mzx_world,
 
       case WPROP_INPUT_FILE_NAME:
         if_savegame
-        size = MIN(size, MAX_PATH - 1);
+        size = MZX_MIN(size, MAX_PATH - 1);
         mfread(mzx_world->input_file_name, size, 1, prop);
         mzx_world->input_file_name[size] = 0;
         break;
@@ -1028,7 +1027,7 @@ static inline void load_world_info(struct world *mzx_world,
 
       case WPROP_OUTPUT_FILE_NAME:
         if_savegame
-        size = MIN(size, MAX_PATH - 1);
+        size = MZX_MIN(size, MAX_PATH - 1);
         mfread(mzx_world->output_file_name, size, 1, prop);
         mzx_world->output_file_name[size] = 0;
         break;
@@ -1228,7 +1227,7 @@ static inline int load_world_chars(struct world *mzx_world,
   int result;
 
   zip_get_next_uncompressed_size(zp, &actual_size);
-  actual_size = MIN(actual_size, NUM_CHARSETS * CHAR_SIZE * CHARSET_SIZE);
+  actual_size = MZX_MIN(actual_size, NUM_CHARSETS * CHAR_SIZE * CHARSET_SIZE);
 
   buffer = cmalloc(actual_size);
   result = zip_read_file(zp, buffer, actual_size, &actual_size);
@@ -1721,7 +1720,7 @@ static inline int load_world_sprites(struct world *mzx_world,
         break;
 
       case SPROP_COLLISION_COUNT:
-        num_collisions = CLAMP(value, 0, MAX_SPRITES);
+        num_collisions = MZX_CLAMP(value, 0, MAX_SPRITES);
         mzx_world->collision_count = num_collisions;
         break;
 

@@ -25,7 +25,6 @@
 #include "../platform.h"
 #undef main
 
-#include "../../util.h"
 #include "../../error.h"
 #include "../../graphics.h"
 #include "../../event/event.h"

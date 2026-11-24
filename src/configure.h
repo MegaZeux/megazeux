@@ -240,8 +240,8 @@ CORE_LIBSPEC boolean _config_enum(int *dest, const char *value,
 CORE_LIBSPEC boolean config_boolean(boolean *dest, const char *value);
 CORE_LIBSPEC boolean _config_string(char *dest, size_t dest_len, const char *value);
 
-#define config_enum(d, v, a) _config_enum(d, v, a, ARRAY_SIZE(a))
-#define config_string(d, v) _config_string(d, ARRAY_SIZE(d), v)
+#define config_enum(d, v, a) _config_enum(d, v, a, MZX_ARRAY_SIZE(a))
+#define config_string(d, v) _config_string(d, MZX_ARRAY_SIZE(d), v)
 
 #endif // CONFIG_EDITOR
 

@@ -145,7 +145,7 @@ static size_t ctr_png_read_fn(void * RESTRICT dest, size_t count, void * RESTRIC
   return vfread(dest, 1, count, (vfile *)handle);
 }
 
-static png_bool ctr_png_alloc_fn(uint32_t width, uint32_t height,
+static boolean ctr_png_alloc_fn(uint32_t width, uint32_t height,
  struct png_rgba **pixels, size_t *pixel_row_pitch, void *priv)
 {
   C3D_Tex **dest = (C3D_Tex **)priv;
@@ -154,20 +154,20 @@ static png_bool ctr_png_alloc_fn(uint32_t width, uint32_t height,
   // texture PNG dimensions must be powers of two
   if(width < 8 || width > 1024 || height < 8 || height > 1024 ||
    (width & (width - 1)) || (height & (height - 1)))
-    return IMAGE_FALSE;
+    return false;
 
   tex = (C3D_Tex *)ccalloc(1, sizeof(C3D_Tex));
 
   if(!C3D_TexInit(tex, width, height, GPU_RGBA8))
   {
     free(tex);
-    return IMAGE_FALSE;
+    return false;
   }
 
   *dest = tex;
   *pixels = (struct png_rgba *)tex->data;
   *pixel_row_pitch = width * sizeof(struct png_rgba);
-  return IMAGE_TRUE;
+  return true;
 }
 
 C3D_Tex *ctr_load_png(const char *name)
