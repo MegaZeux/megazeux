@@ -18,35 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Useful, generic utility functions
-
 #ifndef MEGAZEUX_UTIL_H
 #define MEGAZEUX_UTIL_H
 
 #include "compat.h"
 
 MEGAZEUX_BEGIN_DECLS
-
-#include <stdint.h>
-#include <stdio.h>
-#if !defined(_MSC_VER) && !defined(__amigaos__)
-#include <unistd.h>
-#endif
-
-/* Fix redefinition warnings from some libraries (examples: musl, DirectFB) */
-#undef MIN
-#undef MAX
-#undef CLAMP
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
-#define CLAMP(x, low, high) \
-  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-
-#define SGN(x) ((x > 0) - (x < 0))
 
 enum resource_id
 {
