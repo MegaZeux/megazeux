@@ -87,9 +87,10 @@ USERS
 + Fixed WAV smpl chunk end point off-by-one (the loop end value
   stored in the chunk is inclusive).
 + WAV files loaded by the SDL fallback now load the smpl chunk.
-+ Fix program and SFX corruption when playing a string or SFX
++ Fixed program and SFX corruption when playing a string or SFX
   with an unterminated sample name.
-+ Fix bugs and performance issues in string wildcard comparison.
++ Fixed bugs/performance issues in string wildcard comparison.
++ Fixed PIXEL counter performance regression added in 2.82b.
 
 DEVELOPERS
 
@@ -104,7 +105,7 @@ DEVELOPERS
 + Reorganized renderers to src/render/.
 + Renamed enum thing __TEXT to TEXT_ID to fix conflicts with
   libnix BSD sockets headers.
-+ Fix vfwrite return value for size 0 on DragonFly BSD.
++ Fixed vfwrite return value for size 0 on DragonFly BSD.
 + Replace various instances of audio and editor single-precision
   floating point with doubles or 64-bit integers.
 + Updated libxmp to 4.7.4.

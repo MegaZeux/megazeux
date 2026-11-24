@@ -1770,10 +1770,13 @@ static void char_byte_write(struct world *mzx_world,
 static int pixel_read(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int id)
 {
-  int pixel_x = CLAMP(get_counter(mzx_world, "CHAR_X", id), 0, 255);
-  int pixel_y = CLAMP(get_counter(mzx_world, "CHAR_Y", id), 0, 111);
+  int pixel_x = get_counter(mzx_world, "CHAR_X", id);
+  int pixel_y = get_counter(mzx_world, "CHAR_Y", id);
   char sub_x, sub_y, current_byte, current_char;
   int pixel_mask;
+
+  pixel_x = CLAMP(pixel_x, 0, 255);
+  pixel_y = CLAMP(pixel_y, 0, 111);
 
   sub_x = pixel_x % 8;
   sub_y = pixel_y % 14;
@@ -1787,9 +1790,12 @@ static int pixel_read(struct world *mzx_world,
 static void pixel_write(struct world *mzx_world,
  const struct function_counter *counter, const char *name, int value, int id)
 {
-  int pixel_x = CLAMP(get_counter(mzx_world, "CHAR_X", id), 0, 255);
-  int pixel_y = CLAMP(get_counter(mzx_world, "CHAR_Y", id), 0, 111);
+  int pixel_x = get_counter(mzx_world, "CHAR_X", id);
+  int pixel_y = get_counter(mzx_world, "CHAR_Y", id);
   char sub_x, sub_y, current_byte, current_char;
+
+  pixel_x = CLAMP(pixel_x, 0, 255);
+  pixel_y = CLAMP(pixel_y, 0, 111);
 
   sub_x = pixel_x & 7;
   sub_y = pixel_y % 14;
