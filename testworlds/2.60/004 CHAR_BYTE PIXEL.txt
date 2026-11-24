@@ -1,0 +1,3 @@
+Title: CHAR_BYTE/PIXEL Test
+Author: Alice Rowan
+Desc: Test basic functionality of CHAR_BYTE and PIXEL counters. All testing in this file is in-bounds i.e. it does not test version-specific bounding quirks on CHAR/BYTE/CHAR_X/CHAR_Y. Earliest possible version for this test is 2.60, when most of these counters were added.
