@@ -19,7 +19,6 @@
 
 #include "../event.h"
 #include "../../graphics.h"
-#include "../../util.h"
 #include "../../platform/platform.h"
 
 #include <3ds.h>
@@ -77,7 +76,7 @@ void __warp_mouse(int x, int y)
 static inline int16_t axis_convert(s16 value)
 {
   int new_value = ((int)value) * 32768 / 150;
-  return (int16_t)CLAMP(new_value, -32768, 32767);
+  return (int16_t)MZX_CLAMP(new_value, -32768, 32767);
 }
 
 static inline boolean check_circle(struct buffered_status *status,

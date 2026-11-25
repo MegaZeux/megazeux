@@ -28,7 +28,7 @@
 #include "../render_layer.h"
 #include "../renderers.h"
 
-#include "../../util.h"
+#include "../../util.h" /* mzx_res */
 #include "../../io/path.h"
 #include "../../io/vio.h"
 #include "../../platform/log.h"
@@ -172,7 +172,7 @@ static struct blacklist_entry auto_glsl_blacklist[] =
     "  successfully in cases where they actually did not.\n" },
 };
 
-static int auto_glsl_blacklist_len = ARRAY_SIZE(auto_glsl_blacklist);
+static int auto_glsl_blacklist_len = MZX_ARRAY_SIZE(auto_glsl_blacklist);
 
 static struct
 {
@@ -412,7 +412,7 @@ static void glsl_set_scaling_shader(struct graphics_data *graphics,
 {
   if(shader)
   {
-    size_t buf_len = ARRAY_SIZE(graphics->gl_scaling_shader);
+    size_t buf_len = MZX_ARRAY_SIZE(graphics->gl_scaling_shader);
     snprintf(graphics->gl_scaling_shader, buf_len, "%s", shader);
     graphics->gl_scaling_shader[buf_len - 1] = '\0';
   }

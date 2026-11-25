@@ -31,8 +31,8 @@ MEGAZEUX_BEGIN_DECLS
 #include "platform_thread.h"
 #include "platform_time.h"
 
-CORE_LIBSPEC boolean platform_init(void);
-CORE_LIBSPEC void platform_quit(void);
+MZX_LIBPLATFORM boolean platform_init(void);
+MZX_LIBPLATFORM void platform_quit(void);
 
 MEGAZEUX_END_DECLS
 

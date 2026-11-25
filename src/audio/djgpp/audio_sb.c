@@ -34,7 +34,6 @@
 #include "../audio_drivers.h"
 #include "../audio_players.h"
 #include "../audio_struct.h"
-#include "../../util.h"
 #include "../../algorithm/string_sep.h"
 #include "../../platform/djgpp/platform_djgpp.h"
 #include "../../platform/djgpp/interrupt.h"
@@ -248,12 +247,12 @@ static boolean init_audio_driver_sb(struct config_info *conf)
     unsigned irq_vector;
     boolean is_16_bit = false;
 
-    rate = CLAMP(rate, 5000, 44100);
+    rate = MZX_CLAMP(rate, 5000, 44100);
 
     if(SB_VERSION_ATLEAST(sb_cfg, SB_VERSION_SB16))
     {
       sb_cfg.buffer_format = SAMPLE_S16;
-      sb_cfg.buffer_channels = CLAMP(conf->audio_output_channels, 1, 2);
+      sb_cfg.buffer_channels = MZX_CLAMP(conf->audio_output_channels, 1, 2);
 
       if(sb_cfg.buffer_format == SAMPLE_S16)
         is_16_bit = true;
@@ -268,12 +267,12 @@ static boolean init_audio_driver_sb(struct config_info *conf)
       sb_cfg.buffer_channels = 1;
       // Sound Blaster Pro and up support stereo.
       if(SB_VERSION_ATLEAST(sb_cfg, SB_VERSION_SBPRO1))
-        sb_cfg.buffer_channels = CLAMP(conf->audio_output_channels, 1, 2);
+        sb_cfg.buffer_channels = MZX_CLAMP(conf->audio_output_channels, 1, 2);
 
       // Sound Blaster Pro stereo and all DSPs prior to 2.01 have a
       // maximum rate of around 22050.
       if(sb_cfg.buffer_channels == 2 || !SB_VERSION_ATLEAST(sb_cfg, SB_VERSION_SB2))
-        rate = CLAMP(rate, 5000, 22050);
+        rate = MZX_CLAMP(rate, 5000, 22050);
 
       time_constant = 256 - 1000000 / (sb_cfg.buffer_channels * rate);
       rate = 1000000 / (sb_cfg.buffer_channels * (256 - time_constant));

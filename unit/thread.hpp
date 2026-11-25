@@ -29,7 +29,6 @@
 #undef SKIP_SDL
 #endif
 
-#include "../src/util.h"
 #include "../src/platform/platform_thread.h"
 
 #define NUM_THREADS 3
@@ -165,7 +164,7 @@ static THREAD_RES cond_read_fn(void *opaque)
     if(!platform_mutex_unlock(&(d->lock)))
       d->unlock_ret_false = true;
 
-    for(i = 0; i < ARRAY_SIZE(d->buffer); i++)
+    for(i = 0; i < MZX_ARRAY_SIZE(d->buffer); i++)
       d->sum[num] += d->buffer[i];
 
     if(!platform_mutex_lock(&(d->lock)))
@@ -213,7 +212,7 @@ static THREAD_RES cond_write_fn(void *opaque)
     if(!platform_mutex_unlock(&(d->lock)))
       d->unlock_ret_false = true;
 
-    for(i = 0; i < ARRAY_SIZE(d->buffer); i++)
+    for(i = 0; i < MZX_ARRAY_SIZE(d->buffer); i++)
     {
       d->buffer[i] = (current++);
       d->expected += d->buffer[i];

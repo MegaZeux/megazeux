@@ -286,19 +286,19 @@ static size_t png_memfile_write_fn(const void *src, size_t count, void *handle)
   return mfwrite(src, 1, count, mf);
 }
 
-static png_bool unit_png_read_alloc_fn(uint32_t w, uint32_t h,
+static mzx_bool unit_png_read_alloc_fn(uint32_t w, uint32_t h,
  struct png_rgba **pixels, size_t *pixels_row_pitch, void *priv)
 {
   struct image_file *img = reinterpret_cast<struct image_file *>(priv);
   if(w > 32767u * 8u || h > 32767u * 14u)
-    return IMAGE_FALSE;
+    return MZX_FALSE;
 
   img->data = (struct rgba_color *)calloc(w * h, sizeof(struct png_rgba));
   img->width = w;
   img->height = h;
   *pixels = (struct png_rgba *)img->data;
   *pixels_row_pitch = w * sizeof(struct png_rgba);
-  return img->data ? IMAGE_TRUE : IMAGE_FALSE;
+  return img->data ? MZX_TRUE : MZX_FALSE;
 }
 
 struct png_write_row_priv

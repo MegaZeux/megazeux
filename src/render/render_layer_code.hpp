@@ -29,10 +29,8 @@
 #include "render_layer_common.hpp"
 
 #include "../graphics.h"
-#include "../util.h"
 #include "../algorithm/arch.h"
 #include "../platform/log.h"
-#include "../platform/platform_attribute.h"
 
 #include <stdlib.h>
 
@@ -46,7 +44,7 @@
 
 #if defined(ARCH_INT32_UNALIGN) || defined(ARCH_INT64_UNALIGN)
 /* May be using intentional unaligned accesses; tell UBSan to calm down. */
-#define RENDER_EXTRA_ATTRIBUTES ATTRIBUTE_NO_SANITIZE("alignment")
+#define RENDER_EXTRA_ATTRIBUTES MZX_ATTRIBUTE_NO_SANITIZE("alignment")
 #else
 #define RENDER_EXTRA_ATTRIBUTES
 #endif

@@ -26,10 +26,10 @@ MEGAZEUX_BEGIN_DECLS
 
 #include "core.h"
 
-CORE_LIBSPEC boolean core_task_tick(context *ctx,
+MZX_LIBCORE boolean core_task_tick(context *ctx,
  int progress, int progress_max, const char *status);
 
-CORE_LIBSPEC void core_task_context(context *parent, const char *title,
+MZX_LIBCORE void core_task_context(context *parent, const char *title,
  boolean (*task_callback)(context *ctx, void *priv),
  void (*task_complete)(void *priv, boolean ret), void *priv);
 

@@ -29,7 +29,6 @@
 #include "../graphics.h"
 #include "../idarray.h"
 #include "../idput.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world_struct.h"
 
@@ -116,14 +115,14 @@ int choose_char_set(struct world *mzx_world)
 
   set_context(CTX_CHOOSE_CHARSET);
   elements[0] = construct_radio_button(4, 6, radio_button_strings,
-   ARRAY_SIZE(radio_button_strings), 16, &charset_type);
+   MZX_ARRAY_SIZE(radio_button_strings), 16, &charset_type);
   elements[1] = construct_button(5, 12, "OK", 0);
   elements[2] = construct_button(15, 12, "Cancel", -1);
   elements[3] = construct_label(4, 2,
    "~9Note: this will clear\nany changes made to\nthe character set.");
 
   construct_dialog(&di, "Select Character Set", 26, 3, 28, 15,
-   elements, ARRAY_SIZE(elements), 0);
+   elements, MZX_ARRAY_SIZE(elements), 0);
 
   dialog_result = run_dialog(mzx_world, &di);
 
@@ -205,7 +204,7 @@ int import_type(struct world *mzx_world)
   set_context(CTX_IMPORTEXPORT_TYPE);
 
   elements[0] = construct_radio_button(2, 2, radio_strings,
-   ARRAY_SIZE(radio_strings), 23, &import_choice);
+   MZX_ARRAY_SIZE(radio_strings), 23, &import_choice);
   elements[1] = construct_button(6, 10, "OK", 0);
   elements[2] = construct_button(16, 10, "Cancel", -1);
 

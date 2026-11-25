@@ -25,7 +25,6 @@
 #include "fill.h"
 #include "undo.h"
 
-#include "../util.h"
 #include "../world_struct.h"
 
 struct queue_elem

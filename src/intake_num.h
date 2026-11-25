@@ -43,7 +43,7 @@ MEGAZEUX_BEGIN_DECLS
  * @return          The new intake_num context.
  */
 
-CORE_LIBSPEC
+MZX_LIBCORE
 context *intake_num(context *parent, int value, int min_val, int max_val,
  int x, int y, int min_width, int color, void (*callback)(context *, int));
 

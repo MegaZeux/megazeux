@@ -30,7 +30,6 @@
 #include "../renderers.h"
 #include "render_sdl.h"
 
-#include "../../util.h"
 #include "../../platform/log.h"
 
 struct softscale_render_data
@@ -79,7 +78,7 @@ static boolean softscale_init_video(struct graphics_data *graphics,
   if(conf->force_bpp == BPP_AUTO || conf->force_bpp == 16 || conf->force_bpp == 32)
     graphics->bits_per_pixel = conf->force_bpp;
 
-  snprintf(graphics->sdl_render_driver, ARRAY_SIZE(graphics->sdl_render_driver),
+  snprintf(graphics->sdl_render_driver, MZX_ARRAY_SIZE(graphics->sdl_render_driver),
    "%s", conf->sdl_render_driver);
 
   return true;

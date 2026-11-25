@@ -27,7 +27,6 @@
 #include "error.h"
 #include "graphics.h"
 #include "helpsys.h"
-#include "util.h"
 #include "window.h"
 #include "world.h"
 #include "event/event.h"
@@ -54,7 +53,7 @@ int error(const char *string, enum error_type type, unsigned int options,
   int x;
 
   // Find the name of this error type.
-  if((unsigned int)type >= ARRAY_SIZE(error_type_names))
+  if((unsigned int)type >= MZX_ARRAY_SIZE(error_type_names))
     type = ERROR_T_WARNING;
 
   type_name = error_type_names[type];
@@ -70,7 +69,7 @@ int error(const char *string, enum error_type type, unsigned int options,
     static const enum error_type safe_codes[] = { 0x3101, 0x2C01, 0x0000 };
     skip_error_ui = true;
 
-    for(x = 0; x < (int)ARRAY_SIZE(safe_codes); x++)
+    for(x = 0; x < (int)MZX_ARRAY_SIZE(safe_codes); x++)
       if(code == safe_codes[x])
         skip_error_ui = false;
   }

@@ -20,22 +20,9 @@
 #ifndef MEGAZEUX_IO_IMAGE_COMMON_H
 #define MEGAZEUX_IO_IMAGE_COMMON_H
 
-/* Force dependency tracking even though this doesn't use core MZX headers. */
-#ifndef MEGAZEUX_IO_STANDALONE
-#include "../compat.h"
-#endif
+#include "../base.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef unsigned char image_bool;
-
-enum image_bool_values
-{
-  IMAGE_FALSE,
-  IMAGE_TRUE
-};
+MEGAZEUX_BEGIN_DECLS
 
 #if defined(_MSC_VER) && _MSC_VER < 1400
 static void imagedbg(...) {}
@@ -46,28 +33,6 @@ static void imagenodbg(...) {}
 #define imagenodbg(...) do {} while(0)
 #endif
 
-#ifndef RESTRICT
-#if (defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))) || \
-    (defined(_MSC_VER) && (_MSC_VER >= 1400)) || \
-    (defined(__WATCOMC__) && (__WATCOMC__ >= 1250) && !defined(__cplusplus))
-#define RESTRICT __restrict
-#else
-#define RESTRICT
-#endif
-#endif
-
-#ifndef IMAGE_ARRAY_SIZE
-#define IMAGE_ARRAY_SIZE(a) (sizeof(a) / sizeof(*(a)))
-#endif
-#ifndef IMAGE_MAX
-#define IMAGE_MAX(a,b) ((a) > (b) ? (a) : (b))
-#endif
-#ifndef IMAGE_MIN
-#define IMAGE_MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
-
-#ifdef __cplusplus
-}
-#endif
+MEGAZEUX_END_DECLS
 
 #endif /* MEGAZEUX_IO_IMAGE_COMMON_H */

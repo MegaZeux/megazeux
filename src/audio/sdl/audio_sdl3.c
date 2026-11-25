@@ -25,7 +25,6 @@
 #include "../audio_players.h"
 #include "../audio_struct.h"
 
-#include "../../util.h"
 #include "../../platform/sdl/SDLmzx.h"
 
 static SDL_AudioSpec audio_settings;
@@ -37,7 +36,7 @@ static void sdl_audio_callback(void *userdata, SDL_AudioStream *stream,
  int required_bytes, int requested_bytes)
 {
   size_t framesize = SDL_AUDIO_FRAMESIZE(audio_settings);
-  size_t frames = MAX(0, required_bytes) / framesize;
+  size_t frames = MZX_MAX(0, required_bytes) / framesize;
 
   //fprintf(mzxerr, "  #:%d fr:%zu frsz:%zu\n", required_bytes, frames, framesize);
   while(frames > 0)
@@ -78,14 +77,14 @@ static boolean init_audio_driver_sdl3(struct config_info *conf)
   if(conf->audio_sample_rate != 0)
   {
     // Reject very low sample rates to avoid PulseAudio hangs.
-    audio_settings.freq = MAX(conf->audio_sample_rate, 2048);
+    audio_settings.freq = MZX_MAX(conf->audio_sample_rate, 2048);
   }
 
   if(conf->audio_buffer_samples != 0)
     frames = conf->audio_buffer_samples;
 
   if(conf->audio_output_channels != 0)
-    audio_settings.channels = MIN(conf->audio_output_channels, 2);
+    audio_settings.channels = MZX_MIN(conf->audio_output_channels, 2);
 
   if(!audio_mixer_init(audio_settings.freq, frames, audio_settings.channels))
     return false;

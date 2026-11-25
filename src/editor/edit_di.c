@@ -28,7 +28,6 @@
 #include "../counter.h"
 #include "../idput.h"
 #include "../robot.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world.h"
 #include "../world_struct.h"
@@ -996,7 +995,7 @@ void board_info(struct world *mzx_world)
      1, 46, check_box_results_2);
 
     construct_dialog(&di, "Board Settings", 10, 0, 60, 24,
-     elements, ARRAY_SIZE(elements), pos);
+     elements, MZX_ARRAY_SIZE(elements), pos);
 
     dialog_result = run_dialog(mzx_world, &di);
     pos = di.current_element;
@@ -1566,7 +1565,7 @@ int board_goto(struct world *mzx_world, int overlay_edit,
    0, board_height - 1, NUMBER_BOX, &goto_y);
 
   construct_dialog(&di, titles[overlay_edit],
-   21, 7, 38, 7, elements, ARRAY_SIZE(elements), 2);
+   21, 7, 38, 7, elements, MZX_ARRAY_SIZE(elements), 2);
 
   result = run_dialog(mzx_world, &di);
   destruct_dialog(&di);

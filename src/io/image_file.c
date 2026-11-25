@@ -40,17 +40,6 @@
 /* TODO: hack for MegaZeux fopen_unsafe */
 #undef fopen
 
-#ifdef MEGAZEUX_IO_STANDALONE
-/* Internal compat for MegaZeux boolean type. */
-typedef image_bool boolean;
-#ifndef __cplusplus
-#undef true
-#undef false
-#define true IMAGE_TRUE
-#define false IMAGE_FALSE
-#endif
-#endif
-
 // These constraints are determined by the maximum size of a board/vlayer/MZM,
 // multiplied by the number of pixels per char in a given dimension.
 #define MAXIMUM_WIDTH  (32767u * 8u)
@@ -197,14 +186,14 @@ static uint32_t read32le(const uint8_t in[4])
 /**
  * Image dimensions check for image_init and PNG/GIF loaders.
  */
-static boolean image_constraint(uint32_t width, uint32_t height)
+static mzx_bool image_constraint(uint32_t width, uint32_t height)
 {
   debug("Image constraint: %zu by %zu\n", (size_t)width, (size_t)height);
   if(!width || !height || width > MAXIMUM_WIDTH || height > MAXIMUM_HEIGHT ||
    (uint64_t)width * (uint64_t)height > MAXIMUM_PIXELS)
-    return false;
+    return MZX_FALSE;
 
-  return true;
+  return MZX_TRUE;
 }
 
 /**
@@ -242,7 +231,7 @@ void image_free(struct image_file *dest)
  * PNG loader.
  */
 
-static png_bool png_read_alloc_fn(uint32_t width, uint32_t height,
+static mzx_bool png_read_alloc_fn(uint32_t width, uint32_t height,
  struct png_rgba **pixels, size_t *pixels_row_pitch, void *priv)
 {
   imageinfo *s = (imageinfo *)priv;
@@ -251,11 +240,11 @@ static png_bool png_read_alloc_fn(uint32_t width, uint32_t height,
   if(ret)
   {
     debug("alloc failed: %s\n", image_error_string(ret));
-    return IMAGE_FALSE;
+    return MZX_FALSE;
   }
   *pixels = (struct png_rgba *)s->out->data;
   *pixels_row_pitch = width * sizeof(struct png_rgba);
-  return IMAGE_TRUE;
+  return MZX_TRUE;
 }
 
 static enum image_error convert_png_error(enum png_error err)
@@ -282,7 +271,7 @@ static enum image_error load_png(imageinfo *s)
 #endif
   s->out->data = NULL;
 
-  ret = png_read(s->in, s->readfn, s, png_read_alloc_fn, true);
+  ret = png_read(s->in, s->readfn, s, png_read_alloc_fn, MZX_TRUE);
   if(ret)
   {
     enum image_error r = convert_png_error(ret);
@@ -322,7 +311,7 @@ static enum image_error load_gif(imageinfo *s)
 
   debug("Image type: GIF\n");
 
-  ret = gif_read(&gif, s->in, s->readfn, true);
+  ret = gif_read(&gif, s->in, s->readfn, MZX_TRUE);
   if(ret != GIF_OK)
   {
     debug("read failed: %s\n", gif_error_string(ret));
@@ -533,7 +522,7 @@ static inline uint32_t bmp_decode_bitfields_component(
 }
 
 static inline void bmp_decode_bitfields(const struct bmp_header *bmp,
- struct rgba_color *out, uint32_t value, image_bool alpha)
+ struct rgba_color *out, uint32_t value, mzx_bool alpha)
 {
   out->r = bmp_decode_bitfields_component(&(bmp->r_mask), value);
   out->g = bmp_decode_bitfields_component(&(bmp->g_mask), value);
@@ -594,7 +583,7 @@ static struct rgba_color *bmp_read_color_table(struct bmp_header *bmp, imageinfo
 }
 
 static enum image_error bmp_pixarray_u1(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   const struct rgba_color *color_table = bmp->color_table;
   struct image_file *dest = s->out;
@@ -628,7 +617,7 @@ static enum image_error bmp_pixarray_u1(const struct bmp_header *bmp,
 }
 
 static enum image_error bmp_pixarray_u2(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   const struct rgba_color *color_table = bmp->color_table;
   struct image_file *dest = s->out;
@@ -662,7 +651,7 @@ static enum image_error bmp_pixarray_u2(const struct bmp_header *bmp,
 }
 
 static enum image_error bmp_pixarray_u4(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   const struct rgba_color *color_table = bmp->color_table;
   struct image_file *dest = s->out;
@@ -695,7 +684,7 @@ static enum image_error bmp_pixarray_u4(const struct bmp_header *bmp,
 }
 
 static enum image_error bmp_pixarray_u8(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   const struct rgba_color *color_table = bmp->color_table;
   struct image_file *dest = s->out;
@@ -723,10 +712,10 @@ static enum image_error bmp_pixarray_u8(const struct bmp_header *bmp,
 }
 
 static enum image_error bmp_pixarray_u16(const struct bmp_header *bmp,
- imageinfo * RESTRICT s, const image_bool bitfields)
+ imageinfo * MZX_RESTRICT s, const mzx_bool bitfields)
 {
   struct image_file *dest = s->out;
-  const image_bool alpha = !!bmp->a_mask.mask;
+  const mzx_bool alpha = !!bmp->a_mask.mask;
   uint8_t d[4];
   ssize_t y;
   ssize_t x;
@@ -763,7 +752,7 @@ static enum image_error bmp_pixarray_u16(const struct bmp_header *bmp,
 }
 
 static enum image_error bmp_pixarray_u24(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   struct image_file *dest = s->out;
   uint8_t d[4];
@@ -793,10 +782,10 @@ static enum image_error bmp_pixarray_u24(const struct bmp_header *bmp,
 }
 
 static enum image_error bmp_pixarray_u32(const struct bmp_header *bmp,
- imageinfo * RESTRICT s, const image_bool bitfields)
+ imageinfo * MZX_RESTRICT s, const mzx_bool bitfields)
 {
   struct image_file *dest = s->out;
-  const image_bool alpha = !!bmp->a_mask.mask;
+  const mzx_bool alpha = !!bmp->a_mask.mask;
   uint8_t d[4];
   ssize_t y;
   ssize_t x;
@@ -828,7 +817,7 @@ static enum image_error bmp_pixarray_u32(const struct bmp_header *bmp,
 }
 
 static enum image_error bmp_read_pixarray_uncompressed(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   switch(bmp->bpp)
   {
@@ -836,20 +825,20 @@ static enum image_error bmp_read_pixarray_uncompressed(const struct bmp_header *
     case 2:   return bmp_pixarray_u2(bmp, s);
     case 4:   return bmp_pixarray_u4(bmp, s);
     case 8:   return bmp_pixarray_u8(bmp, s);
-    case 16:  return bmp_pixarray_u16(bmp, s, IMAGE_FALSE);
+    case 16:  return bmp_pixarray_u16(bmp, s, MZX_FALSE);
     case 24:  return bmp_pixarray_u24(bmp, s);
-    case 32:  return bmp_pixarray_u32(bmp, s, IMAGE_FALSE);
+    case 32:  return bmp_pixarray_u32(bmp, s, MZX_FALSE);
   }
   return IMAGE_ERROR_BMP_UNSUPPORTED_BPP;
 }
 
 static enum image_error bmp_read_pixarray_bitfields(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   switch(bmp->bpp)
   {
-    case 16: return bmp_pixarray_u16(bmp, s, IMAGE_TRUE);
-    case 32: return bmp_pixarray_u32(bmp, s, IMAGE_TRUE);
+    case 16: return bmp_pixarray_u16(bmp, s, MZX_TRUE);
+    case 32: return bmp_pixarray_u32(bmp, s, MZX_TRUE);
   }
   return IMAGE_ERROR_BMP_UNSUPPORTED_BPP;
 }
@@ -858,7 +847,7 @@ static enum image_error bmp_read_pixarray_bitfields(const struct bmp_header *bmp
  * Microsoft RLE8 and RLE4 compression.
  */
 static enum image_error bmp_read_pixarray_rle(const struct bmp_header *bmp,
- imageinfo * RESTRICT s)
+ imageinfo * MZX_RESTRICT s)
 {
   const struct rgba_color *color_table = bmp->color_table;
   struct image_file *dest = s->out;
@@ -875,7 +864,7 @@ static enum image_error bmp_read_pixarray_rle(const struct bmp_header *bmp,
     struct rgba_color *pos = &(dest->data[y * bmp->width + x]);
     //debug("RLE%u now at: %zd %zd\n", bmp->bpp, x, y);
 
-    while(true)
+    while(MZX_TRUE)
     {
       if(s->readfn(d, 2, s->in) < 2)
         return IMAGE_ERROR_BMP_BAD_RLE;
@@ -1192,7 +1181,7 @@ static enum image_error load_bmp(imageinfo *s)
   // Assume non-seeking stream, skip everything prior to pixarray with fread.
   while(bmp.streamidx < bmp.pixarray)
   {
-    size_t r = IMAGE_MIN(bmp.pixarray - bmp.streamidx, sizeof(buf));
+    size_t r = MZX_MIN(bmp.pixarray - bmp.streamidx, sizeof(buf));
     bmp.streamidx += r;
 
     if(s->readfn(buf, 1, s->in) < 1)
@@ -1285,9 +1274,9 @@ struct tga_header
   // Derived
   uint8_t   alpha_depth;
   uint8_t   interleaving;
-  boolean   left_to_right;
-  boolean   top_to_bottom;
-  boolean   alpha;
+  mzx_bool  left_to_right;
+  mzx_bool  top_to_bottom;
+  mzx_bool  alpha;
   unsigned  bytes_per_pixel;
   unsigned  bytes_per_color;
   int       offset_in_image;
@@ -1442,14 +1431,14 @@ static enum image_error tga_load_colormap(struct tga_header *tga, imageinfo *s)
 
 static inline enum image_error tga_load_inner(const tga_decode_fn decode,
  struct tga_cursor *out, size_t num,
- const struct tga_header *tga, uint8_t * RESTRICT rowbuf, imageinfo *s)
+ const struct tga_header *tga, uint8_t * MZX_RESTRICT rowbuf, imageinfo *s)
 {
   const size_t bytes_per_pixel = tga->bytes_per_pixel;
   uint8_t *pos;
 
   while(num > 0)
   {
-    size_t sz = IMAGE_MIN(num, tga->width);
+    size_t sz = MZX_MIN(num, tga->width);
     num -= sz;
     if(s->readfn(rowbuf, sz * bytes_per_pixel, s->in) < sz * bytes_per_pixel)
       return IMAGE_ERROR_IO;
@@ -1467,7 +1456,7 @@ static inline enum image_error tga_load_inner(const tga_decode_fn decode,
 }
 
 static inline enum image_error tga_load_image(const tga_decode_fn decode,
- const struct tga_header *tga, uint8_t * RESTRICT rowbuf, imageinfo *s)
+ const struct tga_header *tga, uint8_t * MZX_RESTRICT rowbuf, imageinfo *s)
 {
   struct tga_cursor out;
   tga_cursor_init(&out, tga, s->out->data);
@@ -1475,7 +1464,7 @@ static inline enum image_error tga_load_image(const tga_decode_fn decode,
 }
 
 static inline enum image_error tga_load_image_rle(const tga_decode_fn decode,
- const struct tga_header *tga, uint8_t * RESTRICT rowbuf, imageinfo *s)
+ const struct tga_header *tga, uint8_t * MZX_RESTRICT rowbuf, imageinfo *s)
 {
   struct tga_cursor out;
   struct rgba_color color;
@@ -1641,7 +1630,7 @@ static enum image_error load_tga(imageinfo *s, const uint8_t *header,
       size_t map_len = (size_t)tga.bytes_per_pixel * tga.map_length;
       while(map_len)
       {
-        size_t sz = IMAGE_MIN(map_len, sizeof(buf));
+        size_t sz = MZX_MIN(map_len, sizeof(buf));
         if(s->readfn(buf, sz, s->in) < sz)
         {
           debug("short read skipping colormap\n");
@@ -1800,11 +1789,11 @@ static int next_byte(imageinfo *s)
   return chr;
 }
 
-static boolean skip_whitespace(imageinfo *s)
+static mzx_bool skip_whitespace(imageinfo *s)
 {
   int value = next_byte(s);
   if(value < 0)
-    return false;
+    return MZX_FALSE;
 
   if(value == '#')
   {
@@ -1812,14 +1801,14 @@ static boolean skip_whitespace(imageinfo *s)
     while(value != '\n' && value >= 0)
       value = next_byte(s);
 
-    return true;
+    return MZX_TRUE;
   }
 
   if(isspace(value))
-    return true;
+    return MZX_TRUE;
 
   s->unget_chr = value;
-  return false;
+  return MZX_FALSE;
 }
 
 static int next_number(uint32_t *output, imageinfo *s)
@@ -2257,7 +2246,7 @@ static enum image_error pam_set_tupltype(struct pam_tupl *dest, const char *tupl
   };
 
   size_t i;
-  for(i = 0; i < IMAGE_ARRAY_SIZE(tupltypes); i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(tupltypes); i++)
   {
     if(!strcasecmp(tupltypes[i].name, tuplstr))
     {
@@ -2276,12 +2265,12 @@ static enum image_error pam_header(uint32_t *width, uint32_t *height,
   char tuplstr[256];
   char *key;
   char *value;
-  boolean has_w = false;
-  boolean has_h = false;
-  boolean has_m = false;
-  boolean has_d = false;
-  boolean has_e = false;
-  boolean has_tu = false;
+  mzx_bool has_w = MZX_FALSE;
+  mzx_bool has_h = MZX_FALSE;
+  mzx_bool has_m = MZX_FALSE;
+  mzx_bool has_d = MZX_FALSE;
+  mzx_bool has_e = MZX_FALSE;
+  mzx_bool has_tu = MZX_FALSE;
   enum image_error ret;
 
   while(next_line(linebuf, 256, s))
@@ -2302,7 +2291,7 @@ static enum image_error pam_header(uint32_t *width, uint32_t *height,
 
     if(!strcasecmp(key, "ENDHDR"))
     {
-      has_e = true;
+      has_e = MZX_TRUE;
       break;
     }
     else
@@ -2313,7 +2302,7 @@ static enum image_error pam_header(uint32_t *width, uint32_t *height,
         return IMAGE_ERROR_PAM_BAD_WIDTH;
 
       *width = strtoul(value, NULL, 10);
-      has_w = true;
+      has_w = MZX_TRUE;
     }
     else
 
@@ -2323,7 +2312,7 @@ static enum image_error pam_header(uint32_t *width, uint32_t *height,
         return IMAGE_ERROR_PAM_BAD_HEIGHT;
 
       *height = strtoul(value, NULL, 10);
-      has_h = true;
+      has_h = MZX_TRUE;
     }
     else
 
@@ -2333,7 +2322,7 @@ static enum image_error pam_header(uint32_t *width, uint32_t *height,
         return IMAGE_ERROR_PAM_BAD_DEPTH;
 
       *depth = strtoul(value, NULL, 10);
-      has_d = true;
+      has_d = MZX_TRUE;
     }
     else
 
@@ -2343,7 +2332,7 @@ static enum image_error pam_header(uint32_t *width, uint32_t *height,
         return IMAGE_ERROR_PAM_BAD_MAXVAL;
 
       *maxval = strtoul(value, NULL, 10);
-      has_m = true;
+      has_m = MZX_TRUE;
     }
     else
 
@@ -2354,7 +2343,7 @@ static enum image_error pam_header(uint32_t *width, uint32_t *height,
         return IMAGE_ERROR_PAM_BAD_TUPLTYPE;
 
       snprintf(tuplstr, sizeof(tuplstr), "%s", value);
-      has_tu = true;
+      has_tu = MZX_TRUE;
     }
   }
 
@@ -2552,7 +2541,7 @@ static enum image_error load_raw(imageinfo *s,
   }
 
   if(not_magic_length)
-    memcpy(data, not_magic, IMAGE_MIN(raw_size, not_magic_length));
+    memcpy(data, not_magic, MZX_MIN(raw_size, not_magic_length));
 
   if(raw_size > not_magic_length)
   {

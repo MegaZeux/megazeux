@@ -30,7 +30,7 @@ MEGAZEUX_BEGIN_DECLS
 #define strsep  mzx_strsep
 #endif
 
-UTILS_LIBSPEC char *mzx_strsep(char ** RESTRICT cursor, const char * RESTRICT delim);
+MZX_LIBIO char *mzx_strsep(char ** RESTRICT cursor, const char * RESTRICT delim);
 
 MEGAZEUX_END_DECLS
 

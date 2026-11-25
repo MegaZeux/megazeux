@@ -30,9 +30,6 @@
 #include <zlib.h>
 
 // This needs to stay self-sufficient - don't use core functions.
-// Including util.h for the macros only...
-
-#include "../util.h"
 #include "../platform/log.h"
 
 #include "alloc.h"
@@ -72,7 +69,7 @@
 #define ZIP64_DATA_DESCRIPTOR_LEN 20
 
 #define ZIP_DEFAULT_NUM_FILES 4
-#define ZIP_MAX_NUM_FILES MIN(1u << 24u, SIZE_MAX)
+#define ZIP_MAX_NUM_FILES MZX_MIN(1u << 24u, SIZE_MAX)
 
 #define ZIP_STREAM_BUFFER_SIZE 65536
 #define ZIP_STREAM_BUFFER_U_SIZE (ZIP_STREAM_BUFFER_SIZE * 3 / 4)
@@ -439,7 +436,7 @@ static inline void precalculate_write_errors(struct zip_archive *zp)
 static struct zip_file_header *zip_allocate_file_header(uint16_t filename_len)
 {
   // Attempt to reclaim any alignment padding to fit the filename...
-  size_t size = MAX(sizeof(struct zip_file_header),
+  size_t size = MZX_MAX(sizeof(struct zip_file_header),
    offsetof(struct zip_file_header, file_name) + filename_len + 1);
 
   return (struct zip_file_header *)mzx_io_malloc(size);
@@ -1058,7 +1055,7 @@ static enum zip_error zip_write_file_header(struct zip_archive *zp,
  */
 static enum zip_error zip_set_stream_buffer_size(struct zip_archive *zp, size_t size)
 {
-  size = MAX(size, ZIP_STREAM_BUFFER_SIZE);
+  size = MZX_MAX(size, ZIP_STREAM_BUFFER_SIZE);
 
   if(!zp->stream_buffer || zp->stream_buffer_alloc < size)
   {
@@ -1092,7 +1089,7 @@ static enum zip_error zread_stream(uint8_t *destBuf, size_t readLen,
     if(zp->stream_buffer_pos < zp->stream_buffer_end)
     {
       size_t amount = zp->stream_buffer_end - zp->stream_buffer_pos;
-      amount = MIN(readLen, amount);
+      amount = MZX_MIN(readLen, amount);
 
       memcpy(destBuf, zp->stream_buffer + zp->stream_buffer_pos, amount);
       zp->stream_buffer_pos += amount;
@@ -1165,7 +1162,7 @@ static enum zip_error zread_stream(uint8_t *destBuf, size_t readLen,
 
     while((result = decompress_fn(stream_data)) == ZIP_INPUT_EMPTY)
     {
-      in_size = MIN(in_size, zp->stream_left - *consumed);
+      in_size = MZX_MIN(in_size, zp->stream_left - *consumed);
       if(!in_size)
         return ZIP_EOF;
 
@@ -1204,7 +1201,7 @@ enum zip_error zread(void *destBuf, size_t readLen, struct zip_archive *zp)
     return ZIP_EOF;
 
   // Can't read past the length of the file...
-  readLen = MIN(readLen, zp->stream_u_left);
+  readLen = MZX_MIN(readLen, zp->stream_u_left);
 
   fh = zp->streaming_file;
 
@@ -1269,7 +1266,7 @@ enum zip_error zip_get_next_name(struct zip_archive *zp,
   // Copy the file name, if requested
   if(name && name_buffer_size)
   {
-    name_buffer_size = MIN(name_buffer_size, fh->file_name_length);
+    name_buffer_size = MZX_MIN(name_buffer_size, fh->file_name_length);
     memcpy(name, fh->file_name, name_buffer_size);
     name[name_buffer_size] = 0;
   }
@@ -1601,7 +1598,7 @@ enum zip_error zip_read_close_stream(struct zip_archive *zp)
   // If the stream was incomplete, finish the crc32
   while(zp->stream_u_left)
   {
-    size = MIN(sizeof(buffer), zp->stream_u_left);
+    size = MZX_MIN(sizeof(buffer), zp->stream_u_left);
     result = zread(buffer, size, zp);
     if(result)
       break;
@@ -1718,7 +1715,7 @@ enum zip_error zip_read_file(struct zip_archive *zp,
   if(result)
     goto err_out;
 
-  u_size = MIN(destLen, u_size);
+  u_size = MZX_MIN(destLen, u_size);
 
   result = zread(destBuf, u_size, zp);
   if(result && result != ZIP_EOF)
@@ -1982,8 +1979,8 @@ static inline enum zip_error zip_write_data_descriptor(struct zip_archive *zp,
 {
   char buffer[ZIP64_DATA_DESCRIPTOR_LEN];
   struct memfile mf;
-  uint32_t c_size = MIN(fh->compressed_size, 0xfffffffful);
-  uint32_t u_size = MIN(fh->uncompressed_size, 0xfffffffful);
+  uint32_t c_size = MZX_MIN(fh->compressed_size, 0xfffffffful);
+  uint32_t u_size = MZX_MIN(fh->uncompressed_size, 0xfffffffful);
 
   mfopen_wr(buffer, DATA_DESCRIPTOR_LEN, &mf);
   mfputud(fh->crc32, &mf);
@@ -2823,9 +2820,9 @@ static enum zip_error zip_write_eocd_record(struct zip_archive *zp)
     return ZIP_EOF;
 
   // Clamp these values for Zip64.
-  num_files = MIN(zp->num_files, 0xffff);
-  size = MIN(zp->size_central_directory, 0xfffffffful);
-  offset = MIN(zp->offset_central_directory, 0xfffffffful);
+  num_files = MZX_MIN(zp->num_files, 0xffff);
+  size = MZX_MIN(zp->size_central_directory, 0xfffffffful);
+  offset = MZX_MIN(zp->offset_central_directory, 0xfffffffful);
 
   mfopen_wr(buffer, EOCD_RECORD_LEN, &mf);
 
@@ -3084,7 +3081,7 @@ enum zip_error zip_close(struct zip_archive *zp, uint64_t *final_length)
       *final_length = zp->end_in_file;
   }
 
-  for(i = 0; i < ARRAY_SIZE(zp->stream_data_ptrs); i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(zp->stream_data_ptrs); i++)
     if(zip_method_handlers[i] && zp->stream_data_ptrs[i])
       zip_method_handlers[i]->destroy(zp->stream_data_ptrs[i]);
 

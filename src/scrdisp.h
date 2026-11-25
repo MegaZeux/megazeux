@@ -30,7 +30,7 @@ MEGAZEUX_BEGIN_DECLS
 #define SCROLL_MAX_LINE_LEN 256
 
 // Type 0/1 to DISPLAY a scroll/sign
-CORE_LIBSPEC void scroll_edit(struct world *mzx_world, struct scroll *scroll,
+MZX_LIBCORE void scroll_edit(struct world *mzx_world, struct scroll *scroll,
  int type);
 
 // type == 0 scroll, 1 sign, 2 scroll edit

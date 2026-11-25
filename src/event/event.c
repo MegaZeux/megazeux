@@ -21,7 +21,6 @@
 #include "event.h"
 #include "../configure.h"
 #include "../graphics.h"
-#include "../util.h"
 #include "../algorithm/string_compare.h"
 #include "../platform/platform.h"
 
@@ -158,7 +157,7 @@ void init_event(struct config_info *conf)
   int i, i2;
 
   // Get defaults from config.
-  num_buffered_events = MAX(1, conf->num_buffered_events);
+  num_buffered_events = MZX_MAX(1, conf->num_buffered_events);
   input.unfocus_pause = conf->pause_on_unfocus;
   input.left_alt_is_altgr = conf->key_left_alt_is_altgr;
   input.right_alt_is_altgr = conf->key_right_alt_is_altgr;
@@ -498,7 +497,7 @@ static boolean update_autorepeat(void)
   // better than crashing.
   struct buffered_status *status = store_status();
   enum keycode status_key =
-   MIN((unsigned int) status->key_repeat, STATUS_NUM_KEYCODES - 1);
+   MZX_MIN((unsigned int) status->key_repeat, STATUS_NUM_KEYCODES - 1);
   boolean rval = false;
 
   // Repeat code
@@ -845,7 +844,7 @@ uint32_t get_key(enum keycode_type type)
 uint32_t get_key_status(enum keycode_type type, uint32_t index)
 {
   const struct buffered_status *status = load_status();
-  index = MIN((int)index, STATUS_NUM_KEYCODES - 1);
+  index = MZX_MIN((int)index, STATUS_NUM_KEYCODES - 1);
 
   switch(type)
   {
@@ -1146,13 +1145,13 @@ void set_unfocus_pause(boolean value)
 // TODO: when set this ought to actually reallocate the buffered events.
 void set_num_buffered_events(unsigned int value)
 {
-  num_buffered_events = MAX(1, value);
+  num_buffered_events = MZX_MAX(1, value);
 }
 
 void key_press(struct buffered_status *status, enum keycode key)
 {
   // Prevent invalid keycodes from writing out-of-bounds.
-  enum keycode map_key = MIN((int)key, STATUS_NUM_KEYCODES - 1);
+  enum keycode map_key = MZX_MIN((int)key, STATUS_NUM_KEYCODES - 1);
   status->keymap[map_key] = 1;
   status->key_pressed = key;
   status->key = key;
@@ -1170,7 +1169,7 @@ void key_press_unicode(struct buffered_status *status, uint32_t unicode,
     {
       if(status->unicode_length >= status->unicode_alloc)
       {
-        int alloc = MAX(4, status->unicode_alloc << 1);
+        int alloc = MZX_MAX(4, status->unicode_alloc << 1);
         uint32_t *unicode =
          (uint32_t *)crealloc(status->unicode, alloc * sizeof(uint32_t));
         if(unicode)
@@ -1192,7 +1191,7 @@ void key_press_unicode(struct buffered_status *status, uint32_t unicode,
 void key_release(struct buffered_status *status, enum keycode key)
 {
   // Prevent invalid keycodes from writing out-of-bounds.
-  enum keycode map_key = MIN((int)key, STATUS_NUM_KEYCODES - 1);
+  enum keycode map_key = MZX_MIN((int)key, STATUS_NUM_KEYCODES - 1);
   status->keymap[map_key] = 0;
   status->key_release = key;
 
@@ -1438,7 +1437,7 @@ static const struct joystick_action_name joystick_axis_names[] =
  * prefix used by the config file. */
 static enum keycode keycode_by_name(const char *name)
 {
-  int top = ARRAY_SIZE(keycode_names) - 1;
+  int top = MZX_ARRAY_SIZE(keycode_names) - 1;
   int bottom = 0;
   int middle;
   int cmpval;
@@ -1465,7 +1464,7 @@ static enum keycode keycode_by_name(const char *name)
  * prefix used by Robotic and the config file, respectively. */
 static enum joystick_action joystick_action_by_name(const char *name)
 {
-  int top = ARRAY_SIZE(joystick_action_names) - 1;
+  int top = MZX_ARRAY_SIZE(joystick_action_names) - 1;
   int bottom = 0;
   int middle;
   int cmpval;
@@ -1495,7 +1494,7 @@ static enum joystick_action joystick_action_by_name(const char *name)
 static enum joystick_special_axis joystick_axis_by_name(const char *name)
 {
   size_t i;
-  for(i = 0; i < ARRAY_SIZE(joystick_axis_names); i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(joystick_axis_names); i++)
     if(!strcasecmp(name, joystick_axis_names[i].name))
       return (enum joystick_special_axis)joystick_axis_names[i].value;
 
@@ -1571,7 +1570,7 @@ void joystick_map_button(int first, int last, int button, const char *value,
 
     if(joystick_parse_map_value(value, &binding))
     {
-      last = MIN(last, MAX_JOYSTICKS - 1);
+      last = MZX_MIN(last, MAX_JOYSTICKS - 1);
       for(i = first; i <= last; i++)
       {
         if(is_global)
@@ -1605,7 +1604,7 @@ void joystick_map_axis(int first, int last, int axis, const char *neg,
     if(joystick_parse_map_value(neg, &binding_neg) &&
      joystick_parse_map_value(pos, &binding_pos))
     {
-      last = MIN(last, MAX_JOYSTICKS - 1);
+      last = MZX_MIN(last, MAX_JOYSTICKS - 1);
       for(i = first; i <= last; i++)
       {
         if(is_global)
@@ -1642,7 +1641,7 @@ void joystick_map_hat(int first, int last, const char *up, const char *down,
      joystick_parse_map_value(left, &binding_left) &&
      joystick_parse_map_value(right, &binding_right))
     {
-      last = MIN(last, MAX_JOYSTICKS - 1);
+      last = MZX_MIN(last, MAX_JOYSTICKS - 1);
       for(i = first; i <= last; i++)
       {
         if(is_global)
@@ -1688,7 +1687,7 @@ void joystick_map_action(int first, int last, const char *action,
     if(!joystick_parse_map_value(value, &binding))
       return;
 
-    last = MIN(last, MAX_JOYSTICKS - 1);
+    last = MZX_MIN(last, MAX_JOYSTICKS - 1);
 
     if(!strcasecmp(action, "show_screen_keyboard"))
     {

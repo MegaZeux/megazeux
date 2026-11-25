@@ -20,9 +20,9 @@
 #ifndef MEGAZEUX_IO_IMAGE_GIF_H
 #define MEGAZEUX_IO_IMAGE_GIF_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "../base.h"
+
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,13 +32,6 @@ extern "C" {
 typedef size_t (*gif_read_function)(void *dest, size_t num, void *handle);
 /* Allocate user-managed memory. Used for pixel buffers returned by gif_composite. */
 typedef void *(*gif_alloc_function)(size_t sz);
-typedef unsigned char gif_bool;
-
-enum gif_bool_values
-{
-  GIF_FALSE,
-  GIF_TRUE
-};
 
 enum gif_error
 {
@@ -77,7 +70,7 @@ struct gif_rgba /* for gif_composite output */
 
 struct gif_color_table
 {
-  gif_bool  is_sorted;          /* If true, entries are sorted from most to least used. */
+  mzx_bool  is_sorted;          /* If true, entries are sorted from most to least used. */
   uint16_t  num_entries;        /* Number of entries in table (1 to 256). */
   struct gif_color entries[1];  /* All color entries in table (flexible array member). */
 };
@@ -116,7 +109,7 @@ struct gif_image
   /*  2 */ uint16_t top;                /* Top corner Y position on canvas. */
   /*  4 */ uint16_t width;              /* Width of image. */
   /*  6 */ uint16_t height;             /* Height of image. */
-  /*pack*/ gif_bool is_interlaced;      /* GIF_TRUE if this image was stored interlaced. */
+  /*pack*/ mzx_bool is_interlaced;      /* GIF_TRUE if this image was stored interlaced. */
 
   /* Local Color Table */
   struct gif_color_table *color_table;
@@ -231,7 +224,7 @@ const char *gif_error_string(enum gif_error err);
  * @returns                 `GIF_OK` on success, otherwise a `gif_error` value.
  */
 enum gif_error gif_read(struct gif_info *gif, void *handle,
- const gif_read_function readfn, gif_bool skip_signature);
+ const gif_read_function readfn, mzx_bool skip_signature);
 
 /**
  * Free all GIF data structures from a `gif_info` struct.
@@ -267,8 +260,6 @@ enum gif_error gif_composite(struct gif_rgba **pixels, const struct gif_info *gi
 
 #endif /* !GIF_NO_COMPOSITOR */
 
-#ifdef __cplusplus
-}
-#endif
+MEGAZEUX_END_DECLS
 
 #endif /* MEGAZEUX_IO_IMAGE_GIF_H */

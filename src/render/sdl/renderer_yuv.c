@@ -25,8 +25,6 @@
 #include "../yuv.h"
 #include "render_sdl.h"
 
-#include "../../util.h"
-
 #if SDL_VERSION_ATLEAST(2,0,0)
 #error Overlay renderer no longer supported for SDL 2+. Use softscale!
 #endif

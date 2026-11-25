@@ -104,18 +104,18 @@ struct sfx_list
  sfx_play_from_list(&((mzx_world)->custom_sfx), (sfx))
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC extern const char sfx_strs[NUM_BUILTIN_SFX][LEGACY_SFX_SIZE];
+MZX_LIBCORE extern const char sfx_strs[NUM_BUILTIN_SFX][LEGACY_SFX_SIZE];
 
-CORE_LIBSPEC size_t sfx_ram_usage(const struct sfx_list *sfx_list);
+MZX_LIBCORE size_t sfx_ram_usage(const struct sfx_list *sfx_list);
 #endif // CONFIG_EDITOR
 
 #ifdef CONFIG_AUDIO
 
-CORE_LIBSPEC void sfx_play_from_list(const struct sfx_list *sfx_list, int sfx);
-CORE_LIBSPEC void sfx_play_string(const char *str, boolean sfx_play);
-CORE_LIBSPEC void sfx_clear_queue(void);
-CORE_LIBSPEC boolean sfx_is_playing(void);
-CORE_LIBSPEC int sfx_length_left(void);
+MZX_LIBCORE void sfx_play_from_list(const struct sfx_list *sfx_list, int sfx);
+MZX_LIBCORE void sfx_play_string(const char *str, boolean sfx_play);
+MZX_LIBCORE void sfx_clear_queue(void);
+MZX_LIBCORE boolean sfx_is_playing(void);
+MZX_LIBCORE int sfx_length_left(void);
 
 #else // !CONFIG_AUDIO
 
@@ -127,17 +127,17 @@ static inline int sfx_length_left(void) { return 0; }
 
 #endif // CONFIG_AUDIO
 
-CORE_LIBSPEC const struct custom_sfx *sfx_get(
+MZX_LIBCORE const struct custom_sfx *sfx_get(
  const struct sfx_list *sfx_list, int num);
-CORE_LIBSPEC boolean sfx_set_string(struct sfx_list *sfx_list, int num,
+MZX_LIBCORE boolean sfx_set_string(struct sfx_list *sfx_list, int num,
  const char *src, size_t src_len);
-CORE_LIBSPEC boolean sfx_set_label(struct sfx_list *sfx_list, int num,
+MZX_LIBCORE boolean sfx_set_label(struct sfx_list *sfx_list, int num,
  const char *src, size_t src_len);
-CORE_LIBSPEC void sfx_unset(struct sfx_list *sfx_list, int num);
-CORE_LIBSPEC void sfx_free(struct sfx_list *sfx_list);
-CORE_LIBSPEC size_t sfx_save_to_memory(const struct sfx_list *sfx_list,
+MZX_LIBCORE void sfx_unset(struct sfx_list *sfx_list, int num);
+MZX_LIBCORE void sfx_free(struct sfx_list *sfx_list);
+MZX_LIBCORE size_t sfx_save_to_memory(const struct sfx_list *sfx_list,
  int file_version, char *dest, size_t dest_len, size_t *required);
-CORE_LIBSPEC boolean sfx_load_from_memory(struct sfx_list *sfx_list,
+MZX_LIBCORE boolean sfx_load_from_memory(struct sfx_list *sfx_list,
  int file_version, const char *src, size_t src_len);
 
 MEGAZEUX_END_DECLS

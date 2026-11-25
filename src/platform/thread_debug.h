@@ -30,7 +30,6 @@
 MEGAZEUX_BEGIN_DECLS
 
 #include "platform.h"
-#include "../util.h"
 
 struct platform_mutex_debug
 {

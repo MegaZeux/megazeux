@@ -37,8 +37,6 @@ MEGAZEUX_BEGIN_DECLS
 #include "zip_dict.h"
 #include "zip_stream.h"
 
-#include "../util.h"
-
 struct reduce_stream_data
 {
   struct zip_stream_data zs;
@@ -62,7 +60,7 @@ static inline void reduce_ex_open(struct zip_stream_data *zs, uint16_t method,
 {
   struct reduce_stream_data *rs = ((struct reduce_stream_data *)zs);
   memset(zs, 0, sizeof(struct reduce_stream_data));
-  rs->factor = CLAMP((method - 2), 0, 3);
+  rs->factor = MZX_CLAMP((method - 2), 0, 3);
 }
 
 /**

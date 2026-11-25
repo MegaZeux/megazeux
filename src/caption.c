@@ -23,7 +23,6 @@
 #include "caption.h"
 #include "graphics.h"
 #include "world_struct.h"
-#include "platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
 
 // TODO this might benefit from a dirty flag + graphics.c hook and/or
 // integration into mzx_world to remove the statics.
@@ -83,7 +82,7 @@ static boolean strip_caption_string(char *output, const char *input)
 /**
  * Append a string to the caption.
  */
-ATTRIBUTE_PRINTF(2, 3)
+MZX_ATTRIBUTE_PRINTF(2, 3)
 static inline void caption_append(char caption[MAX_CAPTION_SIZE],
  const char *f, ...)
 {

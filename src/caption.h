@@ -33,7 +33,7 @@ MEGAZEUX_BEGIN_DECLS
  * @param mzx_world   The active world.
  */
 
-CORE_LIBSPEC void caption_set_world(struct world *mzx_world);
+MZX_LIBCORE void caption_set_world(struct world *mzx_world);
 
 #ifdef CONFIG_EDITOR
 
@@ -45,7 +45,7 @@ CORE_LIBSPEC void caption_set_world(struct world *mzx_world);
  * @param board       The active board, or NULL for no board.
  */
 
-CORE_LIBSPEC void caption_set_board(struct world *mzx_world,
+MZX_LIBCORE void caption_set_board(struct world *mzx_world,
  struct board *board);
 
 /**
@@ -55,7 +55,7 @@ CORE_LIBSPEC void caption_set_board(struct world *mzx_world,
  * @param robot       The active robot, or NULL for no robot.
  */
 
-CORE_LIBSPEC void caption_set_robot(struct world *mzx_world,
+MZX_LIBCORE void caption_set_robot(struct world *mzx_world,
  struct robot *robot);
 
 /**
@@ -64,7 +64,7 @@ CORE_LIBSPEC void caption_set_robot(struct world *mzx_world,
  * @param modified    True if the world has been modified.
  */
 
-CORE_LIBSPEC void caption_set_modified(boolean modified);
+MZX_LIBCORE void caption_set_modified(boolean modified);
 
 #endif
 
@@ -75,7 +75,7 @@ CORE_LIBSPEC void caption_set_modified(boolean modified);
  */
 
 #ifdef CONFIG_UPDATER
-CORE_LIBSPEC void caption_set_updates_available(boolean available);
+MZX_LIBCORE void caption_set_updates_available(boolean available);
 #endif
 
 /**

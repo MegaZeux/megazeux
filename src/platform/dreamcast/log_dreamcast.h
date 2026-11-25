@@ -34,9 +34,7 @@ MEGAZEUX_BEGIN_DECLS
  */
 //#include <kos.h>
 
-#include "../platform_attribute.h"
-
-int dbgio_printf(const char *fmt, ...) ATTRIBUTE_PRINTF(1,2);
+int dbgio_printf(const char *fmt, ...) MZX_ATTRIBUTE_PRINTF(1,2);
 int dbgio_flush(void);
 
 #define info(...) \

@@ -29,11 +29,11 @@ MEGAZEUX_BEGIN_DECLS
 #include <time.h>
 
 /* Defined in platform_[platform].c */
-CORE_LIBSPEC void delay(uint32_t ms);
-CORE_LIBSPEC uint64_t get_ticks(void);
+MZX_LIBPLATFORM void delay(uint32_t ms);
+MZX_LIBPLATFORM uint64_t get_ticks(void);
 
 /* Defined in platform_time.c */
-CORE_LIBSPEC boolean platform_system_time(struct tm *tm,
+MZX_LIBPLATFORM boolean platform_system_time(struct tm *tm,
  int64_t *epoch, int32_t *nano);
 
 MEGAZEUX_END_DECLS

@@ -23,8 +23,6 @@
 #include "../platform.h"
 #undef main
 
-#include "../../util.h"
-
 #include <fat.h>
 #include "extmem_nds.h"
 #include "../dlmalloc.h"

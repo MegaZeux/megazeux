@@ -46,7 +46,6 @@
 #include "sfx.h"
 #include "sprite.h"
 #include "str.h"
-#include "util.h"
 #include "window.h"
 #include "world.h"
 #include "algorithm/string_compare.h"
@@ -2721,7 +2720,7 @@ void run_robot(context *ctx, int id, int x, int y)
           volume &= 255;
 
         else
-          volume = CLAMP(volume, 0, 255);
+          volume = MZX_CLAMP(volume, 0, 255);
 
         src_board->volume = volume;
         src_board->volume_target = volume;
@@ -3148,7 +3147,7 @@ void run_robot(context *ctx, int id, int x, int y)
           {
             // Block
             shoot(mzx_world, x, y, dir_to_int(direction),
-             MIN(cur_robot->bullet_type, 2));
+             MZX_MIN(cur_robot->bullet_type, 2));
 
             // Versions 2.80 through 2.91X had the logic inverted here, meaning
             // the blocked array would never get updated when shooting. If this
@@ -5468,9 +5467,9 @@ void run_robot(context *ctx, int id, int x, int y)
 
         // It's pretty sad that this is necessary, but some people don't
         // know how to use set color apparently (see SM4MZX for details)
-        r = CLAMP(r, 0, 63);
-        g = CLAMP(g, 0, 63);
-        b = CLAMP(b, 0, 63);
+        r = MZX_CLAMP(r, 0, 63);
+        g = MZX_CLAMP(g, 0, 63);
+        b = MZX_CLAMP(b, 0, 63);
 
         set_rgb(pal_number, r, g, b);
         break;
@@ -5631,7 +5630,7 @@ void run_robot(context *ctx, int id, int x, int y)
           volume_target &= 255;
 
         else
-          volume_target = CLAMP(volume_target, 0, 255);
+          volume_target = MZX_CLAMP(volume_target, 0, 255);
 
         if(volume_target == volume)
         {

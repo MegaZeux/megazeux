@@ -22,7 +22,6 @@
 #include "audio.h"
 #include "audio_sfx.h"
 #include "audio_struct.h"
-#include "../util.h"
 
 /**
  * In a parallel environment circular buffers are prone to very subtle bugs
@@ -60,7 +59,7 @@ static int sfx_queue_diff(void)
 
 void audio_sfx_queue_sound(int freq, int duration)
 {
-  struct audio_sfx_note note = { CLAMP(duration, 1, UINT16_MAX), freq };
+  struct audio_sfx_note note = { MZX_CLAMP(duration, 1, UINT16_MAX), freq };
   int next_index;
 
   SFX_LOCK();

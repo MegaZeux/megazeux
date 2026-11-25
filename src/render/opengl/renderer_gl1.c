@@ -26,7 +26,6 @@
 #include "../render_layer.h"
 #include "../renderers.h"
 
-#include "../../util.h"
 #include "../../platform/log.h"
 #include "../../platform/platform_dso.h"
 

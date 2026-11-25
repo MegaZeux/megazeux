@@ -23,21 +23,9 @@
 #define MEGAZEUX_COMPAT_H
 
 #include "config.h"
+#include "base.h"
 
 #ifdef __cplusplus
-
-#define MEGAZEUX_BEGIN_DECLS extern "C" {
-#define MEGAZEUX_END_DECLS   }
-
-/**
- * Compatibility define for restrict in C++, where it is a (commonly supported)
- * compiler extension. This has to be defined as 'RESTRICT' because defining
- * 'restrict' conflicts with MSVC's __declspec(restrict) attribute.
- */
-#ifndef RESTRICT
-#define RESTRICT __restrict
-#endif
-
 #if __cplusplus >= 201103
 #define IS_CXX_11 1
 #define maybe_constexpr constexpr
@@ -61,9 +49,6 @@
 #endif
 
 #else
-
-#define MEGAZEUX_BEGIN_DECLS
-#define MEGAZEUX_END_DECLS
 
 #if !defined(CONFIG_WII) && !defined(CONFIG_NDS) && !defined(CONFIG_3DS) && \
  !defined(CONFIG_DREAMCAST)
@@ -130,9 +115,6 @@ typedef unsigned char boolean;
 
 #ifdef _MSC_VER
 #include "msvc.h"
-#ifndef RESTRICT
-#define RESTRICT __restrict
-#endif
 #endif
 
 #ifdef __APPLE__
@@ -160,11 +142,6 @@ typedef unsigned char boolean;
 #endif
 
 #ifdef __OpenBSD__
-#include <sys/param.h>
-// These macros conflict with internally-defined MZX macros
-#undef MIN
-#undef MAX
-
 // unveil added in OpenBSD 6.3
 #ifdef OpenBSD
 #if OpenBSD >= 201805
@@ -179,37 +156,7 @@ typedef unsigned char boolean;
 #endif
 
 #ifndef RESTRICT
-#define RESTRICT restrict
-#endif
-
-#if defined(CONFIG_MODULAR) && defined(__WIN32__)
-#define LIBSPEC __declspec(dllimport)
-#elif defined(CONFIG_MODULAR)
-#define LIBSPEC __attribute__((visibility("default")))
-#else
-#define LIBSPEC
-#endif
-
-#ifndef CORE_LIBSPEC
-#define CORE_LIBSPEC LIBSPEC
-#endif
-
-#ifndef EDITOR_LIBSPEC
-#define EDITOR_LIBSPEC LIBSPEC
-#endif
-
-#ifndef AUDIO_LIBSPEC
-#define AUDIO_LIBSPEC LIBSPEC
-#endif
-
-#ifndef UTILS_LIBSPEC
-#define UTILS_LIBSPEC CORE_LIBSPEC
-#endif
-
-#ifdef CONFIG_UPDATER
-#define UPDATER_LIBSPEC CORE_LIBSPEC
-#else
-#define UPDATER_LIBSPEC
+#define RESTRICT MZX_RESTRICT
 #endif
 
 MEGAZEUX_BEGIN_DECLS
@@ -277,18 +224,18 @@ static inline char *check_strtok(char *d, const char *delim)
 
 #include <stddef.h>
 
-CORE_LIBSPEC void check_alloc_init(void);
+MZX_LIBCORE void check_alloc_init(void);
 
 #define ccalloc(nmemb, size) check_calloc(nmemb, size, __FILE__, __LINE__)
-CORE_LIBSPEC void *check_calloc(size_t nmemb, size_t size, const char *file,
+MZX_LIBCORE void *check_calloc(size_t nmemb, size_t size, const char *file,
  int line);
 
 #define cmalloc(size) check_malloc(size, __FILE__, __LINE__)
-CORE_LIBSPEC void *check_malloc(size_t size, const char *file,
+MZX_LIBCORE void *check_malloc(size_t size, const char *file,
  int line);
 
 #define crealloc(ptr, size) check_realloc(ptr, size, __FILE__, __LINE__)
-CORE_LIBSPEC void *check_realloc(void *ptr, size_t size, const char *file,
+MZX_LIBCORE void *check_realloc(void *ptr, size_t size, const char *file,
  int line);
 
 #else /* CONFIG_CHECK_ALLOC */

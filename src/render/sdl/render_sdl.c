@@ -22,7 +22,6 @@
 #include "../render.h"
 #include "../yuv.h"
 
-#include "../../util.h"
 #include "../../algorithm/string_compare.h"
 #include "../../event/event.h"
 #include "../../platform/log.h"
@@ -496,7 +495,7 @@ void sdl_destruct_window(struct graphics_data *graphics)
 #endif
 
   // Used by the SDL renderer-based renderers for HW acceleration.
-  for(i = 0; i < ARRAY_SIZE(render_data->texture); i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(render_data->texture); i++)
   {
     if(render_data->texture[i])
     {
@@ -582,7 +581,7 @@ static size_t icon_read_vfile_fn(void * RESTRICT buffer, size_t count,
   return vfread(buffer, 1, count, (vfile *)handle);
 }
 
-static png_bool icon_alloc_fn(uint32_t width, uint32_t height,
+static mzx_bool icon_alloc_fn(uint32_t width, uint32_t height,
  struct png_rgba **pixels, size_t *pixels_row_pitch, void *priv)
 {
   SDL_Surface **dest = (SDL_Surface **)priv;
@@ -590,7 +589,7 @@ static png_bool icon_alloc_fn(uint32_t width, uint32_t height,
 
   /* Icons must be multiples of 16 and square. */
   if(width != height || width % 16)
-    return IMAGE_FALSE;
+    return MZX_FALSE;
 
 #if SDL_VERSION_ATLEAST(2,0,0)
   s = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
@@ -614,12 +613,12 @@ static png_bool icon_alloc_fn(uint32_t width, uint32_t height,
   }
 #endif
   if(!s)
-    return IMAGE_FALSE;
+    return MZX_FALSE;
 
   *dest = s;
   *pixels = (struct png_rgba *)s->pixels;
   *pixels_row_pitch = s->pitch;
-  return IMAGE_TRUE;
+  return MZX_TRUE;
 }
 
 static SDL_Surface *png_read_icon(const char *name)

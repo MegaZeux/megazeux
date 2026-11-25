@@ -26,7 +26,7 @@
 #include "game.h"
 #include "graphics.h"
 #include "settings.h"
-#include "util.h"
+#include "util.h" /* mzx_res */
 #include "window.h"
 #include "world_struct.h"
 
@@ -87,7 +87,7 @@ static int choose_video_output(struct world *mzx_world, const char **vo,
   };
 
   construct_dialog(&di, "Choose renderer...", 28, 5, 24, 14,
-   elements, ARRAY_SIZE(elements), 0);
+   elements, MZX_ARRAY_SIZE(elements), 0);
 
   retval = run_dialog(mzx_world, &di);
   destruct_dialog(&di);
@@ -132,7 +132,7 @@ void game_settings(struct world *mzx_world)
 
   num_available_video_outputs =
    get_available_video_output_list(available_video_outputs,
-    ARRAY_SIZE(available_video_outputs));
+    MZX_ARRAY_SIZE(available_video_outputs));
 
   mzx_speed = mzx_world->mzx_speed;
   music = !audio_get_music_on();

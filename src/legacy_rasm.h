@@ -65,7 +65,7 @@ struct command_mapping
   int src_pos;
 };
 
-CORE_LIBSPEC int get_color(char *cmd_line);
+MZX_LIBCORE int get_color(char *cmd_line);
 
 extern const char special_first_char[256];
 
@@ -77,7 +77,7 @@ boolean legacy_convert_v1_program(char **_dest, int *_dest_len,
 
 #ifdef CONFIG_DEBYTECODE
 
-CORE_LIBSPEC int legacy_assemble_line(char *cpos, char *output_buffer, char *error_buffer,
+MZX_LIBCORE int legacy_assemble_line(char *cpos, char *output_buffer, char *error_buffer,
  char *param_listing, int *arg_count_ext);
 
 #else // !CONFIG_DEBYTECODE
@@ -87,19 +87,19 @@ char *assemble_program(char *src, int len, int *size);
 
 void disassemble_file(char *name, char *program, int program_length,
  int allow_ignores, int base);
-CORE_LIBSPEC void disassemble_program(char *program, int program_length,
+MZX_LIBCORE void disassemble_program(char *program, int program_length,
  char **_source, int *_source_length, struct command_mapping **_command_map,
  int *_command_map_length);
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC int legacy_assemble_line(char *cpos, char *output_buffer,
+MZX_LIBCORE int legacy_assemble_line(char *cpos, char *output_buffer,
  char *error_buffer, char *param_listing, int *arg_count_ext);
-CORE_LIBSPEC int disassemble_line(char *cpos, char **next, char *output_buffer,
+MZX_LIBCORE int disassemble_line(char *cpos, char **next, char *output_buffer,
  char *error_buffer, int *total_bytes, int print_ignores, char *arg_types,
  int *arg_count, int base);
-CORE_LIBSPEC const struct search_entry_short *find_argument(char *name);
-CORE_LIBSPEC void print_color(int color, char *color_buffer);
-CORE_LIBSPEC int unescape_char(char *dest, char c);
+MZX_LIBCORE const struct search_entry_short *find_argument(char *name);
+MZX_LIBCORE void print_color(int color, char *color_buffer);
+MZX_LIBCORE int unescape_char(char *dest, char c);
 #endif // CONFIG_EDITOR
 
 #endif // !CONFIG_DEBYTECODE

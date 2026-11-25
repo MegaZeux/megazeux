@@ -29,7 +29,6 @@
 #include "../sfx.h"
 #include "../window.h"
 #include "../world.h"
-#include "../util.h"
 #include "../io/vio.h"
 #include "../event/event.h"
 
@@ -371,7 +370,7 @@ void export_sfx(context *parent)
 
   if(!file_manager(mzx_world, sfx_ext, ".sfx", export_name,
    "Export SFX file", ALLOW_ALL_DIRS, ALLOW_NEW_FILES,
-   elements, ARRAY_SIZE(elements), 1))
+   elements, MZX_ARRAY_SIZE(elements), 1))
   {
     vfile *sfx_file;
     const char *out;

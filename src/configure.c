@@ -31,7 +31,6 @@
 #include "configure.h"
 #include "counter.h"
 #include "rasm.h"
-#include "util.h"
 #include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 #include "io/path.h"
@@ -562,7 +561,7 @@ static boolean config_long_long(long long *dest, const char *value,
   return true;
 }
 
-#define config_enum(d, v, a) _config_enum(d, v, a, ARRAY_SIZE(a))
+#define config_enum(d, v, a) _config_enum(d, v, a, MZX_ARRAY_SIZE(a))
 
 __editor_maybe_static
 boolean _config_enum(int *dest, const char *value,
@@ -592,7 +591,7 @@ boolean config_boolean(boolean *dest, const char *value)
   return false;
 }
 
-#define config_string(d, v) _config_string(d, ARRAY_SIZE(d), v)
+#define config_string(d, v) _config_string(d, MZX_ARRAY_SIZE(d), v)
 
 __editor_maybe_static
 boolean _config_string(char *dest, size_t dest_len, const char *value)
@@ -1445,7 +1444,7 @@ static boolean config_change_option(void *_conf, const char *name,
  const char *value, const char *extended_data)
 {
   const struct config_entry *current_option = find_option(name,
-   config_options, ARRAY_SIZE(config_options));
+   config_options, MZX_ARRAY_SIZE(config_options));
 
   if(current_option)
   {

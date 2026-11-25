@@ -25,25 +25,22 @@ core_flags   += -Wmissing-format-attribute
 core_cflags  += ${CFLAGS}
 core_cxxflags = ${CXXFLAGS}
 
-ifneq (${PLATFORM},emscripten)
-core_flags   += -I${PREFIX}/include
-endif
-
-ifeq (${PLATFORM},mingw)
-core_spec := -DCORE_LIBSPEC="__declspec(dllexport)"
+ifneq (${BUILD_MODULAR},)
+main_spec    := -DMZX_MODULAR -DMZX_MODULE_MAIN
+core_spec    := -DMZX_MODULAR -DMZX_MODULE_CORE
 endif
 
 ${core_obj}/main.o: ${core_src}/main.c
 	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -c $< -o $@
+	${CC} -MD ${core_cflags} ${core_flags} ${main_spec} -c $< -o $@
 
 ${core_obj}/run_stubs.o: ${core_src}/run_stubs.c
 	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${core_cflags} ${core_flags} -c $< -o $@
+	${CC} -MD ${core_cflags} ${core_flags} ${main_spec} -c $< -o $@
 
 ${core_obj}/updater.o: ${core_src}/updater.cpp
 	$(if ${V},,@echo "  CXX     " $<)
-	${CC} -MD ${core_cxxflags} ${core_flags} -c $< -o $@
+	${CC} -MD ${core_cxxflags} ${core_flags} ${main_spec} -c $< -o $@
 
 ${core_obj}/%.o: ${core_src}/%.c
 	$(if ${V},,@echo "  CC      " $<)

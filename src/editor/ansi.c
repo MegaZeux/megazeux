@@ -26,7 +26,6 @@
 #include "../error.h"
 #include "../idput.h"
 #include "../robot.h"
-#include "../util.h"
 #include "../world_struct.h"
 #include "../io/vio.h"
 #include "../platform/log.h"
@@ -350,7 +349,7 @@ boolean export_ansi(struct world *mzx_world, const char *filename,
 
     t = time(NULL);
     tm = localtime(&t);
-    strftime(datebuf, ARRAY_SIZE(datebuf), "%Y%m%d", tm);
+    strftime(datebuf, MZX_ARRAY_SIZE(datebuf), "%Y%m%d", tm);
 
     total_len = vftell(vf);
 
@@ -363,7 +362,7 @@ boolean export_ansi(struct world *mzx_world, const char *filename,
 
     // SAUCE record.
     vfputc(0x1A, vf);
-    snprintf(buffer, ARRAY_SIZE(buffer),
+    snprintf(buffer, MZX_ARRAY_SIZE(buffer),
       "COMNT%-64.64sSAUCE00%-35.35s%-20.20s%-20.20s%-8.8s",
       COMMENT_LINE, // Comment line 1.
       title,
@@ -381,7 +380,7 @@ boolean export_ansi(struct world *mzx_world, const char *filename,
     vfputw(0, vf);                // TInfo4
     vfputc(1, vf);                // Comment line count.
     vfputc(SAUCE_MZX_FLAGS, vf);  // TFlags
-    snprintf(buffer, ARRAY_SIZE(buffer),
+    snprintf(buffer, MZX_ARRAY_SIZE(buffer),
       "%-22.22s",
       "IBM EGA"
     );
@@ -665,7 +664,7 @@ static int read_ansi(struct ansi_data *ansi, vfile *vf)
           if(param[cur_param] < 0)
             return ANSI_ERROR;
 
-          if(cur_param >= (int)ARRAY_SIZE(param))
+          if(cur_param >= (int)MZX_ARRAY_SIZE(param))
             return ANSI_ERROR;
 
           cur_param++;
@@ -704,7 +703,7 @@ static int read_ansi(struct ansi_data *ansi, vfile *vf)
         if(sym == 'J')
         {
           // Erase display.
-          param[0] = CLAMP(param[0], 0, 2);
+          param[0] = MZX_CLAMP(param[0], 0, 2);
 
           ansi->erase_display = param[0];
           return ANSI_ESCAPE;
@@ -714,7 +713,7 @@ static int read_ansi(struct ansi_data *ansi, vfile *vf)
         if(sym == 'K')
         {
           // Erase line.
-          param[0] = CLAMP(param[0], 0, 2);
+          param[0] = MZX_CLAMP(param[0], 0, 2);
 
           ansi->erase_line = param[0];
           return ANSI_ESCAPE;

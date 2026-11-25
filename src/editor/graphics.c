@@ -27,7 +27,7 @@
 #include "graphics.h"
 
 #include "../graphics.h"
-#include "../util.h"
+#include "../util.h" /* mzx_res */
 #include "../io/vio.h"
 
 #include <stdint.h>
@@ -139,8 +139,8 @@ void ec_change_block(uint8_t offset, uint8_t charset,
   int x;
   int y;
 
-  width = CLAMP(width, 1, 32);
-  height = CLAMP(height, 1, 8);
+  width = MZX_CLAMP(width, 1, 32);
+  height = MZX_CLAMP(height, 1, 8);
 
   skip = 32 - width;
 
@@ -165,8 +165,8 @@ void ec_read_block(uint8_t offset, uint8_t charset,
   int x;
   int y;
 
-  width = CLAMP(width, 1, 32);
-  height = CLAMP(height, 1, 8);
+  width = MZX_CLAMP(width, 1, 32);
+  height = MZX_CLAMP(height, 1, 8);
 
   skip = 32 - width;
 

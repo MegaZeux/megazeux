@@ -29,7 +29,7 @@
 #include "../data.h"
 #include "../graphics.h"
 #include "../intake_num.h"
-#include "../util.h"
+#include "../util.h" /* mzx_res */
 #include "../window.h"
 #include "../io/vio.h"
 
@@ -219,8 +219,8 @@ static void rgb_to_hsl(struct color_status *current)
   double g = (double)current->g / 63.0;
   double b = (double)current->b / 63.0;
 
-  double M = MAX(r, MAX(g, b));
-  double m = MIN(r, MIN(g, b));
+  double M = MZX_MAX(r, MZX_MAX(g, b));
+  double m = MZX_MIN(r, MZX_MIN(g, b));
   double c = M - m;
 
   double h =
@@ -338,9 +338,9 @@ static void lab_to_rgb(struct color_status *current)
   g = srgb_linear_to_comp( g );
   b = srgb_linear_to_comp( b );
 
-  current->r = (unsigned int) round(CLAMP(r, 0.0, 1.0) * 63.0);
-  current->g = (unsigned int) round(CLAMP(g, 0.0, 1.0) * 63.0);
-  current->b = (unsigned int) round(CLAMP(b, 0.0, 1.0) * 63.0);
+  current->r = (unsigned int) round(MZX_CLAMP(r, 0.0, 1.0) * 63.0);
+  current->g = (unsigned int) round(MZX_CLAMP(g, 0.0, 1.0) * 63.0);
+  current->b = (unsigned int) round(MZX_CLAMP(b, 0.0, 1.0) * 63.0);
 }
 
 /**
@@ -728,7 +728,7 @@ static boolean color_editor_draw(subcontext *ctx)
    current->x + 10, current->y, 3, 1, 10);
 
   // Modes
-  for(i = 0; i < (int)ARRAY_SIZE(mode_list); i++)
+  for(i = 0; i < (int)MZX_ARRAY_SIZE(mode_list); i++)
   {
     color = (i == current_mode_id) ? DI_GREY : DI_GREY_DARK;
 
@@ -855,7 +855,7 @@ static boolean color_editor_key(subcontext *ctx, int *key)
     case IKEY_PAGEUP:
     {
       if(current_mode_id == 0)
-        current_mode_id = ARRAY_SIZE(mode_list);
+        current_mode_id = MZX_ARRAY_SIZE(mode_list);
 
       current_mode_id--;
       return true;
@@ -865,7 +865,7 @@ static boolean color_editor_key(subcontext *ctx, int *key)
     {
       current_mode_id++;
 
-      if(current_mode_id == ARRAY_SIZE(mode_list))
+      if(current_mode_id == MZX_ARRAY_SIZE(mode_list))
         current_mode_id = 0;
 
       return true;
@@ -927,7 +927,7 @@ static boolean color_editor_click(subcontext *ctx, int *key, int button,
       int len;
       int i;
 
-      for(i = 0; i < (int)ARRAY_SIZE(mode_list); i++)
+      for(i = 0; i < (int)MZX_ARRAY_SIZE(mode_list); i++)
       {
         const struct color_mode *m = &(mode_list[i]);
         len = strlen(m->name);
@@ -972,7 +972,7 @@ static boolean color_editor_drag(subcontext *ctx, int *key, int button,
       int component = mouse_y - current->y - 1;
 
       double value =
-       CLAMP((mouse_x - current->x - 8) + ((mouse_px % 8) / 8.0), 0, 32);
+       MZX_CLAMP((mouse_x - current->x - 8) + ((mouse_px % 8) / 8.0), 0, 32);
 
       c = &(current_mode->components[component]);
 

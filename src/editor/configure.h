@@ -132,11 +132,11 @@ struct editor_config_info
   struct saved_position vlayer_positions[NUM_SAVED_POSITIONS];
 };
 
-EDITOR_LIBSPEC void default_editor_config(void);
-EDITOR_LIBSPEC void store_editor_config_backup(void);
-EDITOR_LIBSPEC void free_editor_config(void);
+MZX_LIBEDITOR void default_editor_config(void);
+MZX_LIBEDITOR void store_editor_config_backup(void);
+MZX_LIBEDITOR void free_editor_config(void);
 
-EDITOR_LIBSPEC struct editor_config_info *get_editor_config(void);
+MZX_LIBEDITOR struct editor_config_info *get_editor_config(void);
 void load_editor_config_backup(void);
 
 size_t get_local_editor_config_name(char *dest, size_t dest_len,

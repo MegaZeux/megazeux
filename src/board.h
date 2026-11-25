@@ -28,15 +28,15 @@ MEGAZEUX_BEGIN_DECLS
 
 struct zip_archive;
 
-CORE_LIBSPEC int save_board(struct world *mzx_world, struct board *cur_board,
+MZX_LIBCORE int save_board(struct world *mzx_world, struct board *cur_board,
  struct zip_archive *zp, int savegame, int file_version, int board_id);
 
-CORE_LIBSPEC struct board *load_board_allocate(struct world *mzx_world,
+MZX_LIBCORE struct board *load_board_allocate(struct world *mzx_world,
  struct zip_archive *zp, int savegame, int file_version, unsigned int board_id);
 
-CORE_LIBSPEC void board_set_input_string(struct board *cur_board,
+MZX_LIBCORE void board_set_input_string(struct board *cur_board,
  const char *input, size_t len);
-CORE_LIBSPEC void clear_board(struct board *cur_board);
+MZX_LIBCORE void clear_board(struct board *cur_board);
 
 struct board *duplicate_board(struct world *mzx_world,
  struct board *src_board);
@@ -47,13 +47,13 @@ void dummy_board(struct world *mzx_world, struct board *cur_board);
 int find_board(struct world *mzx_world, char *name);
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC int load_board_direct(struct world *mzx_world,
+MZX_LIBCORE int load_board_direct(struct world *mzx_world,
  struct board *cur_board,  struct zip_archive *zp, int savegame,
  int file_version, unsigned int board_id);
 
-CORE_LIBSPEC void board_set_charset_path(struct board *cur_board,
+MZX_LIBCORE void board_set_charset_path(struct board *cur_board,
  const char *path, size_t path_len);
-CORE_LIBSPEC void board_set_palette_path(struct board *cur_board,
+MZX_LIBCORE void board_set_palette_path(struct board *cur_board,
  const char *path, size_t path_len);
 #endif // CONFIG_EDITOR
 

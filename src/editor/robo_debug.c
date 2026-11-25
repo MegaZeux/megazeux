@@ -33,7 +33,6 @@
 #include "../graphics.h"
 #include "../robot.h"
 #include "../str.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world_struct.h"
 #include "../algorithm/string_compare.h"
@@ -222,7 +221,7 @@ static int edit_breakpoint_dialog(struct world *mzx_world,
   elements[3] = construct_button(22, 5, "Confirm", 0);
   elements[4] = construct_button(45, 5, "Cancel", -1);
 
-  construct_dialog(&di, title, 2, 7, 76, 7, elements, ARRAY_SIZE(elements), 0);
+  construct_dialog(&di, title, 2, 7, 76, 7, elements, MZX_ARRAY_SIZE(elements), 0);
 
   result = run_dialog(mzx_world, &di);
   destruct_dialog(&di);
@@ -266,7 +265,7 @@ static int edit_watchpoint_dialog(struct world *mzx_world,
   elements[2] = construct_button(22, 4, "Confirm", 0);
   elements[3] = construct_button(45, 4, "Cancel", -1);
 
-  construct_dialog(&di, title, 2, 8, 76, 5, elements, ARRAY_SIZE(elements), 0);
+  construct_dialog(&di, title, 2, 8, 76, 5, elements, MZX_ARRAY_SIZE(elements), 0);
 
   result = run_dialog(mzx_world, &di);
   destruct_dialog(&di);
@@ -302,7 +301,7 @@ static void new_breakpoint(struct world *mzx_world)
   {
     if(num_breakpoints == num_breakpoints_allocated)
     {
-      num_breakpoints_allocated = MAX(32, num_breakpoints_allocated * 2);
+      num_breakpoints_allocated = MZX_MAX(32, num_breakpoints_allocated * 2);
       breakpoints = (struct breakpoint **)crealloc(breakpoints,
        num_breakpoints_allocated * sizeof(struct breakpoint *));
     }
@@ -331,7 +330,7 @@ static void new_watchpoint(struct world *mzx_world)
   {
     if(num_watchpoints == num_watchpoints_allocated)
     {
-      num_watchpoints_allocated = MAX(32, num_watchpoints_allocated * 2);
+      num_watchpoints_allocated = MZX_MAX(32, num_watchpoints_allocated * 2);
       watchpoints = (struct watchpoint **)crealloc(watchpoints,
        num_watchpoints_allocated * sizeof(struct watchpoint *));
     }
@@ -425,8 +424,8 @@ void __debug_robot_config(struct world *mzx_world)
 
   int focus = br_element;
 
-  br_selected = MIN(br_selected, num_breakpoints);
-  wt_selected = MIN(wt_selected, num_watchpoints);
+  br_selected = MZX_MIN(br_selected, num_breakpoints);
+  wt_selected = MZX_MIN(wt_selected, num_watchpoints);
 
   // Prevent previous keys from carrying through.
   force_release_all_keys();
@@ -508,7 +507,7 @@ void __debug_robot_config(struct world *mzx_world)
     elements[9] = construct_button(70, 23, "Done", -1);
 
     construct_dialog_ext(&di, "Configure Robot Debugger", 0, 0, 80, 25,
-     elements, ARRAY_SIZE(elements), 0, 0, focus, debug_config_idle_function);
+     elements, MZX_ARRAY_SIZE(elements), 0, 0, focus, debug_config_idle_function);
 
     result = run_dialog(mzx_world, &di);
     focus = di.current_element;
@@ -718,7 +717,7 @@ static int goto_send_dialog(struct world *mzx_world, int robot_id)
   force_release_all_keys();
 
   elements[0] = construct_radio_button(2, 1,
-   target_strs, ARRAY_SIZE(target_strs), 8, &target);
+   target_strs, MZX_ARRAY_SIZE(target_strs), 8, &target);
 
   elements[1] = construct_input_box(17, 1,
    "Name:", 51, name_in);
@@ -727,13 +726,13 @@ static int goto_send_dialog(struct world *mzx_world, int robot_id)
    "Label:", 51, label_in);
 
   elements[3] = construct_check_box(21, 3,
-   ignore_strs, ARRAY_SIZE(ignore_strs), 50, ignore);
+   ignore_strs, MZX_ARRAY_SIZE(ignore_strs), 50, ignore);
 
   elements[4] = construct_button(26, 4, "Confirm", 0);
   elements[5] = construct_button(42, 4, "Cancel", -1);
 
   construct_dialog(&di, "Goto/Send", 2, 9, 76, 6,
-   elements, ARRAY_SIZE(elements), 0);
+   elements, MZX_ARRAY_SIZE(elements), 0);
 
   result = run_dialog(mzx_world, &di);
   destruct_dialog(&di);
@@ -916,7 +915,7 @@ static int debug_robot(context *ctx, struct robot *cur_robot, int id,
   // TODO: when limitations on command length are lifted,
   // this needs to be extended.
   char buffer[ROBOT_MAX_TR] = { 0 };
-  int buffer_len = ARRAY_SIZE(buffer);
+  int buffer_len = MZX_ARRAY_SIZE(buffer);
 
   char *buffer_pos;
   int buffer_left;
@@ -926,7 +925,7 @@ static int debug_robot(context *ctx, struct robot *cur_robot, int id,
 
   struct dialog di;
   struct element *elements[8];
-  int num_elements = ARRAY_SIZE(elements);
+  int num_elements = MZX_ARRAY_SIZE(elements);
 
   int dialog_result;
   int dialog_y = 0;
@@ -1022,7 +1021,7 @@ static int debug_robot(context *ctx, struct robot *cur_robot, int id,
   *buffer_pos = 0;
 
   // Add 3 to get the button position. ypos may go over 20, so clamp it.
-  ypos = MIN(ypos, 20) + 3;
+  ypos = MZX_MIN(ypos, 20) + 3;
 
   height = ypos + 2;
 

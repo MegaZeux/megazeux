@@ -8,9 +8,13 @@ utils_src = ${core_src}/utils
 utils_obj = ${build_base}/${utils_src}
 build_dirs += ${utils_obj}
 
-# Some core objects are required for file format purposes.
-# Define UTILS_LIBSPEC so these properly link.
-utils_cflags := ${PTHREAD_CFLAGS} -DUTILS_LIBSPEC=
+utils_cflags := ${PTHREAD_CFLAGS}
+
+ifneq (${BUILD_MODULAR},)
+# Do not define modular symbols for utils even for modular builds; this allows
+# statically linking the required objects.
+utils_spec   :=
+endif
 
 # Hack for static linking the utilities on macOS.
 UTILS_ZLIB_LDFLAGS ?= ${ZLIB_LDFLAGS}
@@ -85,7 +89,7 @@ pefix_objs := ${utils_src}/pefix.c
 
 ${utils_obj}/%.o: ${utils_src}/%.c src/config.h
 	$(if ${V},,@echo "  CC      " $<)
-	${CC} -MD ${CFLAGS} ${utils_cflags} -I${core_src} \
+	${CC} -MD ${CFLAGS} ${utils_cflags} ${utils_spec} -I${core_src} \
 	  ${ZLIB_CFLAGS} -c $< -o $@
 
 -include $(utils_objs:.o=.d)

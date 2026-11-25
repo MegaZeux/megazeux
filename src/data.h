@@ -28,14 +28,14 @@ MEGAZEUX_BEGIN_DECLS
 #include <stdio.h>
 #include <stdlib.h>
 
-CORE_LIBSPEC extern char curr_file[MAX_PATH];
-CORE_LIBSPEC extern char curr_sav[MAX_PATH];
-CORE_LIBSPEC extern char current_dir[MAX_PATH];
-CORE_LIBSPEC extern char config_dir[MAX_PATH];
+MZX_LIBCORE extern char curr_file[MAX_PATH];
+MZX_LIBCORE extern char curr_sav[MAX_PATH];
+MZX_LIBCORE extern char current_dir[MAX_PATH];
+MZX_LIBCORE extern char config_dir[MAX_PATH];
 
-CORE_LIBSPEC extern unsigned char scroll_color;
-CORE_LIBSPEC extern const char *const thing_names[128];
-CORE_LIBSPEC extern const unsigned int flags[128];
+MZX_LIBCORE extern unsigned char scroll_color;
+MZX_LIBCORE extern const char *const thing_names[128];
+MZX_LIBCORE extern const unsigned int flags[128];
 
 enum thing
 {

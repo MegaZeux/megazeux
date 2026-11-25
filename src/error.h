@@ -106,13 +106,13 @@ enum error_code
   NUM_ERROR_CODES
 };
 
-CORE_LIBSPEC int error(const char *string, enum error_type type,
+MZX_LIBCORE int error(const char *string, enum error_type type,
  unsigned int options, unsigned int code);
 
-CORE_LIBSPEC int error_message(enum error_code id, int parameter,
+MZX_LIBCORE int error_message(enum error_code id, int parameter,
  const char *string);
 
-CORE_LIBSPEC void set_error_suppression(enum error_code id, boolean enable);
+MZX_LIBCORE void set_error_suppression(enum error_code id, boolean enable);
 
 int get_and_reset_error_count(void);
 void reset_error_suppression(void);

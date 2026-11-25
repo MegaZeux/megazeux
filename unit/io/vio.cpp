@@ -1905,7 +1905,7 @@ UNITTEST(VirtualFilesystem)
   SECTION(dirent)
   {
     enum vdir_type type;
-    boolean found[ARRAY_SIZE(data)]{};
+    boolean found[MZX_ARRAY_SIZE(data)]{};
     boolean found_dir_real = false;
 
     // Make sure dir_real IS cached.
@@ -1939,7 +1939,7 @@ UNITTEST(VirtualFilesystem)
       }
       else
 
-      for(size_t i = 0; i < ARRAY_SIZE(data); i++)
+      for(size_t i = 0; i < MZX_ARRAY_SIZE(data); i++)
       {
         if(strcmp(buf, data[i].path) == 0)
         {
@@ -1951,7 +1951,7 @@ UNITTEST(VirtualFilesystem)
         }
       }
     }
-    for(size_t i = 0; i < ARRAY_SIZE(data); i++)
+    for(size_t i = 0; i < MZX_ARRAY_SIZE(data); i++)
     {
       // Ignore the files not in the current directory.
       if(data[i].path[0] == '.')

@@ -18,7 +18,6 @@
  */
 
 #include "platform_time.h"
-#include "../util.h"
 
 #include <time.h>
 

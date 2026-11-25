@@ -154,7 +154,7 @@ struct context_spec
  * @param ctx_spec          Specification for context functions/variables.
  * @param context_type      Used to identify contexts (also, by the help system)
  */
-CORE_LIBSPEC void create_context(context *ctx, context *parent,
+MZX_LIBCORE void create_context(context *ctx, context *parent,
  struct context_spec *ctx_spec, enum context_type context_type);
 
 /**
@@ -175,7 +175,7 @@ CORE_LIBSPEC void create_context(context *ctx, context *parent,
  * @param parent            The context which created this context.
  * @param sub_spec          Specification for subcontext functions/variables.
  */
-CORE_LIBSPEC void create_subcontext(subcontext *sub, context *parent,
+MZX_LIBCORE void create_subcontext(subcontext *sub, context *parent,
  struct context_spec *sub_spec);
 
 /**
@@ -186,7 +186,7 @@ CORE_LIBSPEC void create_subcontext(subcontext *sub, context *parent,
  *
  * @param ctx           The context or subcontext to destroy.
  */
-CORE_LIBSPEC void destroy_context(context *ctx);
+MZX_LIBCORE void destroy_context(context *ctx);
 
 /**
  * Determine if a context change has occurred.
@@ -195,7 +195,7 @@ CORE_LIBSPEC void destroy_context(context *ctx);
  * @param ctx           Current context
  * @return              true if a context change has occurred.
  */
-CORE_LIBSPEC boolean has_context_changed(context *ctx);
+MZX_LIBCORE boolean has_context_changed(context *ctx);
 
 /**
  * Determine if the given context matches an expected type.
@@ -204,7 +204,7 @@ CORE_LIBSPEC boolean has_context_changed(context *ctx);
  * @param context_type  A context type
  * @return              true if the context has the given context type.
  */
-CORE_LIBSPEC boolean is_context(context *ctx, enum context_type context_type);
+MZX_LIBCORE boolean is_context(context *ctx, enum context_type context_type);
 
 /**
  * Add a callback to a context if a context change has occurred. This callback
@@ -221,7 +221,7 @@ CORE_LIBSPEC boolean is_context(context *ctx, enum context_type context_type);
  * @param param         A parameter to be provided to the callback.
  * @param func          The callback to be executed.
  */
-CORE_LIBSPEC void context_callback(context *ctx, context_callback_param *param,
+MZX_LIBCORE void context_callback(context *ctx, context_callback_param *param,
  context_callback_function func);
 
 /**
@@ -240,28 +240,28 @@ void set_context_framerate_mode(context *ctx, enum framerate_type framerate);
  * @param data          Global information struct.
  * @return              A core context struct.
  */
-CORE_LIBSPEC core_context *core_init(struct world *mzx_world);
+MZX_LIBCORE core_context *core_init(struct world *mzx_world);
 
 /**
  * Run MegaZeux using given context stack information.
  *
  * @param root          The core context to run.
  */
-CORE_LIBSPEC void core_run(core_context *root);
+MZX_LIBCORE void core_run(core_context *root);
 
 /**
  * Signal the core to abort all contexts and exit the current game loop.
  *
  * @param ctx           The current context.
  */
-CORE_LIBSPEC void core_full_exit(context *ctx);
+MZX_LIBCORE void core_full_exit(context *ctx);
 
 /**
  * Signal the core to abort all contexts, exit the loop, and restart MegaZeux.
  *
  * @param ctx           The current context.
  */
-CORE_LIBSPEC void core_full_restart(context *ctx);
+MZX_LIBCORE void core_full_restart(context *ctx);
 
 /**
  * Determine if the a restart was requested.
@@ -269,38 +269,38 @@ CORE_LIBSPEC void core_full_restart(context *ctx);
  * @param root          The core context.
  * @return              True if a restart was requested.
  */
-CORE_LIBSPEC boolean core_restart_requested(core_context *root);
+MZX_LIBCORE boolean core_restart_requested(core_context *root);
 
 /**
  * Clean up MegaZeux all context data for a given core context.
  *
  * @param root          The core context to free.
  */
-CORE_LIBSPEC void core_free(core_context *root);
+MZX_LIBCORE void core_free(core_context *root);
 
 // Deprecated functions.
 
-CORE_LIBSPEC enum context_type get_context(context *);
-CORE_LIBSPEC void set_context(enum context_type idx);
-CORE_LIBSPEC void pop_context(void);
+MZX_LIBCORE enum context_type get_context(context *);
+MZX_LIBCORE void set_context(enum context_type idx);
+MZX_LIBCORE void pop_context(void);
 
 // Editor external function pointers.
 
-CORE_LIBSPEC extern void (*edit_world)(context *parent,
+MZX_LIBCORE extern void (*edit_world)(context *parent,
  boolean reload_curr_file);
-CORE_LIBSPEC extern void (*debug_counters)(context *ctx);
-CORE_LIBSPEC extern void (*draw_debug_box)(struct world *mzx_world,
+MZX_LIBCORE extern void (*debug_counters)(context *ctx);
+MZX_LIBCORE extern void (*draw_debug_box)(struct world *mzx_world,
  int x, int y, int d_x, int d_y, int show_keys);
-CORE_LIBSPEC extern int (*debug_robot_break)(context *ctx,
+MZX_LIBCORE extern int (*debug_robot_break)(context *ctx,
  struct robot *cur_robot, int id, int lines_run);
-CORE_LIBSPEC extern int (*debug_robot_watch)(context *ctx,
+MZX_LIBCORE extern int (*debug_robot_watch)(context *ctx,
  struct robot *cur_robot, int id, int lines_run);
-CORE_LIBSPEC extern void (*debug_robot_config)(struct world *mzx_world);
-CORE_LIBSPEC extern void (*debug_robot_reset)(struct world *mzx_world);
+MZX_LIBCORE extern void (*debug_robot_config)(struct world *mzx_world);
+MZX_LIBCORE extern void (*debug_robot_reset)(struct world *mzx_world);
 
 // Network external function pointers.
 
-CORE_LIBSPEC extern boolean (*check_for_updates)(context *ctx,
+MZX_LIBCORE extern boolean (*check_for_updates)(context *ctx,
  boolean is_automatic);
 
 MEGAZEUX_END_DECLS

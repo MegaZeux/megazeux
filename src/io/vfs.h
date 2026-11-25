@@ -91,54 +91,54 @@ struct vfs_dir
   size_t num_files;
 };
 
-UTILS_LIBSPEC vfilesystem *vfs_init(void);
-UTILS_LIBSPEC void vfs_free(vfilesystem *vfs);
+MZX_LIBIO vfilesystem *vfs_init(void);
+MZX_LIBIO void vfs_free(vfilesystem *vfs);
 
 #ifdef VIRTUAL_FILESYSTEM
 
-UTILS_LIBSPEC enum vfs_error vfs_make_root(vfilesystem *vfs, const char *name);
-UTILS_LIBSPEC enum vfs_error vfs_create_file_at_path(vfilesystem *vfs, const char *path);
+MZX_LIBIO enum vfs_error vfs_make_root(vfilesystem *vfs, const char *name);
+MZX_LIBIO enum vfs_error vfs_create_file_at_path(vfilesystem *vfs, const char *path);
 
-UTILS_LIBSPEC enum vfs_error vfs_open_if_exists(vfilesystem *vfs,
+MZX_LIBIO enum vfs_error vfs_open_if_exists(vfilesystem *vfs,
  const char *path, boolean is_write, uint32_t *inode);
-UTILS_LIBSPEC enum vfs_error vfs_close(vfilesystem *vfs, uint32_t inode);
-UTILS_LIBSPEC enum vfs_error vfs_truncate(vfilesystem *vfs, uint32_t inode);
-UTILS_LIBSPEC ssize_t vfs_filelength(vfilesystem *vfs, uint32_t inode);
-UTILS_LIBSPEC enum vfs_error vfs_lock_file_read(vfilesystem *vfs, uint32_t inode,
+MZX_LIBIO enum vfs_error vfs_close(vfilesystem *vfs, uint32_t inode);
+MZX_LIBIO enum vfs_error vfs_truncate(vfilesystem *vfs, uint32_t inode);
+MZX_LIBIO ssize_t vfs_filelength(vfilesystem *vfs, uint32_t inode);
+MZX_LIBIO enum vfs_error vfs_lock_file_read(vfilesystem *vfs, uint32_t inode,
  const unsigned char **data, size_t *data_length);
-UTILS_LIBSPEC enum vfs_error vfs_unlock_file_read(vfilesystem *vfs, uint32_t inode);
-UTILS_LIBSPEC enum vfs_error vfs_lock_file_write(vfilesystem *vfs, uint32_t inode,
+MZX_LIBIO enum vfs_error vfs_unlock_file_read(vfilesystem *vfs, uint32_t inode);
+MZX_LIBIO enum vfs_error vfs_lock_file_write(vfilesystem *vfs, uint32_t inode,
  unsigned char ***data, size_t **data_length, size_t **data_alloc);
-UTILS_LIBSPEC enum vfs_error vfs_unlock_file_write(vfilesystem *vfs, uint32_t inode);
+MZX_LIBIO enum vfs_error vfs_unlock_file_write(vfilesystem *vfs, uint32_t inode);
 
-UTILS_LIBSPEC enum vfs_error vfs_chdir(vfilesystem *vfs, const char *path);
-UTILS_LIBSPEC enum vfs_error vfs_getcwd(vfilesystem *vfs, char *dest, size_t dest_len);
-UTILS_LIBSPEC enum vfs_error vfs_mkdir(vfilesystem *vfs, const char *path, int mode);
-UTILS_LIBSPEC enum vfs_error vfs_rename(vfilesystem *vfs, const char *oldpath,
+MZX_LIBIO enum vfs_error vfs_chdir(vfilesystem *vfs, const char *path);
+MZX_LIBIO enum vfs_error vfs_getcwd(vfilesystem *vfs, char *dest, size_t dest_len);
+MZX_LIBIO enum vfs_error vfs_mkdir(vfilesystem *vfs, const char *path, int mode);
+MZX_LIBIO enum vfs_error vfs_rename(vfilesystem *vfs, const char *oldpath,
  const char *newpath);
-UTILS_LIBSPEC enum vfs_error vfs_unlink(vfilesystem *vfs, const char *path);
-UTILS_LIBSPEC enum vfs_error vfs_rmdir(vfilesystem *vfs, const char *path);
-UTILS_LIBSPEC enum vfs_error vfs_access(vfilesystem *vfs, const char *path, int mode);
-UTILS_LIBSPEC enum vfs_error vfs_stat(vfilesystem *vfs, const char *path, struct stat *st);
+MZX_LIBIO enum vfs_error vfs_unlink(vfilesystem *vfs, const char *path);
+MZX_LIBIO enum vfs_error vfs_rmdir(vfilesystem *vfs, const char *path);
+MZX_LIBIO enum vfs_error vfs_access(vfilesystem *vfs, const char *path, int mode);
+MZX_LIBIO enum vfs_error vfs_stat(vfilesystem *vfs, const char *path, struct stat *st);
 
-UTILS_LIBSPEC enum vfs_error vfs_readdir(vfilesystem *vfs, const char *path, struct vfs_dir *d);
-UTILS_LIBSPEC enum vfs_error vfs_readdir_free(struct vfs_dir *d);
+MZX_LIBIO enum vfs_error vfs_readdir(vfilesystem *vfs, const char *path, struct vfs_dir *d);
+MZX_LIBIO enum vfs_error vfs_readdir_free(struct vfs_dir *d);
 
-UTILS_LIBSPEC enum vfs_error vfs_invalidate_at_path(vfilesystem *vfs, const char *path);
-UTILS_LIBSPEC enum vfs_error vfs_invalidate_at_least(vfilesystem *vfs, size_t *amount_to_free);
-UTILS_LIBSPEC enum vfs_error vfs_invalidate_all(vfilesystem *vfs);
-UTILS_LIBSPEC enum vfs_error vfs_cache_directory(vfilesystem *vfs,
+MZX_LIBIO enum vfs_error vfs_invalidate_at_path(vfilesystem *vfs, const char *path);
+MZX_LIBIO enum vfs_error vfs_invalidate_at_least(vfilesystem *vfs, size_t *amount_to_free);
+MZX_LIBIO enum vfs_error vfs_invalidate_all(vfilesystem *vfs);
+MZX_LIBIO enum vfs_error vfs_cache_directory(vfilesystem *vfs,
  const char *path, const struct stat *st);
-UTILS_LIBSPEC enum vfs_error vfs_cache_file(vfilesystem *vfs, const char *path,
+MZX_LIBIO enum vfs_error vfs_cache_file(vfilesystem *vfs, const char *path,
  const void *data, size_t data_length);
-UTILS_LIBSPEC enum vfs_error vfs_cache_file_callback(vfilesystem *vfs,
+MZX_LIBIO enum vfs_error vfs_cache_file_callback(vfilesystem *vfs,
  const char *path, size_t (*readfn)(void * RESTRICT, size_t, void * RESTRICT),
  void *priv, size_t data_length);
-UTILS_LIBSPEC size_t vfs_get_cache_total_size(vfilesystem *vfs);
-UTILS_LIBSPEC size_t vfs_get_total_memory_usage(vfilesystem *vfs);
-UTILS_LIBSPEC void vfs_set_timestamps_enabled(vfilesystem *vfs, boolean enable);
+MZX_LIBIO size_t vfs_get_cache_total_size(vfilesystem *vfs);
+MZX_LIBIO size_t vfs_get_total_memory_usage(vfilesystem *vfs);
+MZX_LIBIO void vfs_set_timestamps_enabled(vfilesystem *vfs, boolean enable);
 
-UTILS_LIBSPEC int vfs_error_to_errno(enum vfs_error err);
+MZX_LIBIO int vfs_error_to_errno(enum vfs_error err);
 
 #else /* !VIRTUAL_FILESYSTEM */
 

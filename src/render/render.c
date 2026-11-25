@@ -26,7 +26,6 @@
 #include "yuv.h"
 
 #include "../graphics.h"
-#include "../util.h"
 #include "../algorithm/arch.h"
 
 static void set_colors8_mzx(const struct graphics_data *graphics,
@@ -516,8 +515,8 @@ void get_screen_coords_viewport(struct graphics_data *graphics,
   if(window->viewport_height != SCREEN_PIX_H)
     rel_y = rel_y * SCREEN_PIX_H / window->viewport_height;
 
-  *x = CLAMP(rel_x, 0, SCREEN_PIX_W - 1);
-  *y = CLAMP(rel_y, 0, SCREEN_PIX_H - 1);
+  *x = MZX_CLAMP(rel_x, 0, SCREEN_PIX_W - 1);
+  *y = MZX_CLAMP(rel_y, 0, SCREEN_PIX_H - 1);
   *min_x = window->viewport_x;
   *min_y = window->viewport_y;
   *max_x = window->viewport_x + window->viewport_width - 1;
@@ -549,8 +548,8 @@ void set_window_viewport_scaled(struct graphics_data *graphics,
 {
   int numerator = window->ratio_numerator;
   int denominator = window->ratio_denominator;
-  int width = MAX(window->width_px, 1);
-  int height = MAX(window->height_px, 1);
+  int width = MZX_MAX(window->width_px, 1);
+  int height = MZX_MAX(window->height_px, 1);
 
   if(numerator > 0 && denominator > 0)
   {
@@ -559,12 +558,12 @@ void set_window_viewport_scaled(struct graphics_data *graphics,
     if(width * denominator < height * numerator)
     {
       height = (width * denominator) / numerator;
-      height = MAX(height, 1);
+      height = MZX_MAX(height, 1);
     }
     else
     {
       width = (height * numerator) / denominator;
-      width = MAX(width, 1);
+      width = MZX_MAX(width, 1);
     }
   }
 

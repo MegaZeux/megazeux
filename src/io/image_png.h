@@ -20,14 +20,12 @@
 #ifndef MEGAZEUX_IO_IMAGE_PNG_H
 #define MEGAZEUX_IO_IMAGE_PNG_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "../base.h"
+
+MEGAZEUX_BEGIN_DECLS
 
 #include <stdint.h>
 #include <stdlib.h>
-
-#include "image_common.h"
 
 #define PNG_SIGNATURE_STRING "\x89PNG\r\n\x1A\n"
 
@@ -55,11 +53,12 @@ struct png_rgba
   uint8_t a; /* alpha component (0 to 255) */
 };
 
-typedef size_t (*png_read_function)(void * RESTRICT dest, size_t num, void * RESTRICT handle);
-typedef size_t (*png_write_function)(const void *src, size_t num, void * RESTRICT handle);
-typedef unsigned char png_bool;
+typedef size_t (*png_read_function)(void * MZX_RESTRICT dest, size_t num,
+ void * MZX_RESTRICT handle);
+typedef size_t (*png_write_function)(const void *src, size_t num,
+ void * MZX_RESTRICT handle);
 
-typedef png_bool (*png_read_alloc_function)(uint32_t width, uint32_t height,
+typedef mzx_bool (*png_read_alloc_function)(uint32_t width, uint32_t height,
  struct png_rgba **pixels, size_t *pixels_row_pitch, void *priv);
 typedef const struct png_rgba *(*png_write_row_function)(uint32_t width, void *priv);
 
@@ -87,7 +86,7 @@ typedef const struct png_rgba *(*png_write_row_function)(uint32_t width, void *p
  * @return            PNG_OK on success, otherwise a relevant png_error value.
  */
 enum png_error png_read(void *handle, png_read_function readfn,
- void *priv, png_read_alloc_function allocfn, png_bool skip_signature);
+ void *priv, png_read_alloc_function allocfn, mzx_bool skip_signature);
 
 /**
  * Write a PNG image to file.
@@ -112,8 +111,6 @@ enum png_error png_write(
  void *handle, png_write_function writefn,
  void *priv, png_write_row_function writerowfn);
 
-#ifdef __cplusplus
-}
-#endif
+MEGAZEUX_END_DECLS
 
 #endif /* MEGAZEUX_IO_IMAGE_PNG_H */

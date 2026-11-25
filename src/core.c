@@ -31,7 +31,6 @@
 #include "graphics.h"
 #include "helpsys.h"
 #include "settings.h"
-#include "util.h"
 #include "world.h"
 #include "world_struct.h"
 
@@ -449,7 +448,7 @@ void create_context(context *ctx, context *parent,
 /**
  * Creates a subcontext and adds it to the parent context.
  */
-CORE_LIBSPEC void create_subcontext(subcontext *sub, context *parent,
+void create_subcontext(subcontext *sub, context *parent,
  struct context_spec *sub_spec)
 {
   core_context *root;
@@ -884,7 +883,7 @@ static void core_update(core_context *root)
   if(!key && has_unicode_input())
     key = IKEY_UNICODE;
 
-  if(update_count > (int)ARRAY_SIZE(_update_order))
+  if(update_count > (int)MZX_ARRAY_SIZE(_update_order))
     update_order = cmalloc(update_count * sizeof(context *));
 
   update_order[0] = ctx;

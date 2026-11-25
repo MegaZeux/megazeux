@@ -48,8 +48,8 @@ enum cursor_mode
   MAX_CURSOR_MODE
 };
 
-EDITOR_LIBSPEC void editor_init(void);
-EDITOR_LIBSPEC boolean is_editor(void);
+MZX_LIBEDITOR void editor_init(void);
+MZX_LIBEDITOR boolean is_editor(void);
 
 #define EC_MAIN_BOX           25
 #define EC_MAIN_BOX_DARK      16

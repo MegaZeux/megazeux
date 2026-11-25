@@ -26,9 +26,9 @@ MEGAZEUX_BEGIN_DECLS
 
 #include <stddef.h>
 
-UTILS_LIBSPEC void *mzx_io_malloc(size_t sz);
-UTILS_LIBSPEC void *mzx_io_calloc(size_t nmemb, size_t sz);
-UTILS_LIBSPEC void *mzx_io_realloc(void *ptr, size_t sz);
+MZX_LIBIO void *mzx_io_malloc(size_t sz);
+MZX_LIBIO void *mzx_io_calloc(size_t nmemb, size_t sz);
+MZX_LIBIO void *mzx_io_realloc(void *ptr, size_t sz);
 
 MEGAZEUX_END_DECLS
 

@@ -25,7 +25,6 @@
 MEGAZEUX_BEGIN_DECLS
 
 #include "vfile.h"
-#include "../platform/platform_attribute.h" /* ATTRIBUTE_PRINTF */
 
 #include <stdarg.h>
 #include <stdint.h>
@@ -73,74 +72,74 @@ enum vdirflags
   VDIR_PUBLIC_MASK      = VDIR_NO_SCAN
 };
 
-UTILS_LIBSPEC boolean vio_filesystem_init(size_t max_size, size_t max_file_size,
+MZX_LIBIO boolean vio_filesystem_init(size_t max_size, size_t max_file_size,
  boolean enable_auto_cache);
-UTILS_LIBSPEC boolean vio_filesystem_exit(void);
-UTILS_LIBSPEC size_t vio_filesystem_total_cached_usage(void);
-UTILS_LIBSPEC size_t vio_filesystem_total_memory_usage(void);
-UTILS_LIBSPEC boolean vio_virtual_file(const char *path);
-UTILS_LIBSPEC boolean vio_virtual_directory(const char *path);
-UTILS_LIBSPEC boolean vio_invalidate_at_least(size_t *amount_to_free);
-UTILS_LIBSPEC boolean vio_invalidate_all(void);
+MZX_LIBIO boolean vio_filesystem_exit(void);
+MZX_LIBIO size_t vio_filesystem_total_cached_usage(void);
+MZX_LIBIO size_t vio_filesystem_total_memory_usage(void);
+MZX_LIBIO boolean vio_virtual_file(const char *path);
+MZX_LIBIO boolean vio_virtual_directory(const char *path);
+MZX_LIBIO boolean vio_invalidate_at_least(size_t *amount_to_free);
+MZX_LIBIO boolean vio_invalidate_all(void);
 
-UTILS_LIBSPEC vfile *vfopen_unsafe_ext(const char *filename, const char *mode,
+MZX_LIBIO vfile *vfopen_unsafe_ext(const char *filename, const char *mode,
  int user_flags);
-UTILS_LIBSPEC vfile *vfopen_unsafe(const char *filename, const char *mode);
-UTILS_LIBSPEC vfile *vfile_init_fp(FILE *fp, const char *mode);
-UTILS_LIBSPEC vfile *vfile_init_mem(void *buffer, size_t size, const char *mode);
-UTILS_LIBSPEC vfile *vfile_init_mem_ext(void **external_buffer,
+MZX_LIBIO vfile *vfopen_unsafe(const char *filename, const char *mode);
+MZX_LIBIO vfile *vfile_init_fp(FILE *fp, const char *mode);
+MZX_LIBIO vfile *vfile_init_mem(void *buffer, size_t size, const char *mode);
+MZX_LIBIO vfile *vfile_init_mem_ext(void **external_buffer,
  size_t *external_buffer_size, const char *mode);
-UTILS_LIBSPEC vfile *vtempfile(size_t initial_size);
-UTILS_LIBSPEC boolean vfile_force_to_memory(vfile *vf);
-UTILS_LIBSPEC int vfclose(vfile *vf);
+MZX_LIBIO vfile *vtempfile(size_t initial_size);
+MZX_LIBIO boolean vfile_force_to_memory(vfile *vf);
+MZX_LIBIO int vfclose(vfile *vf);
 
-UTILS_LIBSPEC int vfile_get_mode_flags(const char *mode);
-UTILS_LIBSPEC int vfile_get_flags(vfile *vf);
+MZX_LIBIO int vfile_get_mode_flags(const char *mode);
+MZX_LIBIO int vfile_get_flags(vfile *vf);
 boolean vfile_get_memfile_block(vfile *vf, size_t length, struct memfile *dest);
 
-UTILS_LIBSPEC int vchdir(const char *path);
-UTILS_LIBSPEC char *vgetcwd(char *buf, size_t size);
-UTILS_LIBSPEC int vmkdir(const char *path, int mode);
-UTILS_LIBSPEC int vrename(const char *oldpath, const char *newpath);
-UTILS_LIBSPEC int vunlink(const char *path);
-UTILS_LIBSPEC int vrmdir(const char *path);
-UTILS_LIBSPEC int vaccess(const char *path, int mode);
-UTILS_LIBSPEC int vstat(const char *path, struct stat *buf);
+MZX_LIBIO int vchdir(const char *path);
+MZX_LIBIO char *vgetcwd(char *buf, size_t size);
+MZX_LIBIO int vmkdir(const char *path, int mode);
+MZX_LIBIO int vrename(const char *oldpath, const char *newpath);
+MZX_LIBIO int vunlink(const char *path);
+MZX_LIBIO int vrmdir(const char *path);
+MZX_LIBIO int vaccess(const char *path, int mode);
+MZX_LIBIO int vstat(const char *path, struct stat *buf);
 
-UTILS_LIBSPEC int vfgetc(vfile *vf);
-UTILS_LIBSPEC int vfgetw(vfile *vf);
-UTILS_LIBSPEC int vfgetd(vfile *vf);
-UTILS_LIBSPEC int64_t vfgetq(vfile *vf);
-UTILS_LIBSPEC int vfputc(int character, vfile *vf);
-UTILS_LIBSPEC int vfputw(int character, vfile *vf);
-UTILS_LIBSPEC int vfputd(int character, vfile *vf);
-UTILS_LIBSPEC int64_t vfputq(int64_t character, vfile *vf);
-UTILS_LIBSPEC size_t vfread(void *dest, size_t size, size_t count, vfile *vf);
-UTILS_LIBSPEC size_t vfwrite(const void *src, size_t size, size_t count, vfile *vf);
-UTILS_LIBSPEC char *vfsafegets(char *dest, int size, vfile *vf);
-UTILS_LIBSPEC int vfputs(const char *src, vfile *vf);
-UTILS_LIBSPEC int vf_printf(vfile *vf, const char *fmt, ...)
- ATTRIBUTE_PRINTF(2, 3);
-UTILS_LIBSPEC int vf_vprintf(vfile *vf, const char *fmt, va_list args)
- ATTRIBUTE_PRINTF(2, 0);
-UTILS_LIBSPEC int vungetc(int ch, vfile *vf);
-UTILS_LIBSPEC int vfseek(vfile *vf, int64_t offset, int whence);
-UTILS_LIBSPEC int64_t vftell(vfile *vf);
-UTILS_LIBSPEC void vrewind(vfile *vf);
-UTILS_LIBSPEC int64_t vfilelength(vfile *vf, boolean rewind);
+MZX_LIBIO int vfgetc(vfile *vf);
+MZX_LIBIO int vfgetw(vfile *vf);
+MZX_LIBIO int vfgetd(vfile *vf);
+MZX_LIBIO int64_t vfgetq(vfile *vf);
+MZX_LIBIO int vfputc(int character, vfile *vf);
+MZX_LIBIO int vfputw(int character, vfile *vf);
+MZX_LIBIO int vfputd(int character, vfile *vf);
+MZX_LIBIO int64_t vfputq(int64_t character, vfile *vf);
+MZX_LIBIO size_t vfread(void *dest, size_t size, size_t count, vfile *vf);
+MZX_LIBIO size_t vfwrite(const void *src, size_t size, size_t count, vfile *vf);
+MZX_LIBIO char *vfsafegets(char *dest, int size, vfile *vf);
+MZX_LIBIO int vfputs(const char *src, vfile *vf);
+MZX_LIBIO int vf_printf(vfile *vf, const char *fmt, ...)
+ MZX_ATTRIBUTE_PRINTF(2, 3);
+MZX_LIBIO int vf_vprintf(vfile *vf, const char *fmt, va_list args)
+ MZX_ATTRIBUTE_PRINTF(2, 0);
+MZX_LIBIO int vungetc(int ch, vfile *vf);
+MZX_LIBIO int vfseek(vfile *vf, int64_t offset, int whence);
+MZX_LIBIO int64_t vftell(vfile *vf);
+MZX_LIBIO void vrewind(vfile *vf);
+MZX_LIBIO int64_t vfilelength(vfile *vf, boolean rewind);
 
-UTILS_LIBSPEC vdir *vdir_open(const char *path);
-UTILS_LIBSPEC vdir *vdir_open_ext(const char *path, int flags);
-UTILS_LIBSPEC int vdir_close(vdir *dir);
-UTILS_LIBSPEC boolean vdir_read(vdir *dir, char *buffer, size_t len, enum vdir_type *type);
-UTILS_LIBSPEC boolean vdir_seek(vdir *dir, long position);
-UTILS_LIBSPEC boolean vdir_rewind(vdir *dir);
-UTILS_LIBSPEC long vdir_tell(vdir *dir);
-UTILS_LIBSPEC long vdir_length(vdir *dir);
+MZX_LIBIO vdir *vdir_open(const char *path);
+MZX_LIBIO vdir *vdir_open_ext(const char *path, int flags);
+MZX_LIBIO int vdir_close(vdir *dir);
+MZX_LIBIO boolean vdir_read(vdir *dir, char *buffer, size_t len, enum vdir_type *type);
+MZX_LIBIO boolean vdir_seek(vdir *dir, long position);
+MZX_LIBIO boolean vdir_rewind(vdir *dir);
+MZX_LIBIO long vdir_tell(vdir *dir);
+MZX_LIBIO long vdir_length(vdir *dir);
 
-UTILS_LIBSPEC vvolumelist *vvolumelist_open(void);
-UTILS_LIBSPEC int vvolumelist_close(vvolumelist *volumes);
-UTILS_LIBSPEC const char *vvolumelist_read(vvolumelist *volumes);
+MZX_LIBIO vvolumelist *vvolumelist_open(void);
+MZX_LIBIO int vvolumelist_close(vvolumelist *volumes);
+MZX_LIBIO const char *vvolumelist_read(vvolumelist *volumes);
 
 MEGAZEUX_END_DECLS
 

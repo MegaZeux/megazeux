@@ -26,7 +26,6 @@
 
 #include "rasm.h"
 #include "data.h"
-#include "util.h"
 #include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 #include "io/memfile.h"
@@ -2471,7 +2470,7 @@ __editor_maybe_static int disassemble_line(char *cpos, char **next,
             if(arg_types)
               arg_types[words] = S_THING;
 
-            if(thing >= (int)ARRAY_SIZE(thing_names))
+            if(thing >= (int)MZX_ARRAY_SIZE(thing_names))
             {
               strcpy(output_position, "??");
               output_position += 2;
@@ -2548,7 +2547,7 @@ __editor_maybe_static int disassemble_line(char *cpos, char **next,
               arg_types[words] = S_EQUALITY;
 
             // Is this actually a valid operator?
-            if(equality < (int)ARRAY_SIZE(equality_types))
+            if(equality < (int)MZX_ARRAY_SIZE(equality_types))
             {
               strcpy(output_position, equality_types[equality]);
               output_position += strlen(equality_types[equality]);
@@ -2570,7 +2569,7 @@ __editor_maybe_static int disassemble_line(char *cpos, char **next,
             if(arg_types)
               arg_types[words] = S_CONDITION;
 
-            if(condition >= (int)ARRAY_SIZE(condition_types))
+            if(condition >= (int)MZX_ARRAY_SIZE(condition_types))
             {
               strcpy(output_position, "??");
               output_position += 2;
@@ -2602,7 +2601,7 @@ __editor_maybe_static int disassemble_line(char *cpos, char **next,
             if(arg_types)
               arg_types[words] = S_ITEM;
 
-            if(item >= (int)ARRAY_SIZE(item_types))
+            if(item >= (int)MZX_ARRAY_SIZE(item_types))
             {
               strcpy(output_position, "??");
               output_position += 2;
@@ -3363,7 +3362,7 @@ static void validate_legacy_bytecode_print(char *bc, int program_length,
   }
 
   command_length = bc[offset];
-  print_length = MIN(command_length + 2, program_length - offset);
+  print_length = MZX_MIN(command_length + 2, program_length - offset);
 
   err_mesg = cmalloc(sizeof(char) * (print_length * 3 + 2));
   err_mesg[0] = 0;
@@ -3430,11 +3429,11 @@ static enum bytecode_fix_status validate_legacy_bytecode_attempt_fix(char **_bc,
   // The rest of the fixes are more technical, so print detailed debug output.
   validate_legacy_bytecode_print(bc, program_length, offset);
 
-  command_length = MIN(bc[offset] + 2, left);
+  command_length = MZX_MIN(bc[offset] + 2, left);
 
   // Check for specific patches. The bad command has to exactly match what's
   // in the list for a patch to be applied.
-  for(i = 0; i < ARRAY_SIZE(program_patches); i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(program_patches); i++)
   {
     p = &program_patches[i];
     if(left < p->bad_command_length || command_length < p->bad_command_length)

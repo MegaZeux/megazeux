@@ -29,7 +29,7 @@ MEGAZEUX_BEGIN_DECLS
 #include "data.h"
 #include "world_struct.h"
 
-CORE_LIBSPEC void id_remove_top(struct world *mzx_world,
+MZX_LIBCORE void id_remove_top(struct world *mzx_world,
  int array_x, int array_y);
 
 void id_place(struct world *mzx_world, int array_x, int array_y,

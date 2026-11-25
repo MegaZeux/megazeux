@@ -23,8 +23,6 @@
 #include "../platform.h"
 #undef main
 
-#include "../../util.h"
-
 KOS_INIT_FLAGS(INIT_DEFAULT);
 KOS_INIT_ROMDISK(KOS_INIT_ROMDISK_NONE);
 

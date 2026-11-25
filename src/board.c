@@ -29,7 +29,6 @@
 #include "robot.h"
 #include "world.h"
 #include "world_format.h"
-#include "util.h"
 #include "world_struct.h"
 #include "algorithm/string_compare.h"
 #include "io/memfile.h"
@@ -375,7 +374,7 @@ void board_set_input_string(struct board *cur_board, const char *input, size_t l
 
   if(len + 1 > cur_board->input_allocated)
   {
-    size_t size = MAX(len + 1, 81);
+    size_t size = MZX_MAX(len + 1, 81);
     cur_board->input_string = crealloc(cur_board->input_string, size);
     cur_board->input_allocated = size;
   }
@@ -396,7 +395,7 @@ __editor_maybe_static void board_set_charset_path(struct board *cur_board,
 
   if(path_len + 1 > cur_board->charset_path_allocated)
   {
-    size_t size = MAX(path_len + 1, 32);
+    size_t size = MZX_MAX(path_len + 1, 32);
     cur_board->charset_path = crealloc(cur_board->charset_path, size);
     cur_board->charset_path_allocated = size;
   }
@@ -416,7 +415,7 @@ __editor_maybe_static void board_set_palette_path(struct board *cur_board,
 
   if(path_len + 1 > cur_board->palette_path_allocated)
   {
-    size_t size = MAX(path_len + 1, 32);
+    size_t size = MZX_MAX(path_len + 1, 32);
     cur_board->palette_path = crealloc(cur_board->palette_path, size);
     cur_board->palette_path_allocated = size;
   }
@@ -458,7 +457,7 @@ static int load_board_info(struct world *mzx_world, struct board *cur_board,
 
       // Essential
       case BPROP_BOARD_NAME:
-        size = MIN(size, BOARD_NAME_SIZE - 1);
+        size = MZX_MIN(size, BOARD_NAME_SIZE - 1);
         mfread(cur_board->board_name, size, 1, &prop);
         cur_board->board_name[size] = 0;
         break;
@@ -519,7 +518,7 @@ static int load_board_info(struct world *mzx_world, struct board *cur_board,
 
       // Non-essential
       case BPROP_MOD_PLAYING:
-        size = MIN(size, MAX_PATH-1);
+        size = MZX_MIN(size, MAX_PATH - 1);
         mfread(cur_board->mod_playing, size, 1, &prop);
         cur_board->mod_playing[size] = 0;
         break;
@@ -629,12 +628,12 @@ static int load_board_info(struct world *mzx_world, struct board *cur_board,
         break;
 
       case BPROP_CHARSET_PATH:
-        size = MIN(size, MAX_PATH - 1);
+        size = MZX_MIN(size, MAX_PATH - 1);
         board_set_charset_path(cur_board, (const char *)prop.start, size);
         break;
 
       case BPROP_PALETTE_PATH:
-        size = MIN(size, MAX_PATH - 1);
+        size = MZX_MIN(size, MAX_PATH - 1);
         board_set_palette_path(cur_board, (const char *)prop.start, size);
         break;
 
@@ -687,12 +686,12 @@ static int load_board_info(struct world *mzx_world, struct board *cur_board,
         break;
 
       case BPROP_INPUT_STRING:
-        size = MIN(size, ROBOT_MAX_TR-1);
+        size = MZX_MIN(size, ROBOT_MAX_TR - 1);
         board_set_input_string(cur_board, (const char *)prop.start, size);
         break;
 
       case BRPOP_BOTTOM_MESG:
-        size = MIN(size, ROBOT_MAX_TR-1);
+        size = MZX_MIN(size, ROBOT_MAX_TR - 1);
         mfread(cur_board->bottom_mesg, size, 1, &prop);
         cur_board->bottom_mesg[size] = 0;
         break;
@@ -760,10 +759,14 @@ static int load_board_info(struct world *mzx_world, struct board *cur_board,
     goto err_free;
 
   // Fix viewport width/height (these might have been out-of-order).
-  cur_board->viewport_width  = CLAMP(cur_board->viewport_width, 1, 80 - cur_board->viewport_x);
-  cur_board->viewport_width  = CLAMP(cur_board->viewport_width, 1, cur_board->board_width);
-  cur_board->viewport_height = CLAMP(cur_board->viewport_height, 1, 25 - cur_board->viewport_y);
-  cur_board->viewport_height = CLAMP(cur_board->viewport_height, 1, cur_board->board_height);
+  cur_board->viewport_width =
+   MZX_CLAMP(cur_board->viewport_width, 1, 80 - cur_board->viewport_x);
+  cur_board->viewport_width =
+   MZX_CLAMP(cur_board->viewport_width, 1, cur_board->board_width);
+  cur_board->viewport_height =
+   MZX_CLAMP(cur_board->viewport_height, 1, 25 - cur_board->viewport_y);
+  cur_board->viewport_height =
+   MZX_CLAMP(cur_board->viewport_height, 1, cur_board->board_height);
 
   free(buffer);
   return 0;

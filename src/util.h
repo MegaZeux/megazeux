@@ -18,35 +18,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-// Useful, generic utility functions
-
 #ifndef MEGAZEUX_UTIL_H
 #define MEGAZEUX_UTIL_H
 
 #include "compat.h"
 
 MEGAZEUX_BEGIN_DECLS
-
-#include <stdint.h>
-#include <stdio.h>
-#if !defined(_MSC_VER) && !defined(__amigaos__)
-#include <unistd.h>
-#endif
-
-/* Fix redefinition warnings from some libraries (examples: musl, DirectFB) */
-#undef MIN
-#undef MAX
-#undef CLAMP
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-
-#define CLAMP(x, low, high) \
-  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
-
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
-
-#define SGN(x) ((x > 0) - (x < 0))
 
 enum resource_id
 {
@@ -89,13 +66,13 @@ enum resource_id
 #define GLSL_SHADER_RES_COUNT (GLSL_SHADER_RES_LAST - GLSL_SHADER_RES_FIRST + 1)
 #endif
 
-CORE_LIBSPEC int mzx_res_init(const char *argv0, boolean editor);
-CORE_LIBSPEC void mzx_res_free(void);
-CORE_LIBSPEC const char *mzx_res_get_by_id(enum resource_id id);
+MZX_LIBCORE int mzx_res_init(const char *argv0, boolean editor);
+MZX_LIBCORE void mzx_res_free(void);
+MZX_LIBCORE const char *mzx_res_get_by_id(enum resource_id id);
 
 #if defined(__amigaos__)
-CORE_LIBSPEC extern long __stack_chk_guard[8];
-CORE_LIBSPEC void __stack_chk_fail(void);
+MZX_LIBCORE extern long __stack_chk_guard[8];
+MZX_LIBCORE void __stack_chk_fail(void);
 #endif
 
 MEGAZEUX_END_DECLS

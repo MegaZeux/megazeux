@@ -27,7 +27,6 @@
 #include <unistd.h>
 #endif
 
-#include "../util.h"
 #include "../algorithm/string_compare.h"
 #include "../platform/log.h"
 #include "path.h"
@@ -1031,7 +1030,7 @@ static boolean path_safety_check_dos_device(const char *token, size_t token_len)
 
   if(token_len == 3)
   {
-    for(i = 0; i < ARRAY_SIZE(devices); i++)
+    for(i = 0; i < MZX_ARRAY_SIZE(devices); i++)
       if(!strncasecmp(token, devices[i], 3))
         return true;
   }
@@ -1039,7 +1038,7 @@ static boolean path_safety_check_dos_device(const char *token, size_t token_len)
 
   if(token_len == 4)
   {
-    for(i = 0; i < ARRAY_SIZE(devices_num); i++)
+    for(i = 0; i < MZX_ARRAY_SIZE(devices_num); i++)
     {
       if(strncasecmp(token, devices_num[i], 3))
         continue;

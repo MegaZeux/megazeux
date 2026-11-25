@@ -28,8 +28,8 @@ MEGAZEUX_BEGIN_DECLS
 
 #ifdef CONFIG_NETWORK
 
-CORE_LIBSPEC boolean network_layer_init(struct config_info *conf);
-CORE_LIBSPEC void network_layer_exit(struct config_info *conf);
+MZX_LIBNETWORK boolean network_layer_init(struct config_info *conf);
+MZX_LIBNETWORK void network_layer_exit(struct config_info *conf);
 
 #else /* !CONFIG_NETWORK */
 

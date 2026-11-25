@@ -30,7 +30,6 @@
 #include "audio_struct.h"
 #include "audio_wav_load.h"
 
-#include "../util.h"
 #include "../io/vio.h"
 
 #ifdef CONFIG_SDL

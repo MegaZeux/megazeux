@@ -32,7 +32,6 @@
 #include "../world.h"
 #include "../legacy_board.h"
 #include "../idput.h"
-#include "../util.h"
 #include "../io/memfile.h"
 #include "../io/vio.h"
 #include "../io/zip.h"

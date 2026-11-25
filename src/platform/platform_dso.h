@@ -51,9 +51,9 @@ struct dso_syms_map
 
 #define DSO_MAP_END { NULL, { NULL }}
 
-CORE_LIBSPEC struct dso_library *platform_load_library(const char *name);
-CORE_LIBSPEC void platform_unload_library(struct dso_library *library);
-CORE_LIBSPEC boolean platform_load_function(struct dso_library *library,
+MZX_LIBPLATFORM struct dso_library *platform_load_library(const char *name);
+MZX_LIBPLATFORM void platform_unload_library(struct dso_library *library);
+MZX_LIBPLATFORM boolean platform_load_function(struct dso_library *library,
  const struct dso_syms_map *syms_map);
 
 MEGAZEUX_END_DECLS

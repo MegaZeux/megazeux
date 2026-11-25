@@ -24,7 +24,6 @@
 #include "core.h"
 #include "graphics.h"
 #include "intake_num.h"
-#include "util.h"
 #include "window.h"
 
 #include "event/event.h"
@@ -55,7 +54,7 @@ static void change_value(struct intake_num_context *intk, int value)
   if(intk->leading_minus && value)
     value *= -1;
 
-  intk->value = CLAMP(value, intk->min_val, intk->max_val);
+  intk->value = MZX_CLAMP(value, intk->min_val, intk->max_val);
   intk->empty = false;
   intk->leading_minus = false;
 }
@@ -322,7 +321,7 @@ static void intake_num_destroy(context *ctx)
 
   if(intk->save)
   {
-    int value = CLAMP(intk->value, intk->min_val, intk->max_val);
+    int value = MZX_CLAMP(intk->value, intk->min_val, intk->max_val);
 
     if(intk->callback_fn)
       intk->callback_fn(intk->callback_ctx, value);

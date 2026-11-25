@@ -279,20 +279,20 @@ char *legacy_convert_program(char *src, int len, int *_disasm_length,
 
 char *find_non_identifier_char(char *str);
 
-CORE_LIBSPEC void assemble_program(char *program_source, char **_bytecode,
+MZX_LIBCORE void assemble_program(char *program_source, char **_bytecode,
  int *_bytecode_length, struct command_mapping **_command_map,
  int *_command_map_length);
 
 #ifdef CONFIG_EDITOR
 
-CORE_LIBSPEC int legacy_disassemble_command(char *command_base, char *output_base,
+MZX_LIBCORE int legacy_disassemble_command(char *command_base, char *output_base,
  int *line_length, int bytecode_length, boolean print_ignores, int base);
 
-CORE_LIBSPEC struct token *parse_command(char *src, char **_next,
+MZX_LIBCORE struct token *parse_command(char *src, char **_next,
  int *num_parse_tokens);
-CORE_LIBSPEC void print_color(int color, char *color_buffer);
-CORE_LIBSPEC int unescape_char(char *dest, char c);
-CORE_LIBSPEC int get_thing(char *name, int name_length);
+MZX_LIBCORE void print_color(int color, char *color_buffer);
+MZX_LIBCORE int unescape_char(char *dest, char c);
+MZX_LIBCORE int get_thing(char *name, int name_length);
 
 #endif // CONFIG_EDITOR
 

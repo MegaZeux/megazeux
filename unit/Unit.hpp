@@ -72,11 +72,7 @@
 #error "Include Unit.hpp first!"
 #endif
 
-#define CORE_LIBSPEC
-#define EDITOR_LIBSPEC
-#define SKIP_SDL
 #include "../src/compat.h"
-#include "../src/platform/platform_attribute.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -376,9 +372,9 @@ namespace Unit
     exception(const exception &e);
 
     exception(int _line, const char *_test);
-    ATTRIBUTE_PRINTF(4, 5)
+    MZX_ATTRIBUTE_PRINTF(4, 5)
     exception(int _line, const char *_test, const char *_reason_fmt, ...);
-    ATTRIBUTE_PRINTF(6, 7)
+    MZX_ATTRIBUTE_PRINTF(6, 7)
     exception(int _line, const char *_test, Unit::arg &&_left, Unit::arg &&_right,
      const char *_reason_fmt, ...);
   };

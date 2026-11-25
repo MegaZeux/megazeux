@@ -30,7 +30,6 @@
 #include "../idput.h"
 #include "../robot.h"
 #include "../scrdisp.h"
-#include "../util.h"
 #include "../window.h"
 
 #include "../event/event.h"
@@ -83,7 +82,7 @@ static int pe_chest(struct world *mzx_world, int param)
 
   // First, pick chest contents
   type =
-   list_menu(list, 21, "Choose chest contents", type, ARRAY_SIZE(list), 27, 0);
+   list_menu(list, 21, "Choose chest contents", type, MZX_ARRAY_SIZE(list), 27, 0);
 
   if(type < 0)
     return -1;

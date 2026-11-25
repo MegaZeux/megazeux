@@ -33,18 +33,18 @@ MEGAZEUX_BEGIN_DECLS
 #define TIME_SUSPEND 500
 
 // All screen-affecting code preserves the mouse cursor
-CORE_LIBSPEC int save_screen(void);
-CORE_LIBSPEC int restore_screen(void);
-CORE_LIBSPEC int draw_window_box(int x1, int y1, int x2, int y2, int color,
+MZX_LIBCORE int save_screen(void);
+MZX_LIBCORE int restore_screen(void);
+MZX_LIBCORE int draw_window_box(int x1, int y1, int x2, int y2, int color,
  int dark_color, int corner_color, boolean shadow, boolean fill_center);
-CORE_LIBSPEC int char_selection(int current);
+MZX_LIBCORE int char_selection(int current);
 
 // Shell for run_dialog() (returns 0 for ok, 1 for cancel, -1 for ESC)
 // Confirm_input is the same but takes an additional label name and input/output str
-CORE_LIBSPEC int confirm(struct world *mzx_world, const char *str);
-CORE_LIBSPEC int confirm_input(struct world *mzx_world, const char *title,
+MZX_LIBCORE int confirm(struct world *mzx_world, const char *str);
+MZX_LIBCORE int confirm_input(struct world *mzx_world, const char *title,
  const char *label, char *str);
-CORE_LIBSPEC int ask_yes_no(struct world *mzx_world, char *str);
+MZX_LIBCORE int ask_yes_no(struct world *mzx_world, char *str);
 
 int draw_window_box_ext(int x1, int y1, int x2, int y2, int color,
  int dark_color, int corner_color, boolean shadow, boolean fill_center,
@@ -241,45 +241,45 @@ enum allow_new
   ALLOW_WILDCARD_FILES,
 };
 
-CORE_LIBSPEC int input_window(struct world *mzx_world, const char *title,
+MZX_LIBCORE int input_window(struct world *mzx_world, const char *title,
  char *buffer, int max_len);
 
-CORE_LIBSPEC void construct_dialog(struct dialog *src, const char *title,
+MZX_LIBCORE void construct_dialog(struct dialog *src, const char *title,
  int x, int y, int width, int height, struct element **elements,
  int num_elements, int start_element);
-CORE_LIBSPEC void destruct_dialog(struct dialog *src);
+MZX_LIBCORE void destruct_dialog(struct dialog *src);
 
-CORE_LIBSPEC struct element *construct_label(int x, int y, const char *text);
-CORE_LIBSPEC struct element *construct_radio_button(int x, int y,
+MZX_LIBCORE struct element *construct_label(int x, int y, const char *text);
+MZX_LIBCORE struct element *construct_radio_button(int x, int y,
  const char **choices, int num_choices, int max_length, int *result);
-CORE_LIBSPEC struct element *construct_button(int x, int y, const char *label,
+MZX_LIBCORE struct element *construct_button(int x, int y, const char *label,
  int return_value);
-CORE_LIBSPEC struct element *construct_slot_selector(int x, int y,
+MZX_LIBCORE struct element *construct_slot_selector(int x, int y,
  const char *title, int num_slots, boolean *highlighted_slots,
  boolean *disabled_slots, int default_slot, int save);
-CORE_LIBSPEC struct element *construct_number_box(int x, int y,
+MZX_LIBCORE struct element *construct_number_box(int x, int y,
  const char *question, int lower_limit, int upper_limit,
  enum number_box_type type, int *result);
-CORE_LIBSPEC struct element *construct_file_selector(int x, int y,
+MZX_LIBCORE struct element *construct_file_selector(int x, int y,
  const char *title, const char *file_manager_title,
  const char *const *file_manager_exts, const char *none_mesg,
  int show_width, int allow_unset, const char *base_path, char *result,
  int return_value);
-CORE_LIBSPEC struct element *construct_list_box(int x, int y,
+MZX_LIBCORE struct element *construct_list_box(int x, int y,
  const char **choices, int num_choices, int num_choices_visible,
  int choice_length, int return_value, int *result, int *result_offset,
  boolean respect_color_codes);
 
-CORE_LIBSPEC int choose_file_ch(struct world *mzx_world,
+MZX_LIBCORE int choose_file_ch(struct world *mzx_world,
  const char *const *wildcards, char *ret, const char *title,
  enum allow_dirs allow_dirs);
-CORE_LIBSPEC int new_file(struct world *mzx_world,
+MZX_LIBCORE int new_file(struct world *mzx_world,
  const char *const *wildcards, const char *default_ext, char *ret,
  const char *title, enum allow_dirs allow_dirs);
 
-CORE_LIBSPEC void meter(const char *title, unsigned int progress,
+MZX_LIBCORE void meter(const char *title, unsigned int progress,
  unsigned int out_of);
-CORE_LIBSPEC void meter_interior(unsigned int progress, unsigned int out_of);
+MZX_LIBCORE void meter_interior(unsigned int progress, unsigned int out_of);
 
 // Dialog box color #define's-
 #define DI_MAIN             31
@@ -338,12 +338,12 @@ CORE_LIBSPEC void meter_interior(unsigned int progress, unsigned int out_of);
 #define pc_dot '\xFE'
 #define pc_meter 219
 
-CORE_LIBSPEC int run_dialog(struct world *mzx_world, struct dialog *di);
-CORE_LIBSPEC int slot_manager(struct world *mzx_world, char *ret,
+MZX_LIBCORE int run_dialog(struct world *mzx_world, struct dialog *di);
+MZX_LIBCORE int slot_manager(struct world *mzx_world, char *ret,
  const char *title, boolean save);
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC void construct_element(struct element *e, int x, int y,
+MZX_LIBCORE void construct_element(struct element *e, int x, int y,
  int width, int height,
  void (* draw_function)(struct world *mzx_world, struct dialog *di,
   struct element *e, int color, int active),
@@ -356,19 +356,19 @@ CORE_LIBSPEC void construct_element(struct element *e, int x, int y,
   struct element *e, int mouse_button, int mouse_x, int mouse_y),
  int (* idle_function)(struct world *mzx_world, struct dialog *di,
   struct element *e));
-CORE_LIBSPEC struct element *construct_input_box(int x, int y,
+MZX_LIBCORE struct element *construct_input_box(int x, int y,
  const char *question, int max_length, char *result);
-CORE_LIBSPEC void construct_dialog_ext(struct dialog *src, const char *title,
+MZX_LIBCORE void construct_dialog_ext(struct dialog *src, const char *title,
  int x, int y, int width, int height, struct element **elements,
  int num_elements, int sfx_test_for_input, int pad_space, int start_element,
  int (* idle_function)(struct world *mzx_world, struct dialog *di, int key));
 
-CORE_LIBSPEC int char_selection_ext(int current, int allow_char_255,
+MZX_LIBCORE int char_selection_ext(int current, int allow_char_255,
  int *width_ptr, int *height_ptr, int *charset, int selection_pal);
-CORE_LIBSPEC int char_select_next_tile(int current_char,
+MZX_LIBCORE int char_select_next_tile(int current_char,
  int direction, int highlight_width, int highlight_height);
 
-CORE_LIBSPEC int file_manager(struct world *mzx_world,
+MZX_LIBCORE int file_manager(struct world *mzx_world,
  const char *const *wildcards, const char *default_ext, char *ret,
  const char *title, enum allow_dirs allow_dirs, enum allow_new allow_new,
  struct element **dialog_ext, int num_ext, int ext_height);

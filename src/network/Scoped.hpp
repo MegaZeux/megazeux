@@ -25,7 +25,6 @@
 #define MEGAZEUX_SCOPED_HPP
 
 #include "../compat.h"
-#include "../util.h"
 
 #include <stdio.h>
 #include <stdlib.h>

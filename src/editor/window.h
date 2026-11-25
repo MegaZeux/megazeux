@@ -37,7 +37,7 @@ MEGAZEUX_BEGIN_DECLS
 #define CHAR_SMZX_C2    183
 #define CHAR_SMZX_C3    219
 
-EDITOR_LIBSPEC int list_menu(const char *const *choices, int choice_size,
+MZX_LIBEDITOR int list_menu(const char *const *choices, int choice_size,
  const char *title, int current, int num_choices, int xpos, int ypos);
 int color_selection(int current, int allow_wild);
 void draw_color_box(int color, int q_bit, int x, int y, int x_limit);

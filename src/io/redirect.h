@@ -25,8 +25,8 @@
 MEGAZEUX_BEGIN_DECLS
 
 #ifdef CONFIG_STDIO_REDIRECT
-UTILS_LIBSPEC extern FILE *mzxout_h;
-UTILS_LIBSPEC extern FILE *mzxerr_h;
+MZX_LIBIO extern FILE *mzxout_h;
+MZX_LIBIO extern FILE *mzxerr_h;
 #define mzxout (mzxout_h ? mzxout_h : stdout)
 #define mzxerr (mzxerr_h ? mzxerr_h : stderr)
 #else
@@ -34,8 +34,8 @@ UTILS_LIBSPEC extern FILE *mzxerr_h;
 #define mzxerr stderr
 #endif
 
-UTILS_LIBSPEC boolean redirect_stdio_init(const char *base_path, boolean require_conf);
-UTILS_LIBSPEC void redirect_stdio_exit(void);
+MZX_LIBIO boolean redirect_stdio_init(const char *base_path, boolean require_conf);
+MZX_LIBIO void redirect_stdio_exit(void);
 
 MEGAZEUX_END_DECLS
 

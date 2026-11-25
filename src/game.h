@@ -31,16 +31,16 @@ MEGAZEUX_BEGIN_DECLS
 #include "core.h"
 #include "world_struct.h"
 
-CORE_LIBSPEC void title_screen(context *parent);
-CORE_LIBSPEC void load_board_module(struct world *mzx_world);
-CORE_LIBSPEC boolean load_game_module(struct world *mzx_world, char *filename,
+MZX_LIBCORE void title_screen(context *parent);
+MZX_LIBCORE void load_board_module(struct world *mzx_world);
+MZX_LIBCORE boolean load_game_module(struct world *mzx_world, char *filename,
  boolean fail_if_same);
 
 void clear_intro_mesg(void);
 void draw_intro_mesg(struct world *mzx_world);
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC void play_game(context *parent, boolean *_fade_in);
+MZX_LIBCORE void play_game(context *parent, boolean *_fade_in);
 #endif
 
 MEGAZEUX_END_DECLS

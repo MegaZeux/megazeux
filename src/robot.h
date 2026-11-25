@@ -73,11 +73,11 @@ enum rel_prefix
 
 #ifdef CONFIG_DEBYTECODE
 
-CORE_LIBSPEC void change_robot_name(struct board *src_board,
+MZX_LIBCORE void change_robot_name(struct board *src_board,
  struct robot *cur_robot, char *new_name);
-CORE_LIBSPEC void add_robot_name_entry(struct board *src_board,
+MZX_LIBCORE void add_robot_name_entry(struct board *src_board,
  struct robot *cur_robot, char *name);
-CORE_LIBSPEC int find_free_robot(struct board *src_board);
+MZX_LIBCORE int find_free_robot(struct board *src_board);
 
 void prepare_robot_bytecode(struct world *mzx_world, struct robot *cur_robot);
 void translate_robot_bytecode_offsets(struct world *mzx_world,
@@ -85,7 +85,7 @@ void translate_robot_bytecode_offsets(struct world *mzx_world,
 
 #else /* !CONFIG_DEBYTECODE */
 
-CORE_LIBSPEC void reallocate_robot(struct robot *robot, int size);
+MZX_LIBCORE void reallocate_robot(struct robot *robot, int size);
 
 void change_robot_name(struct board *src_board, struct robot *cur_robot,
  char *new_name);
@@ -97,34 +97,34 @@ void fix_robot_stack_offsets(struct robot *cur_robot);
 
 #endif /* !CONFIG_DEBYTECODE */
 
-CORE_LIBSPEC void cache_robot_labels(struct robot *robot);
-CORE_LIBSPEC void clear_label_cache(struct robot *cur_robot);
+MZX_LIBCORE void cache_robot_labels(struct robot *robot);
+MZX_LIBCORE void clear_label_cache(struct robot *cur_robot);
 
-CORE_LIBSPEC void clear_robot_contents(struct robot *cur_robot);
-CORE_LIBSPEC void clear_robot_id(struct board *src_board, int id);
-CORE_LIBSPEC void clear_scroll_id(struct board *src_board, int id);
-CORE_LIBSPEC void clear_sensor_id(struct board *src_board, int id);
-CORE_LIBSPEC void replace_robot(struct world *mzx_world,
+MZX_LIBCORE void clear_robot_contents(struct robot *cur_robot);
+MZX_LIBCORE void clear_robot_id(struct board *src_board, int id);
+MZX_LIBCORE void clear_scroll_id(struct board *src_board, int id);
+MZX_LIBCORE void clear_sensor_id(struct board *src_board, int id);
+MZX_LIBCORE void replace_robot(struct world *mzx_world,
  struct board *src_board, struct robot *src_robot, int dest_id);
-CORE_LIBSPEC int duplicate_robot(struct world *mzx_world,
+MZX_LIBCORE int duplicate_robot(struct world *mzx_world,
  struct board *src_board, struct robot *cur_robot, int x, int y,
  int preserve_state);
-CORE_LIBSPEC int duplicate_scroll(struct board *src_board,
+MZX_LIBCORE int duplicate_scroll(struct board *src_board,
  struct scroll *cur_scroll);
-CORE_LIBSPEC int duplicate_sensor(struct board *src_board,
+MZX_LIBCORE int duplicate_sensor(struct board *src_board,
  struct sensor *cur_sensor);
-CORE_LIBSPEC int send_robot_id_def(struct world *mzx_world, int robot_id,
+MZX_LIBCORE int send_robot_id_def(struct world *mzx_world, int robot_id,
  const char *mesg, int ignore_lock);
-CORE_LIBSPEC void send_robot_all_def(struct world *mzx_world, const char *mesg);
-CORE_LIBSPEC void send_robot_def(struct world *mzx_world, int robot_id,
+MZX_LIBCORE void send_robot_all_def(struct world *mzx_world, const char *mesg);
+MZX_LIBCORE void send_robot_def(struct world *mzx_world, int robot_id,
  enum builtin_label mesg_id);
-CORE_LIBSPEC void optimize_null_objects(struct board *src_board);
+MZX_LIBCORE void optimize_null_objects(struct board *src_board);
 
-CORE_LIBSPEC int place_at_xy(struct world *mzx_world, enum thing id,
+MZX_LIBCORE int place_at_xy(struct world *mzx_world, enum thing id,
  int color, int param, int x, int y);
-CORE_LIBSPEC int place_player_xy(struct world *mzx_world, int x, int y);
-CORE_LIBSPEC void setup_overlay(struct board *src_board, int mode);
-CORE_LIBSPEC void replace_player(struct world *mzx_world);
+MZX_LIBCORE int place_player_xy(struct world *mzx_world, int x, int y);
+MZX_LIBCORE void setup_overlay(struct board *src_board, int mode);
+MZX_LIBCORE void replace_player(struct world *mzx_world);
 
 void load_robot(struct world *mzx_world, struct robot *cur_robot,
  struct zip_archive *zp, int savegame, int file_version);
@@ -154,9 +154,9 @@ void clear_scroll(struct scroll *cur_scroll);
 void clear_sensor(struct sensor *cur_sensor);
 void reallocate_scroll(struct scroll *scroll, size_t size);
 
-CORE_LIBSPEC void send_robot(struct world *mzx_world, char *name,
+MZX_LIBCORE void send_robot(struct world *mzx_world, char *name,
  const char *mesg, int ignore_lock);
-CORE_LIBSPEC int send_robot_id(struct world *mzx_world, int id,
+MZX_LIBCORE int send_robot_id(struct world *mzx_world, int id,
  const char *mesg, int ignore_lock);
 
 int find_robot(struct board *src_board, const char *name,
@@ -194,24 +194,24 @@ void push_sensor(struct world *mzx_world, int id);
 void step_sensor(struct world *mzx_world, int id);
 int get_robot_id(struct board *src_board, const char *name);
 
-CORE_LIBSPEC void get_robot_position(struct robot *cur_robot, int *xpos,
+MZX_LIBCORE void get_robot_position(struct robot *cur_robot, int *xpos,
  int *ypos);
 
 void run_robot(context *ctx, int id, int x, int y);
 
-CORE_LIBSPEC void duplicate_robot_direct(struct world *mzx_world,
+MZX_LIBCORE void duplicate_robot_direct(struct world *mzx_world,
  struct robot *cur_robot, struct robot *copy_robot, int x, int y,
  int preserve_state);
-CORE_LIBSPEC void duplicate_scroll_direct(struct scroll *cur_scroll,
+MZX_LIBCORE void duplicate_scroll_direct(struct scroll *cur_scroll,
  struct scroll *copy_scroll);
-CORE_LIBSPEC void duplicate_sensor_direct(struct sensor *cur_sensor,
+MZX_LIBCORE void duplicate_sensor_direct(struct sensor *cur_sensor,
  struct sensor *copy_sensor);
 
-CORE_LIBSPEC int get_program_command_num(struct robot *cur_robot,
+MZX_LIBCORE int get_program_command_num(struct robot *cur_robot,
  int program_pos);
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC extern const int def_params[128];
+MZX_LIBCORE extern const int def_params[128];
 #endif // CONFIG_EDITOR
 
 MEGAZEUX_END_DECLS

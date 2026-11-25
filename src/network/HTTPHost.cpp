@@ -27,7 +27,6 @@
 
 #include "HTTPHost.hpp"
 #include "Scoped.hpp"
-#include "../util.h"
 #include "../algorithm/string_compare.h"
 #include "../algorithm/string_sep.h"
 #include "../io/vio.h"
@@ -361,7 +360,7 @@ HTTPHostStatus HTTPHost::http_read_header_line(HTTPRequestInfo &dest, char *h,
 
   if(strcasecmp(key, "Transfer-Encoding") == 0)
   {
-    const size_t len = ARRAY_SIZE(dest.transfer_encoding);
+    const size_t len = MZX_ARRAY_SIZE(dest.transfer_encoding);
     snprintf(dest.transfer_encoding, len, "%s", value);
     dest.transfer_encoding[len - 1] = '\0';
 
@@ -375,7 +374,7 @@ HTTPHostStatus HTTPHost::http_read_header_line(HTTPRequestInfo &dest, char *h,
   {
     const char *type = strsep(&value, ";");
 
-    size_t len = ARRAY_SIZE(dest.content_type);
+    size_t len = MZX_ARRAY_SIZE(dest.content_type);
     snprintf(dest.content_type, len, "%s", type);
     dest.content_type[len - 1] = '\0';
     if(value)
@@ -383,7 +382,7 @@ HTTPHostStatus HTTPHost::http_read_header_line(HTTPRequestInfo &dest, char *h,
       while(isspace(*value))
         value++;
 
-      len = ARRAY_SIZE(dest.content_type_params);
+      len = MZX_ARRAY_SIZE(dest.content_type_params);
       snprintf(dest.content_type_params, len, "%s", value);
       dest.content_type_params[len - 1] = '\0';
     }
@@ -394,7 +393,7 @@ HTTPHostStatus HTTPHost::http_read_header_line(HTTPRequestInfo &dest, char *h,
 
   if(strcasecmp(key, "Content-Encoding") == 0)
   {
-    const size_t len = ARRAY_SIZE(dest.content_encoding);
+    const size_t len = MZX_ARRAY_SIZE(dest.content_encoding);
     snprintf(dest.content_encoding, len, "%s", value);
     dest.content_encoding[len - 1] = '\0';
 
@@ -435,7 +434,7 @@ HTTPHostStatus HTTPHost::http_filter_content_type(const HTTPRequestInfo &request
       if(params)
       {
         size_t type_len = (params - type);
-        if(type_len >= ARRAY_SIZE(request.content_type))
+        if(type_len >= MZX_ARRAY_SIZE(request.content_type))
         {
           warn("Content-Type filter '%s' exceeds buffer length (REPORT THIS).\n",
            type);
@@ -702,7 +701,7 @@ HTTPHostStatus HTTPHost::get(HTTPRequestInfo &request, vfile *file)
      * However for very small chunks (which are unlikely) this will always
      * be shorter than BLOCK_SIZE.
      */
-    block_size = MIN(BLOCK_SIZE, len - pos);
+    block_size = MZX_MIN(BLOCK_SIZE, len - pos);
 
     /* In either case, all headers and block computation has now been done,
      * and the buffer can be streamed to disk.

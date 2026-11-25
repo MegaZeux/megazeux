@@ -24,7 +24,6 @@
 #include "sampled_stream.h"
 
 #include "../const.h"
-#include "../util.h"
 #include "../io/vio.h"
 
 #ifdef _WIN32
@@ -298,7 +297,7 @@ static uint32_t mm_get_position(struct audio_stream *a_src)
 {
   struct mikmod_stream *mm_stream = (struct mikmod_stream *)a_src;
   MODULE *mm_data = mm_stream->module_data;
-  uint32_t order = CLAMP(mm_data->sngpos, 0, (int)mm_stream->num_orders);
+  uint32_t order = MZX_CLAMP(mm_data->sngpos, 0, (int)mm_stream->num_orders);
 
   return mm_stream->order_to_pos_table[order] + mm_data->patpos;
 }

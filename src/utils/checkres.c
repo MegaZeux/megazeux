@@ -85,9 +85,6 @@
 #include <strings.h>
 #endif
 
-// Defines so checkres builds when MZX headers are included.
-#define CORE_LIBSPEC
-
 // From MZX itself:
 
 // Safe- self sufficient or completely macros/static inlines
@@ -103,9 +100,7 @@
 #include "../io/zip.h"
 #include "../platform/log.h"
 
-// Contains some CORE_LIBSPEC functions, which should be fine if the object
-// is included in linking due to the CORE_LIBSPEC define above. Right now,
-// checkres only needs the defines from world.h.
+// Right now, checkres only needs the defines from world.h.
 #include "../world.h"
 
 #include "utils_alloc.h"
@@ -458,7 +453,7 @@ static boolean get_wildcard_path(char dest[MAX_PATH], const char *src)
     else
       dest[j++] = src[i];
   }
-  dest[MIN(j, MAX_PATH - 1)] = 0;
+  dest[MZX_MIN(j, MAX_PATH - 1)] = 0;
   return true;
 }
 
@@ -533,7 +528,7 @@ static boolean check_wildcard_path(const char *path, const char *wildcard)
         pos--;
 
         // Allow up to 10 digits to be consumed
-        for(i = p; i < MIN(p + 10, path_len); i++)
+        for(i = p; i < MZX_MIN(p + 10, path_len); i++)
         {
           if(pos == MAX_STATE - 1) break;
           if(isdigit((unsigned char)path[i]))
@@ -1029,8 +1024,8 @@ static struct resource *add_requirement_ext(const char *src,
     // currently is when only unused files are being displayed, though.
     if(display_not_found || display_found || display_created || display_wildcard)
     {
-      resource_max_len = MAX(resource_max_len, req->path_len);
-      parent_max_len = MAX(parent_max_len, (int)strlen(file->file_name));
+      resource_max_len = MZX_MAX(resource_max_len, req->path_len);
+      parent_max_len = MZX_MAX(parent_max_len, (int)strlen(file->file_name));
     }
     HASH_ADD(RESOURCE, requirement_table, req);
   }
@@ -1114,8 +1109,8 @@ static struct resource *add_resource(const char *src, struct base_file *file)
     // However, if this changes, uncomment this.
     /*if(display_created)
     {
-      resource_max_len = MAX(resource_max_len, key_len);
-      parent_max_len = MAX(parent_max_len, (int)strlen(file->file_name));
+      resource_max_len = MZX_MAX(resource_max_len, key_len);
+      parent_max_len = MZX_MAX(parent_max_len, (int)strlen(file->file_name));
     }*/
     HASH_ADD(RESOURCE, resource_table, res);
   }
@@ -1150,7 +1145,7 @@ static void add_base_path_file(struct base_path *path,
     HASH_ADD(BASE_PATH_FILE, path->file_list_table, entry);
 
     if(display_unused || display_wildcard)
-      resource_max_len = MAX(resource_max_len, (int)file_name_length);
+      resource_max_len = MZX_MAX(resource_max_len, (int)file_name_length);
   }
 }
 
@@ -1533,7 +1528,7 @@ static void process_requirements(struct base_path **path_list,
 
     for(j = 0; j < path_list_size; j++)
       if(path_list[j]->file_list_table)
-        bpf_alloc = MAX(bpf_alloc, kh_size(path_list[j]->file_list_table));
+        bpf_alloc = MZX_MAX(bpf_alloc, kh_size(path_list[j]->file_list_table));
 
     if(bpf_alloc)
     {
@@ -2965,7 +2960,7 @@ static enum status parse_sfx_file(struct memfile *mf, struct base_file *file)
           break;
 
         case SFXPROP_STRING:
-          len = MIN(len, MAX_SFX_SIZE - 1);
+          len = MZX_MIN(len, MAX_SFX_SIZE - 1);
           mfread(sfx_buf, len, 1, &prop);
           sfx_buf[len] = '\0';
 

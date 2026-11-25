@@ -223,96 +223,96 @@ struct graphics_data
   int renderer_num;
 };
 
-CORE_LIBSPEC void color_string(const char *string, unsigned int x,
+MZX_LIBCORE void color_string(const char *string, unsigned int x,
  unsigned int y, uint8_t color);
-CORE_LIBSPEC void write_string(const char *string, unsigned int x,
+MZX_LIBCORE void write_string(const char *string, unsigned int x,
  unsigned int y, uint8_t color, int flags);
-CORE_LIBSPEC void write_number(int number, uint8_t color, unsigned int x,
+MZX_LIBCORE void write_number(int number, uint8_t color, unsigned int x,
  unsigned int y, int minlen, boolean rightalign, int base);
-CORE_LIBSPEC void color_line(unsigned int length, unsigned int x,
+MZX_LIBCORE void color_line(unsigned int length, unsigned int x,
  unsigned int y, uint8_t color);
-CORE_LIBSPEC void fill_line(unsigned int length, unsigned int x, unsigned int y,
+MZX_LIBCORE void fill_line(unsigned int length, unsigned int x, unsigned int y,
  uint8_t chr, uint8_t color);
-CORE_LIBSPEC void fill_line_ext(unsigned int length, unsigned int x, unsigned int y,
+MZX_LIBCORE void fill_line_ext(unsigned int length, unsigned int x, unsigned int y,
  uint8_t chr, uint8_t color, unsigned int chr_offset, unsigned int color_offset);
-CORE_LIBSPEC void draw_char(uint8_t chr, uint8_t color, unsigned int x, unsigned int y);
-CORE_LIBSPEC void erase_char(unsigned int x, unsigned int y);
-CORE_LIBSPEC void erase_area(unsigned int x, unsigned int y,
+MZX_LIBCORE void draw_char(uint8_t chr, uint8_t color, unsigned int x, unsigned int y);
+MZX_LIBCORE void erase_char(unsigned int x, unsigned int y);
+MZX_LIBCORE void erase_area(unsigned int x, unsigned int y,
  unsigned int x2, unsigned int y2);
 
-CORE_LIBSPEC void write_string_ext(const char *str, unsigned int x, unsigned int y,
+MZX_LIBCORE void write_string_ext(const char *str, unsigned int x, unsigned int y,
  uint8_t color, int flags, unsigned int chr_offset, unsigned int color_offset);
-CORE_LIBSPEC void draw_char_ext(uint8_t chr, uint8_t color, unsigned int x,
+MZX_LIBCORE void draw_char_ext(uint8_t chr, uint8_t color, unsigned int x,
  unsigned int y, unsigned int chr_offset, unsigned int color_offset);
-CORE_LIBSPEC void draw_char_bleedthru_ext(uint8_t chr, uint8_t color,
+MZX_LIBCORE void draw_char_bleedthru_ext(uint8_t chr, uint8_t color,
  unsigned int x, unsigned int y, unsigned int chr_offset, unsigned int color_offset);
-CORE_LIBSPEC void draw_char_to_layer(uint8_t chr, uint8_t color,
+MZX_LIBCORE void draw_char_to_layer(uint8_t chr, uint8_t color,
  unsigned int x, unsigned int y, unsigned int chr_offset, unsigned int color_offset);
 
-CORE_LIBSPEC void clear_screen(void);
+MZX_LIBCORE void clear_screen(void);
 
-CORE_LIBSPEC void cursor_underline(unsigned int x, unsigned int y);
-CORE_LIBSPEC void cursor_solid(unsigned int x, unsigned int y);
-CORE_LIBSPEC void cursor_hint(unsigned int x, unsigned int y);
-CORE_LIBSPEC void cursor_off(void);
+MZX_LIBCORE void cursor_underline(unsigned int x, unsigned int y);
+MZX_LIBCORE void cursor_solid(unsigned int x, unsigned int y);
+MZX_LIBCORE void cursor_hint(unsigned int x, unsigned int y);
+MZX_LIBCORE void cursor_off(void);
 
-CORE_LIBSPEC boolean init_video(struct config_info *conf, const char *caption);
-CORE_LIBSPEC void quit_video(void);
-CORE_LIBSPEC void destruct_layers(void);
-CORE_LIBSPEC void destruct_extra_layers(uint32_t first);
-CORE_LIBSPEC uint32_t create_layer(int x, int y, unsigned int w, unsigned int h,
+MZX_LIBCORE boolean init_video(struct config_info *conf, const char *caption);
+MZX_LIBCORE void quit_video(void);
+MZX_LIBCORE void destruct_layers(void);
+MZX_LIBCORE void destruct_extra_layers(uint32_t first);
+MZX_LIBCORE uint32_t create_layer(int x, int y, unsigned int w, unsigned int h,
  int draw_order, int t_col, int offset, boolean unbound);
-CORE_LIBSPEC void set_layer_offset(uint32_t layer, int offset);
-CORE_LIBSPEC void set_layer_mode(uint32_t layer, int mode);
-CORE_LIBSPEC void move_layer(uint32_t layer, int x, int y);
-CORE_LIBSPEC void select_layer(uint32_t layer);
-CORE_LIBSPEC void blank_layers(void);
-CORE_LIBSPEC boolean has_video_initialized(void);
-CORE_LIBSPEC void update_screen(void);
-CORE_LIBSPEC void set_window_caption(const char *caption);
+MZX_LIBCORE void set_layer_offset(uint32_t layer, int offset);
+MZX_LIBCORE void set_layer_mode(uint32_t layer, int mode);
+MZX_LIBCORE void move_layer(uint32_t layer, int x, int y);
+MZX_LIBCORE void select_layer(uint32_t layer);
+MZX_LIBCORE void blank_layers(void);
+MZX_LIBCORE boolean has_video_initialized(void);
+MZX_LIBCORE void update_screen(void);
+MZX_LIBCORE void set_window_caption(const char *caption);
 
-CORE_LIBSPEC void ec_read_char(uint16_t chr, char matrix[CHAR_SIZE]);
-CORE_LIBSPEC void ec_change_char(uint16_t chr, const char matrix[CHAR_SIZE]);
-CORE_LIBSPEC int ec_load_set_var(const char *filename, uint16_t first_chr, int ver);
-CORE_LIBSPEC void ec_mem_load_set(const void *buffer, size_t len);
-CORE_LIBSPEC void ec_mem_load_set_var(const void *buffer, size_t len,
+MZX_LIBCORE void ec_read_char(uint16_t chr, char matrix[CHAR_SIZE]);
+MZX_LIBCORE void ec_change_char(uint16_t chr, const char matrix[CHAR_SIZE]);
+MZX_LIBCORE int ec_load_set_var(const char *filename, uint16_t first_chr, int ver);
+MZX_LIBCORE void ec_mem_load_set(const void *buffer, size_t len);
+MZX_LIBCORE void ec_mem_load_set_var(const void *buffer, size_t len,
  uint16_t first_chr, int ver);
-CORE_LIBSPEC void ec_mem_save_set_var(void *buffer, size_t len, uint16_t first_chr);
-CORE_LIBSPEC void ec_clear_set(void);
+MZX_LIBCORE void ec_mem_save_set_var(void *buffer, size_t len, uint16_t first_chr);
+MZX_LIBCORE void ec_clear_set(void);
 
-CORE_LIBSPEC void update_palette(void);
-CORE_LIBSPEC void load_palette(const char *filename);
-CORE_LIBSPEC void load_palette_mem(const void *buffer, size_t len);
-CORE_LIBSPEC void load_index_file(const char *filename);
-CORE_LIBSPEC void smzx_palette_loaded(boolean is_loaded);
-CORE_LIBSPEC void set_screen_mode(unsigned int mode);
-CORE_LIBSPEC unsigned int get_screen_mode(void);
-CORE_LIBSPEC void set_palette_intensity(unsigned int percent);
-CORE_LIBSPEC void set_rgb(uint8_t color, unsigned int r,
+MZX_LIBCORE void update_palette(void);
+MZX_LIBCORE void load_palette(const char *filename);
+MZX_LIBCORE void load_palette_mem(const void *buffer, size_t len);
+MZX_LIBCORE void load_index_file(const char *filename);
+MZX_LIBCORE void smzx_palette_loaded(boolean is_loaded);
+MZX_LIBCORE void set_screen_mode(unsigned int mode);
+MZX_LIBCORE unsigned int get_screen_mode(void);
+MZX_LIBCORE void set_palette_intensity(unsigned int percent);
+MZX_LIBCORE void set_rgb(uint8_t color, unsigned int r,
  unsigned int g, unsigned int b);
-CORE_LIBSPEC void set_protected_rgb(uint8_t color, unsigned int r,
+MZX_LIBCORE void set_protected_rgb(uint8_t color, unsigned int r,
  unsigned int g, unsigned int b);
-CORE_LIBSPEC void set_red_component(uint8_t color, unsigned int r);
-CORE_LIBSPEC void set_green_component(uint8_t color, unsigned int g);
-CORE_LIBSPEC void set_blue_component(uint8_t color, unsigned int b);
-CORE_LIBSPEC void get_rgb(uint8_t color, uint8_t *r, uint8_t *g, uint8_t *b);
-CORE_LIBSPEC unsigned int get_red_component(uint8_t color);
-CORE_LIBSPEC unsigned int get_green_component(uint8_t color);
-CORE_LIBSPEC unsigned int get_blue_component(uint8_t color);
-CORE_LIBSPEC uint8_t get_smzx_index(uint8_t palette, unsigned int offset);
-CORE_LIBSPEC void set_smzx_index(uint8_t palette, unsigned int offset, uint8_t color);
-CORE_LIBSPEC boolean get_fade_status(void);
-CORE_LIBSPEC void vquick_fadeout(void);
-CORE_LIBSPEC void insta_fadein(void);
-CORE_LIBSPEC void insta_fadeout(void);
-CORE_LIBSPEC void dialog_fadein(void);
-CORE_LIBSPEC void dialog_fadeout(void);
-CORE_LIBSPEC void default_palette(void);
-CORE_LIBSPEC void default_protected_palette(void);
+MZX_LIBCORE void set_red_component(uint8_t color, unsigned int r);
+MZX_LIBCORE void set_green_component(uint8_t color, unsigned int g);
+MZX_LIBCORE void set_blue_component(uint8_t color, unsigned int b);
+MZX_LIBCORE void get_rgb(uint8_t color, uint8_t *r, uint8_t *g, uint8_t *b);
+MZX_LIBCORE unsigned int get_red_component(uint8_t color);
+MZX_LIBCORE unsigned int get_green_component(uint8_t color);
+MZX_LIBCORE unsigned int get_blue_component(uint8_t color);
+MZX_LIBCORE uint8_t get_smzx_index(uint8_t palette, unsigned int offset);
+MZX_LIBCORE void set_smzx_index(uint8_t palette, unsigned int offset, uint8_t color);
+MZX_LIBCORE boolean get_fade_status(void);
+MZX_LIBCORE void vquick_fadeout(void);
+MZX_LIBCORE void insta_fadein(void);
+MZX_LIBCORE void insta_fadeout(void);
+MZX_LIBCORE void dialog_fadein(void);
+MZX_LIBCORE void dialog_fadeout(void);
+MZX_LIBCORE void default_palette(void);
+MZX_LIBCORE void default_protected_palette(void);
 
-CORE_LIBSPEC void m_hide(void);
-CORE_LIBSPEC void m_show(void);
-CORE_LIBSPEC void mouse_size(unsigned int width, unsigned int height);
+MZX_LIBCORE void m_hide(void);
+MZX_LIBCORE void m_show(void);
+MZX_LIBCORE void mouse_size(unsigned int width, unsigned int height);
 
 const char *video_get_default_caption(void);
 
@@ -332,7 +332,7 @@ int get_available_video_output_list(const char **buffer, int buffer_len);
 int get_current_video_output(void);
 
 unsigned video_create_window(void);
-CORE_LIBSPEC const struct video_window *video_get_window(unsigned window_id);
+MZX_LIBCORE const struct video_window *video_get_window(unsigned window_id);
 unsigned video_window_by_platform_id(unsigned platform_id);
 void video_window_update_viewport(struct video_window *window);
 void video_sync_window_size(unsigned window_id,
@@ -371,8 +371,8 @@ void get_screen_coords(int screen_x, int screen_y, int *x, int *y,
  int *min_x, int *min_y, int *max_x, int *max_y);
 void set_screen_coords(int x, int y, int *screen_x, int *screen_y);
 
-CORE_LIBSPEC boolean switch_shader(const char *name);
-CORE_LIBSPEC boolean layer_renderer_check(boolean show_error);
+MZX_LIBCORE boolean switch_shader(const char *name);
+MZX_LIBCORE boolean layer_renderer_check(boolean show_error);
 
 /* Renderers might have the facility to center a screen on a given
  * region of the window. Currently only the NDS renderer implements
@@ -382,16 +382,16 @@ void focus_screen(int x, int y); // Board coordinates
 void focus_pixel(int x, int y);  // Pixel coordinates
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC extern struct graphics_data graphics;
-CORE_LIBSPEC int get_color_luma(unsigned int color);
-CORE_LIBSPEC int get_char_average_luma(uint16_t chr, uint8_t palette, int mode,
+MZX_LIBCORE extern struct graphics_data graphics;
+MZX_LIBCORE int get_color_luma(unsigned int color);
+MZX_LIBCORE int get_char_average_luma(uint16_t chr, uint8_t palette, int mode,
  int mask_chr);
-CORE_LIBSPEC void ec_load_mzx(void);
-CORE_LIBSPEC void ec_load_set_secondary(const char *filename,
+MZX_LIBCORE void ec_load_mzx(void);
+MZX_LIBCORE void ec_load_set_secondary(const char *filename,
  uint8_t dest[CHAR_SIZE * CHARSET_SIZE]);
-CORE_LIBSPEC void draw_char_mixed_pal_ext(uint8_t chr, uint8_t bg_color,
+MZX_LIBCORE void draw_char_mixed_pal_ext(uint8_t chr, uint8_t bg_color,
  uint8_t fg_color, unsigned int x, unsigned int y, unsigned int chr_offset);
-CORE_LIBSPEC boolean dump_layer_to_image(const char *filename,
+MZX_LIBCORE boolean dump_layer_to_image(const char *filename,
  size_t width_ch, size_t height_ch, const struct char_element *layer,
  boolean (*status_callback)(void *priv, size_t p, size_t m), void *priv);
 #endif // CONFIG_EDITOR

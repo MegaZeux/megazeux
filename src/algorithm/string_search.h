@@ -35,10 +35,10 @@ struct mzx_string_search_data
   boolean has_good_suffix_table;
 };
 
-UTILS_LIBSPEC void mzx_string_search_index(const void *B, const size_t b_len,
+MZX_LIBIO void mzx_string_search_index(const void *B, const size_t b_len,
  struct mzx_string_search_data *data, boolean ignore_case);
 
-UTILS_LIBSPEC const void *mzx_string_search(const void *A, const size_t a_len,
+MZX_LIBIO const void *mzx_string_search(const void *A, const size_t a_len,
  const void *B, const size_t b_len, const struct mzx_string_search_data *data,
  boolean ignore_case);
 

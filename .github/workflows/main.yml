@@ -70,6 +70,14 @@ jobs:
         run: $MZX_MAKE test
       - name: Distclean (--disable-editor)
         run: $MZX_MAKE distclean
+      - name: Configure (--disable-modular)
+        run: ./config.sh --platform unix-devel --enable-release --disable-modular
+      - name: Build (--disable-modular)
+        run: $MZX_MAKE
+      - name: Run tests (--disable-modular)
+        run: $MZX_MAKE test
+      - name: Distclean (--disable-modular)
+        run: $MZX_MAKE distclean
       - name: Configure (SDL 1.2)
         run: ./config.sh --platform unix-devel --enable-release --enable-sdl1
       - name: Build (SDL 1.2)

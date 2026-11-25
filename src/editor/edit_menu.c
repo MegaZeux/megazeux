@@ -22,7 +22,6 @@
 #include "../core.h"
 #include "../idput.h"
 #include "../graphics.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world_struct.h"
 
@@ -251,7 +250,7 @@ static void draw_menu_status(struct edit_menu_subcontext *edit_menu, int line)
       {
         char unknown[20];
 
-        if(buffer->id < ARRAY_SIZE(thing_names))
+        if(buffer->id < MZX_ARRAY_SIZE(thing_names))
         {
           str = thing_names[buffer->id];
         }

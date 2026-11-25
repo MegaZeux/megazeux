@@ -78,7 +78,7 @@ struct zip_method_handler
 /**
  * ZIP stream function registry for supported (de)compression methods.
  */
-UTILS_LIBSPEC
+MZX_LIBIO
 extern const struct zip_method_handler * const zip_method_handlers[ZIP_M_MAX_SUPPORTED + 1];
 
 MEGAZEUX_END_DECLS

@@ -27,7 +27,6 @@
 #include "data.h"
 #include "rasm.h"
 #include "str.h"
-#include "util.h"
 #include "algorithm/string_compare.h"
 #include "io/fsafeopen.h"
 #include "io/memfile.h"
@@ -5548,7 +5547,7 @@ static char *legacy_disassemble_arg(enum arg_type arg_type, char *src,
 
     if(arg_type & ARG_TYPE_ITEM)
     {
-      if(compiled_arg_value < (int)ARRAY_SIZE(item_names))
+      if(compiled_arg_value < (int)MZX_ARRAY_SIZE(item_names))
       {
         write_arg_word(item_names[compiled_arg_value]);
       }
@@ -5564,7 +5563,7 @@ static char *legacy_disassemble_arg(enum arg_type arg_type, char *src,
       int direction = compiled_arg_value >> 8;
       const char *_str;
 
-      if(condition < (int)ARRAY_SIZE(condition_names))
+      if(condition < (int)MZX_ARRAY_SIZE(condition_names))
         _str = condition_names[condition];
 
       else
@@ -5593,7 +5592,7 @@ static char *legacy_disassemble_arg(enum arg_type arg_type, char *src,
 
     if(arg_type & ARG_TYPE_EQUALITY)
     {
-      if(compiled_arg_value < (int)ARRAY_SIZE(equality_names))
+      if(compiled_arg_value < (int)MZX_ARRAY_SIZE(equality_names))
       {
         write_arg_word(equality_names[compiled_arg_value]);
       }
@@ -5605,7 +5604,7 @@ static char *legacy_disassemble_arg(enum arg_type arg_type, char *src,
 
     if(arg_type & ARG_TYPE_THING)
     {
-      if(compiled_arg_value < (int)ARRAY_SIZE(thing_names))
+      if(compiled_arg_value < (int)MZX_ARRAY_SIZE(thing_names))
       {
         write_arg_word(thing_names[compiled_arg_value]);
       }

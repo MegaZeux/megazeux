@@ -40,7 +40,6 @@
 #include "../intake.h"
 #include "../rasm.h"
 #include "../robot.h"
-#include "../util.h"
 #include "../window.h"
 #include "../world.h"
 #include "../algorithm/string_compare.h"
@@ -1882,7 +1881,7 @@ static void edit_single_line_macros(struct robot_editor_context *rstate)
   memcpy(new_macros, macros, 64 * 5);
 
   construct_dialog(&di, "Edit Single Line Macros", 3, 7, 74, 10,
-   elements, ARRAY_SIZE(elements), 0);
+   elements, MZX_ARRAY_SIZE(elements), 0);
 
   dialog_result = run_dialog(mzx_world, &di);
   destruct_dialog(&di);
@@ -2003,7 +2002,7 @@ static void goto_line(struct robot_editor_context *rstate, int line, int column)
     line = 1;
 
   move_and_update(rstate, line - rstate->current_line);
-  rstate->current_x = CLAMP(column, 0, rstate->current_rline->line_text_length);
+  rstate->current_x = MZX_CLAMP(column, 0, rstate->current_rline->line_text_length);
 }
 
 static void goto_position(struct robot_editor_context *rstate)
@@ -2309,7 +2308,7 @@ static void robo_ed_search_dialog(struct robot_editor_context *rstate)
     construct_input_box(2, 1, "Search: ", 47, search_string),
     construct_button(60, 1, "Search", SEARCH_OPTION_SEARCH),
   };
-  int num_elements = ARRAY_SIZE(elements);
+  int num_elements = MZX_ARRAY_SIZE(elements);
   int result;
 
   // Prevent previous keys from carrying through.
@@ -2351,7 +2350,7 @@ static void robo_ed_replace_dialog(struct robot_editor_context *rstate)
     construct_button(61, 1, "Replace", SEARCH_OPTION_REPLACE),
     construct_button(61, 2, "Replace All", SEARCH_OPTION_REPLACE_ALL),
   };
-  int num_elements = ARRAY_SIZE(elements);
+  int num_elements = MZX_ARRAY_SIZE(elements);
   int result;
 
   // Prevent previous keys from carrying through.

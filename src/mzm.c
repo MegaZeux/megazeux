@@ -32,7 +32,6 @@
 #include "legacy_world.h"
 #include "robot.h"
 #include "str.h"
-#include "util.h"
 #include "world.h"
 #include "world_format.h"
 #include "world_struct.h"

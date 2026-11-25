@@ -23,7 +23,6 @@
 #include "audio_struct.h"
 #include "sampled_stream.h"
 
-#include "../util.h"
 #include "../algorithm/string_compare.h"
 #include "../io/path.h"
 #include "../io/vio.h"
@@ -299,7 +298,7 @@ static boolean omp_test(vfile *vf, const char *filename, boolean is_primary)
   if(ext_pos < 0)
     return false;
 
-  for(i = 0; i < ARRAY_SIZE(ext_list); i++)
+  for(i = 0; i < MZX_ARRAY_SIZE(ext_list); i++)
   {
     if(!strcasecmp(filename + ext_pos + 1, ext_list[i]))
       return true;

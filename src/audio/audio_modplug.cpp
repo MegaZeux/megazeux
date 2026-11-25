@@ -29,7 +29,6 @@
 
 #include "../const.h"
 #include "../configure.h"
-#include "../util.h"
 #include "../io/fsafeopen.h"
 #include "../io/vio.h"
 

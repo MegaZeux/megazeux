@@ -24,7 +24,6 @@
 #include "audio_struct.h"
 #include "sampled_stream.h"
 
-#include "../util.h"
 #include "../io/vio.h"
 
 #include <stdint.h>

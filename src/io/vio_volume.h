@@ -21,7 +21,6 @@
 #define MEGAZEUX_IO_VIO_VOLUME_H
 
 #include "../compat.h"
-#include "../util.h"
 #include "path.h"
 
 MEGAZEUX_BEGIN_DECLS
@@ -112,7 +111,7 @@ static inline int platform_vvolumelist_read(struct vvolumelist_handle *vh,
     return snprintf(buf, buf_sz, "%*.*s:", len, len, (char *)bname + 1);
   }
 
-  while(vh->pos < ARRAY_SIZE(extras))
+  while(vh->pos < MZX_ARRAY_SIZE(extras))
   {
     size_t num = (vh->pos++);
     return snprintf(buf, buf_sz, "%s:", extras[num]);
@@ -190,7 +189,7 @@ static inline void platform_vvolumelist_close(struct vvolumelist_handle *vh)
 static inline int platform_vvolumelist_read(struct vvolumelist_handle *vh,
  char *buf, size_t buf_sz)
 {
-  while(vh->pos < ARRAY_SIZE(volume_list))
+  while(vh->pos < MZX_ARRAY_SIZE(volume_list))
   {
     unsigned num = (vh->pos++);
 

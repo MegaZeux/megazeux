@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-#include "../util.h"
 #include "../platform/log.h"
 #include "alloc.h"
 #include "memfile.h"
@@ -1212,7 +1211,7 @@ static inline boolean virt_writeback(vfile *vf)
 
   avail = vf->mf.end - src;
   count = vf->position - vf->position_writeback;
-  avail = MIN(avail, count);
+  avail = MZX_MIN(avail, count);
   out = fwrite(src, 1, avail, vf->fp);
   fflush(vf->fp);
 

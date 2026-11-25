@@ -34,10 +34,10 @@ MEGAZEUX_BEGIN_DECLS
 #define strncasecmp     mzx_strncasecmp
 #endif
 
-UTILS_LIBSPEC int mzx_strcasecmp(const char *a, const char *b);
-UTILS_LIBSPEC int mzx_strncasecmp(const char *a, const char *b, size_t n);
-UTILS_LIBSPEC int mzx_memcasecmp(const void *a, const void *b, size_t n);
-UTILS_LIBSPEC int mzx_memcasecmp32(const void *a, const void *b, size_t n);
+MZX_LIBIO int mzx_strcasecmp(const char *a, const char *b);
+MZX_LIBIO int mzx_strncasecmp(const char *a, const char *b, size_t n);
+MZX_LIBIO int mzx_memcasecmp(const void *a, const void *b, size_t n);
+MZX_LIBIO int mzx_memcasecmp32(const void *a, const void *b, size_t n);
 
 MEGAZEUX_END_DECLS
 

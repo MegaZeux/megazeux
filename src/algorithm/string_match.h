@@ -24,7 +24,7 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-UTILS_LIBSPEC boolean mzx_string_wildcard(const void *a, size_t a_len,
+MZX_LIBIO boolean mzx_string_wildcard(const void *a, size_t a_len,
  const void *b, size_t b_len, boolean ignore_case);
 
 MEGAZEUX_END_DECLS
