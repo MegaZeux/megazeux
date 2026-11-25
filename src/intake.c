@@ -93,6 +93,7 @@ int intake(struct world *mzx_world, char *string, int max_len, int display_len,
   int offset = mask_colors ? PRO_CH : 0;
   int c_offset = mask_colors ? 16 : 0;
   int currx, curr_len;
+  int fill_x, fill_len;
   int scrolledx, tmpx;
   int done = 0, place = 0;
   char tmp_char;
@@ -128,11 +129,9 @@ int intake(struct world *mzx_world, char *string, int max_len, int display_len,
     write_string_ext(string + scrolledx, x, y, color, flags, 0, c_offset);
     string[tmpx] = tmp_char;
 
-    if(curr_len < display_len)
-    {
-      fill_line_ext(display_len + 1 - curr_len, x + curr_len, y, 32, color,
-       offset, c_offset);
-    }
+    fill_x = MZX_MIN(curr_len, display_len);
+    fill_len = display_len + 1 - fill_x;
+    fill_line_ext(fill_len, x + fill_x, y, 32, color, offset, c_offset);
 
     if(insert_on)
       cursor_underline(x + currx - scrolledx, y);
