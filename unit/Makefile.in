@@ -113,9 +113,17 @@ endif
 # tested directly. In particular, render_layer.cpp is expensive to compile,
 # so reuse the object compiled for the library binary.
 #
+# The vector layer renderer compilation units also require special compilation
+# flags to enable extra instruction sets, intrinsics, etc.
+#
 unit_extra_objs += \
   ${render_obj}/render.o  \
   ${render_obj}/render_layer.o \
+  ${render_obj}/render_layer_altivec.o \
+  ${render_obj}/render_layer_avx.o \
+  ${render_obj}/render_layer_neon.o \
+  ${render_obj}/render_layer_rvv.o \
+  ${render_obj}/render_layer_sse2.o \
 
 #
 # Build without -DDEBUG to suppress debug messages,
