@@ -60,7 +60,7 @@ enum proxy_status
  * Base class for network connections.
  * Most uses will want to use a specialized host class instead (see HTTPHost).
  */
-class UPDATER_LIBSPEC Host
+class MZX_LIBNETWORK Host
 {
 private:
   enum host_state

@@ -448,7 +448,7 @@ void create_context(context *ctx, context *parent,
 /**
  * Creates a subcontext and adds it to the parent context.
  */
-CORE_LIBSPEC void create_subcontext(subcontext *sub, context *parent,
+void create_subcontext(subcontext *sub, context *parent,
  struct context_spec *sub_spec)
 {
   core_context *root;

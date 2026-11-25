@@ -9,11 +9,10 @@ editor_obj = ${build_base}/${editor_src}
 build_dirs += ${editor_obj}
 
 editor_flags := ${core_flags}
-
 editor_ldflags += ${ZLIB_LDFLAGS}
 
-ifeq (${PLATFORM},mingw)
-editor_spec := -DEDITOR_LIBSPEC="__declspec(dllexport)"
+ifneq (${BUILD_MODULAR},)
+editor_spec := -DMZX_MODULAR -DMZX_MODULE_EDITOR
 endif
 
 ${editor_obj}/%.o: ${editor_src}/%.c

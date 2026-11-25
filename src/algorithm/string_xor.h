@@ -25,7 +25,7 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-UTILS_LIBSPEC void mzx_memxorchr(void *dest, uint8_t xor_chr, size_t dest_len)
+MZX_LIBIO void mzx_memxorchr(void *dest, uint8_t xor_chr, size_t dest_len)
  MZX_ATTRIBUTE_NONNULL;
 
 MEGAZEUX_END_DECLS

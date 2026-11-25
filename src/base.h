@@ -26,7 +26,7 @@
  *
  * These are usually prefixed with MZX_ or mzx_ in case this header is
  * included by external files; for the internal versions (where applicable),
- * function visibility defines, and deprecated standard function wrappers,
+ * conditional visibility defines, and deprecated standard function wrappers,
  * see compat.h. Internal headers should typically include this via compat.h.
  */
 #if defined(__cplusplus)
@@ -63,14 +63,21 @@ typedef unsigned char mzx_bool;
 
 /**
  * Visibility
+ * MZX_MODULAR and MZX_MODULE_* are provided by gcc options via the Makefile.
  */
 #ifdef MZX_MODULAR
 #ifdef _WIN32
-#define MZX_IMPORT extern __declspec(dllimport)
-#define MZX_EXPORT extern __declspec(dllexport)
+#define MZX_IMPORT __declspec(dllimport)
+#define MZX_EXPORT __declspec(dllexport)
 #else
-#define MZX_IMPORT __attribute__((visibility("default"))) extern
-#define MZX_EXPORT __attribute__((visibility("default"))) extern
+#define MZX_IMPORT __attribute__((visibility("default")))
+#define MZX_EXPORT __attribute__((visibility("default")))
+#endif
+
+#ifdef MZX_MODULE_MAIN
+#define MZX_LIBMAIN     MZX_EXPORT
+#else
+#define MZX_LIBMAIN     MZX_IMPORT
 #endif
 
 #ifdef MZX_MODULE_CORE
@@ -98,6 +105,9 @@ typedef unsigned char mzx_bool;
 #endif
 
 #else /* !MZX_MODULAR */
+#define MZX_IMPORT
+#define MZX_EXPORT
+#define MZX_LIBMAIN
 #define MZX_LIBCORE
 #define MZX_LIBIO
 #define MZX_LIBPLATFORM

@@ -30,12 +30,12 @@ MEGAZEUX_BEGIN_DECLS
 
 #define MZX_RNG_MAX ((uint64_t)UINT32_MAX + 1)
 
-UTILS_LIBSPEC void mzx_rng_init(struct mzx_rng_state *rng) MZX_ATTRIBUTE_NONNULL;
-UTILS_LIBSPEC uint64_t mzx_rng_get_seed(const struct mzx_rng_state *rng)
+MZX_LIBIO void mzx_rng_init(struct mzx_rng_state *rng) MZX_ATTRIBUTE_NONNULL;
+MZX_LIBIO uint64_t mzx_rng_get_seed(const struct mzx_rng_state *rng)
  MZX_ATTRIBUTE_NONNULL;
-UTILS_LIBSPEC void mzx_rng_set_seed(struct mzx_rng_state *rng, uint64_t value)
+MZX_LIBIO void mzx_rng_set_seed(struct mzx_rng_state *rng, uint64_t value)
  MZX_ATTRIBUTE_NONNULL;
-UTILS_LIBSPEC uint32_t mzx_rng_get_random(struct mzx_rng_state *rng, uint64_t range)
+MZX_LIBIO uint32_t mzx_rng_get_random(struct mzx_rng_state *rng, uint64_t range)
  MZX_ATTRIBUTE_NONNULL;
 
 MEGAZEUX_END_DECLS

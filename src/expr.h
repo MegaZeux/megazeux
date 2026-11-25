@@ -36,7 +36,7 @@ int parse_string_expression(struct world *mzx_world, char **_expression,
  int id, char *output, size_t output_left);
 #endif
 
-CORE_LIBSPEC char *tr_msg_ext(struct world *mzx_world, char *mesg, int id,
+MZX_LIBCORE char *tr_msg_ext(struct world *mzx_world, char *mesg, int id,
  char *buffer, char terminating_char);
 
 static inline char *tr_msg(struct world *mzx_world, char *mesg, int id,

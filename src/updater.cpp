@@ -342,7 +342,7 @@ static int ui_confirm_changes(context *ctx, const Manifest &removed,
   for(e = removed.first(); e; e = e->next, entries++)
     list_entry_width = MZX_MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
   for(e = replaced.first(); e; e = e->next, entries++)
-    list_entry_width = MZ_MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
+    list_entry_width = MZX_MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
   for(e = added.first(); e; e = e->next, entries++)
     list_entry_width = MZX_MAX(list_entry_width, 2 + (int)strlen(e->name)+1+1);
 

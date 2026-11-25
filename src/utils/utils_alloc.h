@@ -44,21 +44,21 @@ static void out_of_memory_check(void *p, const char *file, int line)
   }
 }
 
-CORE_LIBSPEC void *check_calloc(size_t nmemb, size_t size, const char *file, int line)
+MZX_LIBCORE void *check_calloc(size_t nmemb, size_t size, const char *file, int line)
 {
   void *result = calloc(nmemb, size);
   out_of_memory_check(result, file, line);
   return result;
 }
 
-CORE_LIBSPEC void *check_malloc(size_t size, const char *file, int line)
+MZX_LIBCORE void *check_malloc(size_t size, const char *file, int line)
 {
   void *result = malloc(size);
   out_of_memory_check(result, file, line);
   return result;
 }
 
-CORE_LIBSPEC void *check_realloc(void *ptr, size_t size, const char *file, int line)
+MZX_LIBCORE void *check_realloc(void *ptr, size_t size, const char *file, int line)
 {
   void *result = realloc(ptr, size);
   out_of_memory_check(result, file, line);

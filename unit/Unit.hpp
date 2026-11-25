@@ -72,9 +72,6 @@
 #error "Include Unit.hpp first!"
 #endif
 
-#define CORE_LIBSPEC
-#define EDITOR_LIBSPEC
-#define SKIP_SDL
 #include "../src/compat.h"
 
 #include <stdio.h>

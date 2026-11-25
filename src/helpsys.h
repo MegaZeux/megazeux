@@ -29,9 +29,9 @@ MEGAZEUX_BEGIN_DECLS
 #include "core.h"
 #include "world_struct.h"
 
-CORE_LIBSPEC void help_open(struct world *mzx_world, const char *file_name);
-CORE_LIBSPEC void help_close(struct world *mzx_world);
-CORE_LIBSPEC void help_system(context *ctx, struct world *mzx_world);
+MZX_LIBCORE void help_open(struct world *mzx_world, const char *file_name);
+MZX_LIBCORE void help_close(struct world *mzx_world);
+MZX_LIBCORE void help_system(context *ctx, struct world *mzx_world);
 
 #endif
 

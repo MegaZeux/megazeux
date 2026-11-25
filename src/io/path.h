@@ -123,48 +123,48 @@ static inline boolean isslash(const char chr)
   return (chr == '\\') || (chr == '/');
 }
 
-UTILS_LIBSPEC char *path_tokenize(char **next);
-UTILS_LIBSPEC char *path_reverse_tokenize(char **base, size_t *base_len);
+MZX_LIBIO char *path_tokenize(char **next);
+MZX_LIBIO char *path_reverse_tokenize(char **base, size_t *base_len);
 
-UTILS_LIBSPEC boolean path_force_ext(char *path, size_t buffer_len, const char *ext);
-UTILS_LIBSPEC ssize_t path_get_ext_offset(const char *path);
+MZX_LIBIO boolean path_force_ext(char *path, size_t buffer_len, const char *ext);
+MZX_LIBIO ssize_t path_get_ext_offset(const char *path);
 
-UTILS_LIBSPEC ssize_t path_is_absolute(const char *path);
-UTILS_LIBSPEC ssize_t path_is_absolute_dos(const char *path);
-UTILS_LIBSPEC boolean path_is_root(const char *path);
-UTILS_LIBSPEC boolean path_has_directory(const char *path);
-UTILS_LIBSPEC ssize_t path_to_directory(char *path, size_t buffer_len);
-UTILS_LIBSPEC ssize_t path_to_filename(char *path, size_t buffer_len);
-UTILS_LIBSPEC ssize_t path_get_directory(char *dest, size_t dest_len,
+MZX_LIBIO ssize_t path_is_absolute(const char *path);
+MZX_LIBIO ssize_t path_is_absolute_dos(const char *path);
+MZX_LIBIO boolean path_is_root(const char *path);
+MZX_LIBIO boolean path_has_directory(const char *path);
+MZX_LIBIO ssize_t path_to_directory(char *path, size_t buffer_len);
+MZX_LIBIO ssize_t path_to_filename(char *path, size_t buffer_len);
+MZX_LIBIO ssize_t path_get_directory(char *dest, size_t dest_len,
  const char *path);
-UTILS_LIBSPEC ssize_t path_get_filename(char *dest, size_t dest_len,
+MZX_LIBIO ssize_t path_get_filename(char *dest, size_t dest_len,
  const char *path);
-UTILS_LIBSPEC boolean path_get_directory_and_filename(char *d_dest, size_t d_len,
+MZX_LIBIO boolean path_get_directory_and_filename(char *d_dest, size_t d_len,
  char *f_dest, size_t f_len, const char *path);
-UTILS_LIBSPEC ssize_t path_get_parent(char *dest, size_t dest_len,
+MZX_LIBIO ssize_t path_get_parent(char *dest, size_t dest_len,
  const char *path);
 
-UTILS_LIBSPEC size_t path_clean(char *path, size_t path_len);
-UTILS_LIBSPEC size_t path_clean_copy(char *dest, size_t dest_len, const char *path);
-UTILS_LIBSPEC size_t path_clean_copy_posixdos(char *dest, size_t dest_len,
+MZX_LIBIO size_t path_clean(char *path, size_t path_len);
+MZX_LIBIO size_t path_clean_copy(char *dest, size_t dest_len, const char *path);
+MZX_LIBIO size_t path_clean_copy_posixdos(char *dest, size_t dest_len,
  const char *path);
-UTILS_LIBSPEC ssize_t path_clean_current_tokens(char *path, size_t path_len);
-UTILS_LIBSPEC ssize_t path_clean_root(char *path, size_t path_len);
-UTILS_LIBSPEC ssize_t path_append(char *path, size_t buffer_len, const char *rel);
-UTILS_LIBSPEC ssize_t path_join(char *dest, size_t dest_len, const char *base,
+MZX_LIBIO ssize_t path_clean_current_tokens(char *path, size_t path_len);
+MZX_LIBIO ssize_t path_clean_root(char *path, size_t path_len);
+MZX_LIBIO ssize_t path_append(char *path, size_t buffer_len, const char *rel);
+MZX_LIBIO ssize_t path_join(char *dest, size_t dest_len, const char *base,
  const char *rel);
-UTILS_LIBSPEC ssize_t path_remove_prefix(char *path, size_t buffer_len,
+MZX_LIBIO ssize_t path_remove_prefix(char *path, size_t buffer_len,
  const char *prefix, size_t prefix_len);
 
-UTILS_LIBSPEC enum path_safe_mask path_safety_check(const char *path, int flags);
-UTILS_LIBSPEC const char *path_safety_strerror(enum path_safe_mask value);
+MZX_LIBIO enum path_safe_mask path_safety_check(const char *path, int flags);
+MZX_LIBIO const char *path_safety_strerror(enum path_safe_mask value);
 
-UTILS_LIBSPEC ssize_t path_navigate(char *path, size_t path_len,
+MZX_LIBIO ssize_t path_navigate(char *path, size_t path_len,
  const char *target);
-UTILS_LIBSPEC ssize_t path_navigate_no_check(char *path, size_t path_len,
+MZX_LIBIO ssize_t path_navigate_no_check(char *path, size_t path_len,
  const char *target);
 
-UTILS_LIBSPEC enum path_create_error path_create_parent_recursively(
+MZX_LIBIO enum path_create_error path_create_parent_recursively(
  const char *filename);
 
 MEGAZEUX_END_DECLS

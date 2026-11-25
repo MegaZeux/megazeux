@@ -33,7 +33,7 @@
 #define LOCAL_MANIFEST_TXT MANIFEST_TXT
 #define REMOTE_MANIFEST_TXT "manifest.remote.txt"
 
-class UPDATER_LIBSPEC ManifestEntry
+class MZX_LIBNETWORK ManifestEntry
 {
 public:
   ManifestEntry *next;
@@ -85,7 +85,7 @@ private:
   static boolean compute_sha256(SHA256_ctx &ctx, vfile *vf, size_t len);
 };
 
-class UPDATER_LIBSPEC Manifest
+class MZX_LIBNETWORK Manifest
 {
 public:
   ManifestEntry *head;

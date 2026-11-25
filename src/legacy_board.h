@@ -29,10 +29,10 @@ MEGAZEUX_BEGIN_DECLS
 #include "world_struct.h"
 #include "io/vfile.h"
 
-CORE_LIBSPEC int legacy_load_board_direct(struct world *mzx_world,
+MZX_LIBCORE int legacy_load_board_direct(struct world *mzx_world,
  struct board *cur_board, vfile *vf, int data_size, int savegame, int version);
 
-CORE_LIBSPEC struct board *legacy_load_board_allocate(struct world *mzx_world,
+MZX_LIBCORE struct board *legacy_load_board_allocate(struct world *mzx_world,
  vfile *vf, int data_offset, int data_size, int savegame, int file_version);
 
 MEGAZEUX_END_DECLS

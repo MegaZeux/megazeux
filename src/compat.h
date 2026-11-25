@@ -159,36 +159,6 @@ typedef unsigned char boolean;
 #define RESTRICT MZX_RESTRICT
 #endif
 
-#if defined(CONFIG_MODULAR) && defined(__WIN32__)
-#define LIBSPEC __declspec(dllimport)
-#elif defined(CONFIG_MODULAR)
-#define LIBSPEC __attribute__((visibility("default")))
-#else
-#define LIBSPEC
-#endif
-
-#ifndef CORE_LIBSPEC
-#define CORE_LIBSPEC LIBSPEC
-#endif
-
-#ifndef EDITOR_LIBSPEC
-#define EDITOR_LIBSPEC LIBSPEC
-#endif
-
-#ifndef AUDIO_LIBSPEC
-#define AUDIO_LIBSPEC LIBSPEC
-#endif
-
-#ifndef UTILS_LIBSPEC
-#define UTILS_LIBSPEC CORE_LIBSPEC
-#endif
-
-#ifdef CONFIG_UPDATER
-#define UPDATER_LIBSPEC CORE_LIBSPEC
-#else
-#define UPDATER_LIBSPEC
-#endif
-
 MEGAZEUX_BEGIN_DECLS
 
 #ifdef __GNUC__
@@ -254,18 +224,18 @@ static inline char *check_strtok(char *d, const char *delim)
 
 #include <stddef.h>
 
-CORE_LIBSPEC void check_alloc_init(void);
+MZX_LIBCORE void check_alloc_init(void);
 
 #define ccalloc(nmemb, size) check_calloc(nmemb, size, __FILE__, __LINE__)
-CORE_LIBSPEC void *check_calloc(size_t nmemb, size_t size, const char *file,
+MZX_LIBCORE void *check_calloc(size_t nmemb, size_t size, const char *file,
  int line);
 
 #define cmalloc(size) check_malloc(size, __FILE__, __LINE__)
-CORE_LIBSPEC void *check_malloc(size_t size, const char *file,
+MZX_LIBCORE void *check_malloc(size_t size, const char *file,
  int line);
 
 #define crealloc(ptr, size) check_realloc(ptr, size, __FILE__, __LINE__)
-CORE_LIBSPEC void *check_realloc(void *ptr, size_t size, const char *file,
+MZX_LIBCORE void *check_realloc(void *ptr, size_t size, const char *file,
  int line);
 
 #else /* CONFIG_CHECK_ALLOC */

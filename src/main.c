@@ -155,12 +155,9 @@ static char **rewrite_argv_for_execv(int argc, char **argv)
 #endif /* CONFIG_UPDATER && __WIN32__ */
 
 #ifdef __amigaos__
-#define __libspec LIBSPEC
-#else
-#define __libspec
+MZX_LIBMAIN
 #endif
-
-__libspec int main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   char *_backup_argv[] = { (char*) SHAREDIR "/megazeux" };
   int err = 1;

@@ -30,23 +30,23 @@
 #include <stdlib.h>
 #include <new>
 
-extern "C" CORE_LIBSPEC void __cxa_pure_virtual();
-extern "C" CORE_LIBSPEC void __cxa_pure_virtual()
+extern "C" MZX_LIBCORE void __cxa_pure_virtual();
+extern "C" MZX_LIBCORE void __cxa_pure_virtual()
 {
   fprintf(mzxerr, "Attempted to call pure virtual function! Aborting!\n");
   fflush(mzxerr);
   exit(1);
 }
 
-extern "C" CORE_LIBSPEC void __cxa_deleted_virtual();
-extern "C" CORE_LIBSPEC void __cxa_deleted_virtual()
+extern "C" MZX_LIBCORE void __cxa_deleted_virtual();
+extern "C" MZX_LIBCORE void __cxa_deleted_virtual()
 {
   fprintf(mzxerr, "Attempted to call deleted virtual function! Aborting!\n");
   fflush(mzxerr);
   exit(1);
 }
 
-CORE_LIBSPEC void *operator new(size_t count)
+MZX_LIBCORE void *operator new(size_t count)
 {
   void *ptr = cmalloc(count);
   if(!ptr)
@@ -59,7 +59,7 @@ CORE_LIBSPEC void *operator new(size_t count)
   return ptr;
 }
 
-CORE_LIBSPEC void *operator new[](size_t count)
+MZX_LIBCORE void *operator new[](size_t count)
 {
   void *ptr = cmalloc(count);
   if(!ptr)
@@ -72,12 +72,12 @@ CORE_LIBSPEC void *operator new[](size_t count)
   return ptr;
 }
 
-CORE_LIBSPEC void operator delete(void *ptr) noexcept
+MZX_LIBCORE void operator delete(void *ptr) noexcept
 {
   free(ptr);
 }
 
-CORE_LIBSPEC void operator delete[](void *ptr) noexcept
+MZX_LIBCORE void operator delete[](void *ptr) noexcept
 {
   free(ptr);
 }

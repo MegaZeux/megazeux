@@ -164,23 +164,23 @@ enum val_result
   VAL_ABORTED,    // Load aborted by user
 };
 
-CORE_LIBSPEC int world_magic(const char magic_string[3]);
-CORE_LIBSPEC int save_magic(const char magic_string[5]);
-CORE_LIBSPEC int get_version_string(char buffer[16], enum mzx_version version);
+MZX_LIBCORE int world_magic(const char magic_string[3]);
+MZX_LIBCORE int save_magic(const char magic_string[5]);
+MZX_LIBCORE int get_version_string(char buffer[16], enum mzx_version version);
 
-CORE_LIBSPEC int save_world(struct world *mzx_world, const char *file,
+MZX_LIBCORE int save_world(struct world *mzx_world, const char *file,
  boolean savegame, int file_version);
-CORE_LIBSPEC boolean reload_world(struct world *mzx_world, const char *file,
+MZX_LIBCORE boolean reload_world(struct world *mzx_world, const char *file,
  boolean *faded);
-CORE_LIBSPEC void clear_world(struct world *mzx_world);
-CORE_LIBSPEC void clear_global_data(struct world *mzx_world);
-CORE_LIBSPEC void default_scroll_values(struct world *mzx_world);
+MZX_LIBCORE void clear_world(struct world *mzx_world);
+MZX_LIBCORE void clear_global_data(struct world *mzx_world);
+MZX_LIBCORE void default_scroll_values(struct world *mzx_world);
 
-CORE_LIBSPEC void change_board(struct world *mzx_world, int board_id);
-CORE_LIBSPEC void change_board_set_values(struct world *mzx_world);
-CORE_LIBSPEC void change_board_load_assets(struct world *mzx_world);
+MZX_LIBCORE void change_board(struct world *mzx_world, int board_id);
+MZX_LIBCORE void change_board_set_values(struct world *mzx_world);
+MZX_LIBCORE void change_board_load_assets(struct world *mzx_world);
 
-CORE_LIBSPEC void remap_vlayer(struct world *mzx_world,
+MZX_LIBCORE void remap_vlayer(struct world *mzx_world,
  int new_width, int new_height);
 
 boolean reload_savegame(struct world *mzx_world, const char *file,
@@ -201,18 +201,18 @@ void meter_initial_draw(int curr, int target, const char *title);
 #include <stdio.h>
 struct zip_archive;
 
-CORE_LIBSPEC void try_load_world(struct world *mzx_world,
+MZX_LIBCORE void try_load_world(struct world *mzx_world,
  struct zip_archive **zp, vfile **vf, const char *file, boolean savegame,
  int *file_version, char *name);
 
-CORE_LIBSPEC void default_vlayer(struct world *mzx_world);
-CORE_LIBSPEC void default_global_data(struct world *mzx_world);
+MZX_LIBCORE void default_vlayer(struct world *mzx_world);
+MZX_LIBCORE void default_global_data(struct world *mzx_world);
 
-CORE_LIBSPEC void set_update_done(struct world *mzx_world);
-CORE_LIBSPEC void refactor_board_list(struct world *mzx_world,
+MZX_LIBCORE void set_update_done(struct world *mzx_world);
+MZX_LIBCORE void refactor_board_list(struct world *mzx_world,
  struct board **new_board_list, int new_list_size,
  int *board_id_translation_list);
-CORE_LIBSPEC void optimize_null_boards(struct world *mzx_world);
+MZX_LIBCORE void optimize_null_boards(struct world *mzx_world);
 
 #endif // CONFIG_EDITOR
 

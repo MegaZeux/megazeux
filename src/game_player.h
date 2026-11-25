@@ -29,7 +29,7 @@ MEGAZEUX_BEGIN_DECLS
 
 #include "world_struct.h"
 
-CORE_LIBSPEC void find_player(struct world *mzx_world);
+MZX_LIBCORE void find_player(struct world *mzx_world);
 
 void set_mesg(struct world *mzx_world, const char *str);
 void set_mesg_direct(struct board *src_board, const char *str);

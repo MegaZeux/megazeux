@@ -49,24 +49,24 @@ enum intake_event_type
   INTK_OVERWRITE_BLOCK, /* Text block overwritten via intake_input_string. */
 };
 
-CORE_LIBSPEC boolean intake_get_insert(void);
-CORE_LIBSPEC void intake_set_insert(boolean new_insert_state);
+MZX_LIBCORE boolean intake_get_insert(void);
+MZX_LIBCORE void intake_set_insert(boolean new_insert_state);
 
-CORE_LIBSPEC int intake(struct world *mzx_world, char *string, int max_len, int display_len,
+MZX_LIBCORE int intake(struct world *mzx_world, char *string, int max_len, int display_len,
  int x, int y, char color, enum intake_exit_type exit_type, boolean mask_colors,
  int *return_x_pos);
 
-CORE_LIBSPEC subcontext *intake2(context *parent, char *dest, int max_length,
+MZX_LIBCORE subcontext *intake2(context *parent, char *dest, int max_length,
  int *pos_external, int *length_external);
 
-CORE_LIBSPEC void intake_sync(subcontext *intk);
-CORE_LIBSPEC const char *intake_input_string(subcontext *intk, const char *src,
+MZX_LIBCORE void intake_sync(subcontext *intk);
+MZX_LIBCORE const char *intake_input_string(subcontext *intk, const char *src,
  int linebreak_char);
-CORE_LIBSPEC void intake_event_callback(subcontext *intk, void *priv,
+MZX_LIBCORE void intake_event_callback(subcontext *intk, void *priv,
  boolean (*event_cb)(void *priv, subcontext *sub, enum intake_event_type type,
  int old_pos, int new_pos, int value, const char *data));
 
-CORE_LIBSPEC boolean intake_apply_event_fixed(subcontext *sub,
+MZX_LIBCORE boolean intake_apply_event_fixed(subcontext *sub,
  enum intake_event_type type, int new_pos, int value, const char *data);
 
 MEGAZEUX_END_DECLS

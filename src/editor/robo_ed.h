@@ -126,7 +126,7 @@ struct robot_editor_context
 
 void robot_editor(context *parent, struct robot *cur_robot);
 
-EDITOR_LIBSPEC void init_macros(void);
+MZX_LIBEDITOR void init_macros(void);
 
 /* Internal functions. */
 void robo_ed_goto_line(struct robot_editor_context *rstate, int line, int column);

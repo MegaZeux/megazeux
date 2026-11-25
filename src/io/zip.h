@@ -250,72 +250,72 @@ struct zip_archive
   struct zip_stream_data *stream_data_ptrs[ZIP_M_MAX_SUPPORTED + 1];
 };
 
-UTILS_LIBSPEC int zip_bound_deflate_usage(size_t length);
-UTILS_LIBSPEC int zip_bound_total_header_usage(int num_files, int max_name_size);
+MZX_LIBIO int zip_bound_deflate_usage(size_t length);
+MZX_LIBIO int zip_bound_total_header_usage(int num_files, int max_name_size);
 
-UTILS_LIBSPEC enum zip_error zread(void *destBuf, size_t readLen,
+MZX_LIBIO enum zip_error zread(void *destBuf, size_t readLen,
  struct zip_archive *zp);
 
-UTILS_LIBSPEC enum zip_error zip_get_next_name(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_get_next_name(struct zip_archive *zp,
  char *name, int name_buffer_size);
 
-UTILS_LIBSPEC enum zip_error zip_get_next_mzx_file_id(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_get_next_mzx_file_id(struct zip_archive *zp,
  unsigned int *prop_id, unsigned int *board_id, unsigned int *robot_id);
 
-UTILS_LIBSPEC enum zip_error zip_get_next_method(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_get_next_method(struct zip_archive *zp,
  unsigned int *method);
 
-UTILS_LIBSPEC enum zip_error zip_get_next_uncompressed_size(
+MZX_LIBIO enum zip_error zip_get_next_uncompressed_size(
  struct zip_archive *zp, size_t *u_size);
-UTILS_LIBSPEC enum zip_error zip_get_next_uncompressed_size64(
+MZX_LIBIO enum zip_error zip_get_next_uncompressed_size64(
  struct zip_archive *zp, uint64_t *u_size);
 
-UTILS_LIBSPEC enum zip_error zip_read_open_file_stream(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_read_open_file_stream(struct zip_archive *zp,
  uint64_t *destLen);
 
-UTILS_LIBSPEC enum zip_error zip_read_close_stream(struct zip_archive *zp);
+MZX_LIBIO enum zip_error zip_read_close_stream(struct zip_archive *zp);
 
-UTILS_LIBSPEC enum zip_error zip_read_open_mem_stream(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_read_open_mem_stream(struct zip_archive *zp,
  struct memfile *mf);
 
-UTILS_LIBSPEC enum zip_error zip_rewind(struct zip_archive *zp);
+MZX_LIBIO enum zip_error zip_rewind(struct zip_archive *zp);
 
-UTILS_LIBSPEC enum zip_error zip_skip_file(struct zip_archive *zp);
+MZX_LIBIO enum zip_error zip_skip_file(struct zip_archive *zp);
 
-UTILS_LIBSPEC enum zip_error zip_read_file(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_read_file(struct zip_archive *zp,
  void *destBuf, size_t destLen, size_t *readLen);
 
-UTILS_LIBSPEC enum zip_error zwrite(const void *src, size_t srcLen,
+MZX_LIBIO enum zip_error zwrite(const void *src, size_t srcLen,
  struct zip_archive *zp);
 
-UTILS_LIBSPEC enum zip_error zip_set_zip64_enabled(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_set_zip64_enabled(struct zip_archive *zp,
  boolean enable_zip64);
 
-UTILS_LIBSPEC enum zip_error zip_write_open_file_stream(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_write_open_file_stream(struct zip_archive *zp,
  const char *name, int method);
 
-UTILS_LIBSPEC enum zip_error zip_write_close_stream(struct zip_archive *zp);
+MZX_LIBIO enum zip_error zip_write_close_stream(struct zip_archive *zp);
 
-UTILS_LIBSPEC enum zip_error zip_write_open_mem_stream(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_write_open_mem_stream(struct zip_archive *zp,
  struct memfile *mf, const char *name, size_t length);
 
-UTILS_LIBSPEC enum zip_error zip_write_close_mem_stream(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_write_close_mem_stream(struct zip_archive *zp,
  struct memfile *mf);
 
-UTILS_LIBSPEC enum zip_error zip_write_file(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_write_file(struct zip_archive *zp,
  const char *name, const void *src, size_t srcLen, int method);
 
-UTILS_LIBSPEC enum zip_error zip_close(struct zip_archive *zp,
+MZX_LIBIO enum zip_error zip_close(struct zip_archive *zp,
  uint64_t *final_length);
 
-UTILS_LIBSPEC struct zip_archive *zip_open_vf_read(vfile *vf);
-UTILS_LIBSPEC struct zip_archive *zip_open_vf_write(vfile *vf);
-UTILS_LIBSPEC struct zip_archive *zip_open_file_read(const char *file_name);
-UTILS_LIBSPEC struct zip_archive *zip_open_file_write(const char *file_name);
-UTILS_LIBSPEC struct zip_archive *zip_open_mem_read(const void *src, size_t len);
-UTILS_LIBSPEC struct zip_archive *zip_open_mem_write(void *src, size_t len,
+MZX_LIBIO struct zip_archive *zip_open_vf_read(vfile *vf);
+MZX_LIBIO struct zip_archive *zip_open_vf_write(vfile *vf);
+MZX_LIBIO struct zip_archive *zip_open_file_read(const char *file_name);
+MZX_LIBIO struct zip_archive *zip_open_file_write(const char *file_name);
+MZX_LIBIO struct zip_archive *zip_open_mem_read(const void *src, size_t len);
+MZX_LIBIO struct zip_archive *zip_open_mem_write(void *src, size_t len,
  size_t start_pos);
-UTILS_LIBSPEC struct zip_archive *zip_open_mem_write_ext(void **external_buffer,
+MZX_LIBIO struct zip_archive *zip_open_mem_write_ext(void **external_buffer,
  size_t *external_buffer_size, size_t start_pos);
 
 MEGAZEUX_END_DECLS

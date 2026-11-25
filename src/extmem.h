@@ -43,16 +43,16 @@ MEGAZEUX_BEGIN_DECLS
 #ifdef CONFIG_EXTRAM
 
 // Move the board's memory from normal RAM to extra RAM.
-CORE_LIBSPEC void real_store_board_to_extram(struct board *board,
+MZX_LIBCORE void real_store_board_to_extram(struct board *board,
  const char *file, int line);
 
 // Move the board's memory from extra RAM to normal RAM. If free_data is set,
 // clear all buffers and NULL their respective pointers instead.
-CORE_LIBSPEC void real_retrieve_board_from_extram(struct board *board,
+MZX_LIBCORE void real_retrieve_board_from_extram(struct board *board,
  boolean free_data, const char *file, int line);
 
 #ifdef CONFIG_EDITOR
-CORE_LIBSPEC boolean board_extram_usage(struct board *board, size_t *compressed,
+MZX_LIBCORE boolean board_extram_usage(struct board *board, size_t *compressed,
  size_t *uncompressed);
 #endif /* CONFIG_EDITOR */
 

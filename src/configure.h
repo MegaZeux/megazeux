@@ -218,27 +218,27 @@ struct config_enum
   const int value;
 };
 
-CORE_LIBSPEC struct config_info *get_config(void);
-CORE_LIBSPEC void default_config(void);
-CORE_LIBSPEC void set_config_from_file(enum config_type type,
+MZX_LIBCORE struct config_info *get_config(void);
+MZX_LIBCORE void default_config(void);
+MZX_LIBCORE void set_config_from_file(enum config_type type,
  const char *conf_file_name);
-CORE_LIBSPEC void set_config_from_command_line(int *argc, char *argv[]);
-CORE_LIBSPEC void set_config_startup_path_and_file(const char *path);
-CORE_LIBSPEC void free_config(void);
+MZX_LIBCORE void set_config_from_command_line(int *argc, char *argv[]);
+MZX_LIBCORE void set_config_startup_path_and_file(const char *path);
+MZX_LIBCORE void free_config(void);
 
 typedef boolean (*find_change_option)(void *conf, const char *name,
  const char *value, const char *extended_data);
 
 #ifdef CONFIG_EDITOR
 
-CORE_LIBSPEC void register_config(enum config_type type, void *conf,
+MZX_LIBCORE void register_config(enum config_type type, void *conf,
  find_change_option handler);
 
-CORE_LIBSPEC boolean config_int(int *dest, const char *value, int min, int max);
-CORE_LIBSPEC boolean _config_enum(int *dest, const char *value,
+MZX_LIBCORE boolean config_int(int *dest, const char *value, int min, int max);
+MZX_LIBCORE boolean _config_enum(int *dest, const char *value,
  const struct config_enum *allowed, size_t num);
-CORE_LIBSPEC boolean config_boolean(boolean *dest, const char *value);
-CORE_LIBSPEC boolean _config_string(char *dest, size_t dest_len, const char *value);
+MZX_LIBCORE boolean config_boolean(boolean *dest, const char *value);
+MZX_LIBCORE boolean _config_string(char *dest, size_t dest_len, const char *value);
 
 #define config_enum(d, v, a) _config_enum(d, v, a, MZX_ARRAY_SIZE(a))
 #define config_string(d, v) _config_string(d, MZX_ARRAY_SIZE(d), v)

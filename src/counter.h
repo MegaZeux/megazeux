@@ -32,17 +32,17 @@ MEGAZEUX_BEGIN_DECLS
 #define SAVE_ROBOT_DISASM_EXTRAS  true
 #define SAVE_ROBOT_DISASM_BASE    10
 
-CORE_LIBSPEC void counter_fsg(void);
-CORE_LIBSPEC int match_function_counter(const char *dest, const char *src);
-CORE_LIBSPEC int get_counter(struct world *mzx_world, const char *name, int id);
-CORE_LIBSPEC const struct counter *get_counter_pointer(struct world *mzx_world,
+MZX_LIBCORE void counter_fsg(void);
+MZX_LIBCORE int match_function_counter(const char *dest, const char *src);
+MZX_LIBCORE int get_counter(struct world *mzx_world, const char *name, int id);
+MZX_LIBCORE const struct counter *get_counter_pointer(struct world *mzx_world,
  const char *name, int id);
-CORE_LIBSPEC void set_counter(struct world *mzx_world, const char *name,
+MZX_LIBCORE void set_counter(struct world *mzx_world, const char *name,
  int value, int id);
-CORE_LIBSPEC void new_counter(struct world *mzx_world, const char *name,
+MZX_LIBCORE void new_counter(struct world *mzx_world, const char *name,
  int value, int id);
-CORE_LIBSPEC void sort_counter_list(struct counter_list *counter_list);
-CORE_LIBSPEC void counter_list_size(struct counter_list *counter_list,
+MZX_LIBCORE void sort_counter_list(struct counter_list *counter_list);
+MZX_LIBCORE void counter_list_size(struct counter_list *counter_list,
  size_t *list_size, size_t *table_size, size_t *counters_size);
 
 void initialize_gateway_functions(struct world *mzx_world);

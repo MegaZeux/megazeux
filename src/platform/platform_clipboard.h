@@ -24,11 +24,11 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-CORE_LIBSPEC void copy_buffer_to_clipboard(char **buffer, int lines,
+MZX_LIBPLATFORM void copy_buffer_to_clipboard(char **buffer, int lines,
  int total_length);
 
-CORE_LIBSPEC char *get_clipboard_buffer(void);
-CORE_LIBSPEC void free_clipboard_buffer(char *buffer);
+MZX_LIBPLATFORM char *get_clipboard_buffer(void);
+MZX_LIBPLATFORM void free_clipboard_buffer(char *buffer);
 
 MEGAZEUX_END_DECLS
 

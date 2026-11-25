@@ -37,14 +37,14 @@ struct config_info;
 #define SAM_DEFAULT_PERIOD 428
 struct audio_stream;
 
-CORE_LIBSPEC void init_audio(struct config_info *conf);
-CORE_LIBSPEC void quit_audio(void);
-CORE_LIBSPEC int audio_play_module(const char *filename, boolean safely, int volume);
-CORE_LIBSPEC void audio_end_module(void);
-CORE_LIBSPEC void audio_play_sample(const char *filename, boolean safely, int period);
-CORE_LIBSPEC void audio_spot_sample(int period, int which);
+MZX_LIBAUDIO void init_audio(struct config_info *conf);
+MZX_LIBAUDIO void quit_audio(void);
+MZX_LIBAUDIO int audio_play_module(const char *filename, boolean safely, int volume);
+MZX_LIBAUDIO void audio_end_module(void);
+MZX_LIBAUDIO void audio_play_sample(const char *filename, boolean safely, int period);
+MZX_LIBAUDIO void audio_spot_sample(int period, int which);
 
-CORE_LIBSPEC void audio_set_module_volume(int volume);
+MZX_LIBAUDIO void audio_set_module_volume(int volume);
 void audio_set_module_order(int order);
 int audio_get_module_order(void);
 void audio_set_module_position(int pos);

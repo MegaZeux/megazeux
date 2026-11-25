@@ -61,7 +61,7 @@ enum HTTPHostStatus
 /**
  * Struct for HTTP request and response data.
  */
-struct UPDATER_LIBSPEC HTTPRequestInfo
+struct MZX_LIBNETWORK HTTPRequestInfo
 {
   static const int URL_BUF_SIZE = 256;
   static const int STATUS_BUF_SIZE = 32;
@@ -112,7 +112,7 @@ struct UPDATER_LIBSPEC HTTPRequestInfo
 /**
  * Class for network connections over the HTTP protocol.
  */
-class UPDATER_LIBSPEC HTTPHost: public Host
+class MZX_LIBNETWORK HTTPHost: public Host
 {
 protected:
   ssize_t http_receive_line(char *buffer, size_t len);

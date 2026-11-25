@@ -44,7 +44,6 @@
 #include <strings.h>
 #endif
 
-#define CORE_LIBSPEC
 #include "../compat.h"
 #include "utils_alloc.h"
 

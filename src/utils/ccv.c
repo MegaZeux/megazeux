@@ -17,10 +17,6 @@
 
 #define CCV_VERSION "v0.075"
 
-// With fix contributed by Lachesis
-
-#define CORE_LIBSPEC
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>

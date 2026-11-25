@@ -31,19 +31,19 @@ MEGAZEUX_BEGIN_DECLS
 
 void set_id_char_by_legacy_index(unsigned index, unsigned char value);
 
-CORE_LIBSPEC void id_put(struct board *src_board, unsigned char x_pos,
+MZX_LIBCORE void id_put(struct board *src_board, unsigned char x_pos,
  unsigned char y_pos, int array_x, int array_y, int ovr_x, int ovr_y);
-CORE_LIBSPEC void draw_game_window(struct board *src_board,
+MZX_LIBCORE void draw_game_window(struct board *src_board,
  int array_x, int array_y);
-CORE_LIBSPEC void draw_game_window_blind(struct board *src_board,
+MZX_LIBCORE void draw_game_window_blind(struct board *src_board,
  int array_x, int array_y, int player_x, int player_y);
-CORE_LIBSPEC void draw_viewport(struct board *src_board, int edge_color);
+MZX_LIBCORE void draw_viewport(struct board *src_board, int edge_color);
 
-CORE_LIBSPEC unsigned char get_id_char(struct board *src_board, int id_offset);
-CORE_LIBSPEC unsigned char get_id_color(struct board *src_board, int id_offset);
-CORE_LIBSPEC unsigned char get_id_board_color(struct board *src_board, int id_offset, int ignore_under);
-CORE_LIBSPEC unsigned char get_id_under_char(struct board *src_board, int id_offset);
-CORE_LIBSPEC unsigned char get_id_under_color(struct board *src_board, int id_offset);
+MZX_LIBCORE unsigned char get_id_char(struct board *src_board, int id_offset);
+MZX_LIBCORE unsigned char get_id_color(struct board *src_board, int id_offset);
+MZX_LIBCORE unsigned char get_id_board_color(struct board *src_board, int id_offset, int ignore_under);
+MZX_LIBCORE unsigned char get_id_under_char(struct board *src_board, int id_offset);
+MZX_LIBCORE unsigned char get_id_under_color(struct board *src_board, int id_offset);
 
 #define ID_CHARS_SIZE               323
 #define ID_DMG_SIZE                 128
@@ -67,10 +67,10 @@ CORE_LIBSPEC unsigned char get_id_under_color(struct board *src_board, int id_of
 #define player_char  318
 #define player_color 322
 
-CORE_LIBSPEC extern unsigned char id_chars[ID_CHARS_SIZE];
-CORE_LIBSPEC extern unsigned char id_dmg[ID_DMG_SIZE];
-CORE_LIBSPEC extern unsigned char bullet_color[ID_BULLET_COLOR_SIZE];
-CORE_LIBSPEC extern unsigned char missile_color;
+MZX_LIBCORE extern unsigned char id_chars[ID_CHARS_SIZE];
+MZX_LIBCORE extern unsigned char id_dmg[ID_DMG_SIZE];
+MZX_LIBCORE extern unsigned char bullet_color[ID_BULLET_COLOR_SIZE];
+MZX_LIBCORE extern unsigned char missile_color;
 
 MEGAZEUX_END_DECLS
 

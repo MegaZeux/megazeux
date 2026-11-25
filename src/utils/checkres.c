@@ -85,9 +85,6 @@
 #include <strings.h>
 #endif
 
-// Defines so checkres builds when MZX headers are included.
-#define CORE_LIBSPEC
-
 // From MZX itself:
 
 // Safe- self sufficient or completely macros/static inlines
@@ -103,9 +100,7 @@
 #include "../io/zip.h"
 #include "../platform/log.h"
 
-// Contains some CORE_LIBSPEC functions, which should be fine if the object
-// is included in linking due to the CORE_LIBSPEC define above. Right now,
-// checkres only needs the defines from world.h.
+// Right now, checkres only needs the defines from world.h.
 #include "../world.h"
 
 #include "utils_alloc.h"

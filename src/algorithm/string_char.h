@@ -24,7 +24,7 @@
 
 MEGAZEUX_BEGIN_DECLS
 
-UTILS_LIBSPEC extern const unsigned char mzx_tolower_table[256];
+MZX_LIBIO extern const unsigned char mzx_tolower_table[256];
 
 #define mzx_tolower(d)  mzx_tolower_table[(unsigned char)(d)]
 #define memcasechr      mzx_memcasechr
@@ -36,9 +36,9 @@ UTILS_LIBSPEC extern const unsigned char mzx_tolower_table[256];
 #define memchr          mzx_memchr
 #endif
 
-UTILS_LIBSPEC const void *mzx_memchr(const void *haystack,
+MZX_LIBIO const void *mzx_memchr(const void *haystack,
  unsigned char needle, size_t len) MZX_ATTRIBUTE_NONNULL;
-UTILS_LIBSPEC const void *mzx_memcasechr(const void *haystack,
+MZX_LIBIO const void *mzx_memcasechr(const void *haystack,
  unsigned char needle, size_t len) MZX_ATTRIBUTE_NONNULL;
 
 MEGAZEUX_END_DECLS

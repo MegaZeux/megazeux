@@ -58,16 +58,16 @@ static inline boolean is_string(const char *buffer)
   return buffer[namelen] != '.';
 }
 
-CORE_LIBSPEC int get_string(struct world *mzx_world, char *name_buffer,
+MZX_LIBCORE int get_string(struct world *mzx_world, char *name_buffer,
  struct string *dest, int id);
-CORE_LIBSPEC const struct string *get_string_pointer(struct world *mzx_world,
+MZX_LIBCORE const struct string *get_string_pointer(struct world *mzx_world,
  const char *name, int id);
-CORE_LIBSPEC int set_string(struct world *mzx_world, char *name_buffer,
+MZX_LIBCORE int set_string(struct world *mzx_world, char *name_buffer,
  struct string *src, int id);
-CORE_LIBSPEC struct string *new_string(struct world *mzx_world,
+MZX_LIBCORE struct string *new_string(struct world *mzx_world,
  const char *name, size_t length, int id);
-CORE_LIBSPEC void sort_string_list(struct string_list *string_list);
-CORE_LIBSPEC void string_list_size(struct string_list *string_list,
+MZX_LIBCORE void sort_string_list(struct string_list *string_list);
+MZX_LIBCORE void string_list_size(struct string_list *string_list,
  size_t *list_size, size_t *table_size, size_t *strings_size);
 
 int string_read_as_counter(struct world *mzx_world,

@@ -58,16 +58,16 @@ struct mzm_header
   int world_version;
 };
 
-CORE_LIBSPEC void save_mzm(struct world *mzx_world, char *name,
+MZX_LIBCORE void save_mzm(struct world *mzx_world, char *name,
  int start_x, int start_y, int width, int height, int mode, int savegame);
-CORE_LIBSPEC void save_mzm_string(struct world *mzx_world, const char *name,
+MZX_LIBCORE void save_mzm_string(struct world *mzx_world, const char *name,
  int start_x, int start_y, int width, int height, int mode, int savegame, int id);
-CORE_LIBSPEC int load_mzm(struct world *mzx_world, char *name,
+MZX_LIBCORE int load_mzm(struct world *mzx_world, char *name,
  int start_x, int start_y, int mode, int savegame, enum thing layer_convert_id);
-CORE_LIBSPEC int load_mzm_memory(struct world *mzx_world, char *name, int start_x,
+MZX_LIBCORE int load_mzm_memory(struct world *mzx_world, char *name, int start_x,
  int start_y, int mode, int savegame, enum thing layer_convert_id,
  const void *buffer, size_t length);
-CORE_LIBSPEC boolean load_mzm_header(char *name, struct mzm_header *mzm_header);
+MZX_LIBCORE boolean load_mzm_header(char *name, struct mzm_header *mzm_header);
 
 MEGAZEUX_END_DECLS
 
