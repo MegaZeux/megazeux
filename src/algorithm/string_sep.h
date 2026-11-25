@@ -25,8 +25,9 @@
 MEGAZEUX_BEGIN_DECLS
 
 /* This function is a GNU and BSD extension and isn't guaranteed to be
- * present in the MinGW/MSVC and Amiga C libraries. */
-#if defined(_WIN32) || defined(__amigaos__)
+ * present in the MinGW/MSVC and Amiga C libraries. In Haiku, it's provided
+ * by libbsd and it's easier to just use the MZX implementation. */
+#if defined(_WIN32) || defined(__amigaos__) || defined(__HAIKU__)
 #define strsep  mzx_strsep
 #endif
 
