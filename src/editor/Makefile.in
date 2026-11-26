@@ -51,7 +51,7 @@ ${editor_objs}: $(filter-out $(wildcard ${editor_obj}), ${editor_obj})
 
 ifeq (${BUILD_MODULAR},1)
 
-editor_target := ${DSOPRE}editor${DSOPOST}
+editor_target := ${bin_base}${DSOPRE}editor${DSOPOST}
 
 ${editor_target}: ${editor_objs} ${core_target}
 	$(if ${V},,@echo "  LINK    " $@)

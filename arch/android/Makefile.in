@@ -124,6 +124,12 @@ endif
 endif
 
 ifneq (${ANDROID_LIBS},none)
+#
+# Build to architecture-specific base directories to support
+# incremental rebuild for all of them.
+#
+build_base     := ${build_base}/${ANDROID_TARGET}
+bin_base       := ${build_base}/
 
 CC             := ${TOOLCHAIN}/bin/${CLANG_PRE}${SDK}-clang
 CXX            := ${TOOLCHAIN}/bin/${CLANG_PRE}${SDK}-clang++
@@ -161,11 +167,11 @@ ${JNI_LIB_DIR}/${ABI}:
 
 package: all ${JNI_LIB_DIR}/${ABI}
 ifneq (${BUILD_EDITOR},)
-	$(if ${V},,@echo "  MV      " ${mzx} "${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}")
-	${MV} ${mzx} ${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}
+	$(if ${V},,@echo "  CP      " ${mzx} "${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}")
+	${CP} ${mzx} ${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}
 else
-	$(if ${V},,@echo "  MV      " ${mzxrun} "${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}")
-	${MV} ${mzxrun} ${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}
+	$(if ${V},,@echo "  CP      " ${mzxrun} "${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}")
+	${CP} ${mzxrun} ${JNI_LIB_DIR}/${ABI}/${JNI_LIB_SO}
 endif
 
 else
@@ -210,19 +216,14 @@ ${ASSETS_DIR}/assets.zip: ${ASSETS_DIR}
 	mv assets.zip ../../$@
 
 dist:
-	@${MAKE} ANDROID_TARGET=arm    clean
 	@echo "Building 'arm'."
 	@${MAKE} ANDROID_TARGET=arm    package
-	@${MAKE} ANDROID_TARGET=arm    clean
 	@echo "Building 'arm64'."
 	@${MAKE} ANDROID_TARGET=arm64  package
-	@${MAKE} ANDROID_TARGET=arm64  clean
 	@echo "Building 'i686'."
 	@${MAKE} ANDROID_TARGET=i686   package
-	@${MAKE} ANDROID_TARGET=i686   clean
 	@echo "Building 'x86_64'."
 	@${MAKE} ANDROID_TARGET=x86_64 package
-	@${MAKE} ANDROID_TARGET=x86_64 clean
 
 apk: ${ASSETS_DIR}/assets.zip
 	@(cd ${PROJECT_DIR} && ./${GRADLEW} build)
