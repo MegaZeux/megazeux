@@ -202,7 +202,7 @@ ${core_objs}: $(filter-out $(wildcard ${core_obj}), ${core_obj})
 
 ifeq (${BUILD_MODULAR},1)
 
-core_target := ${DSOPRE}core${DSOPOST}
+core_target := ${bin_base}${DSOPRE}core${DSOPOST}
 
 ${core_target}: ${core_objs}
 	$(if ${V},,@echo "  LINK    " $@)

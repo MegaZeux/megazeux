@@ -27,6 +27,7 @@ all:
 include version.inc
 
 #
+# ${bin_base}: build directory for executables/libs (blank: same dir as Makefile).
 # ${build_base}: where temporary object/dependency files should be stored.
 # ${build_root}: base location where builds are copied to be archived for release.
 # ${build}: location where the MegaZeux executable and data files should be placed.
@@ -34,6 +35,7 @@ include version.inc
 # use a subdirectory instead. This is useful when a platform expects a particular
 # path hierarchy within the archive (e.g. MacOS .app bundles).
 #
+bin_base ?=
 build_base ?= .build
 build_root := build/${SUBPLATFORM}
 build := ${build_root}
@@ -534,8 +536,8 @@ build/${TARGET}src:
 #
 ifneq (${SUPPRESS_ALL_TARGETS},1)
 
-mzxrun = mzxrun${BINEXT}
-mzx = megazeux${BINEXT}
+mzxrun = ${bin_base}mzxrun${BINEXT}
+mzx = ${bin_base}megazeux${BINEXT}
 
 mzx: ${mzxrun} ${mzx}
 mzx.debug: ${mzxrun}.debug ${mzx}.debug
