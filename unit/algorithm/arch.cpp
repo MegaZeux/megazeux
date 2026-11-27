@@ -21,6 +21,8 @@
 #include "../../src/algorithm/arch.h"
 #include "../../src/platform/log.h"
 
+#include "../../src/algorithm/arch_features.c"
+
 #include <string.h>
 
 #ifdef _WIN32
@@ -144,9 +146,17 @@ UNITTEST(Machine)
    * sane defaults if no machine macros are set, and the only other use
    * for these is to enable architecture-specific features. */
   if(num > 0)
+  {
     ASSERTEQ(num, 1, "architecture macros set for:%s", detected);
+    ASSERT(strcasecmp(ARCHITECTURE_NAME, "unknown") != 0,
+     "%s has ARCHITECTURE_NAME 'unknown'", detected);
+  }
   else
+  {
     warn("no architecture macros set\n");
+    ASSERT(strcasecmp(ARCHITECTURE_NAME, "unknown") == 0,
+     "failed to detect architecture for ARCHITECTURE_NAME '" ARCHITECTURE_NAME "'");
+  }
 
 #ifdef _WIN32
   /* Note: most of these have not been tested. */
@@ -478,5 +488,166 @@ UNITTEST(ArchUint)
     pa = ARCH_UINT_UNALIGN_CAST(p8);
     ASSERTEQ((size_t)pa, (size_t)p8 & ~(ARCH_UINT_UNALIGN - 1), "%d", i);
 #endif
+  }
+}
+
+UNITTEST(Features)
+{
+  /* TODO: would be nice to have a way to verify these */
+  boolean ret;
+
+  SECTION(SSE2)
+  {
+    ret = mzx_architecture_has_sse2();
+
+#if ARCHITECTURE_IS_X86_64
+    ASSERTEQ(ret, true, ARCHITECTURE_NAME);
+#elif defined(ARCHITECTURE_IS_X86)
+    if(!ret)
+    {
+      ASSERTEQ(mzx_architecture_has_avx(), false, "");
+      ASSERTEQ(mzx_architecture_has_avx2(), false, "");
+    }
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_sse2(), "");
+  }
+
+  SECTION(AVX)
+  {
+    ret = mzx_architecture_has_avx();
+
+#if ARCHITECTURE_IS_X86
+    if(ret)
+      ASSERTEQ(mzx_architecture_has_sse2(), true, "");
+    else
+      ASSERTEQ(mzx_architecture_has_avx2(), false, "");
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_avx(), "");
+  }
+
+  SECTION(AVX2)
+  {
+    ret = mzx_architecture_has_avx2();
+
+#if ARCHITECTURE_IS_X86
+    if(ret)
+    {
+      ASSERTEQ(mzx_architecture_has_sse2(), true, "");
+      ASSERTEQ(mzx_architecture_has_avx(), true, "");
+    }
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_avx2(), "");
+  }
+
+  SECTION(Neon)
+  {
+    ret = mzx_architecture_has_neon();
+
+#if ARCHITECTURE_IS_ARM64
+    ASSERTEQ(ret, true, ARCHITECTURE_NAME);
+#elif ARCHITECTURE_IS_ARM
+    if(!ret)
+      ASSERTEQ(mzx_architecture_has_sve(), false, "");
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_neon(), "");
+  }
+
+  SECTION(SVE)
+  {
+    ret = mzx_architecture_has_sve();
+
+#if ARCHITECTURE_IS_ARM
+    // TODO: not detected and nothing will use it.
+    if(ret)
+      ASSERTEQ(mzx_architecture_has_neon(), true, "");
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_sve(), "");
+  }
+
+  SECTION(RVV)
+  {
+    ret = mzx_architecture_has_rvv();
+
+#if ARCHITECTURE_IS_RISCV
+    (void)ret;
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_rvv(), "");
+  }
+
+  SECTION(VMX)
+  {
+    ret = mzx_architecture_has_altivec();
+
+#if ARCHITECTURE_IS_PPC64
+    ASSERTEQ(ret, true, ARCHITECTURE_NAME);
+#elif ARCHITECTURE_IS_PPC
+    if(!ret)
+      ASSERTEQ(mzx_architecture_has_altivec_vsx(), false, "");
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_altivec(), "");
+  }
+
+  SECTION(VSX)
+  {
+    ret = mzx_architecture_has_altivec_vsx();
+
+#if ARCHITECTURE_IS_PPC64
+    if(ret)
+      ASSERTEQ(mzx_architecture_has_altivec(), true, "");
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_altivec_vsx(), "");
+  }
+
+  SECTION(LSX)
+  {
+    ret = mzx_architecture_has_lsx();
+
+#if ARCHITECTURE_IS_LOONGARCH
+    if(!ret)
+      ASSERTEQ(mzx_architecture_has_lasx(), false, "");
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_lsx(), "");
+  }
+
+  SECTION(LASX)
+  {
+    ret = mzx_architecture_has_lasx();
+
+#if ARCHITECTURE_IS_LOONGARCH
+    if(ret)
+      ASSERTEQ(mzx_architecture_has_lsx(), true, "");
+#else
+    ASSERTEQ(ret, false, ARCHITECTURE_NAME);
+#endif
+    /* Should get the same result twice */
+    ASSERTEQ(ret, mzx_architecture_has_lasx(), "");
   }
 }

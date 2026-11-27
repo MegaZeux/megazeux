@@ -140,6 +140,57 @@
 #define ARCHITECTURE_IS_WASM 1
 #endif
 
+/* Architecture name string. */
+#if defined(ARCHITECTURE_IS_X86_64)
+#define ARCHITECTURE_NAME "x86_64"
+#elif defined(ARCHITECTURE_IS_X86)
+#define ARCHITECTURE_NAME "x86"
+#elif defined(ARCHITECTURE_IS_ALPHA)
+#define ARCHITECTURE_NAME "alpha"
+#elif defined(ARCHITECTURE_IS_ARM64)
+#define ARCHITECTURE_NAME "aarch64"
+#elif defined(ARCHITECTURE_IS_ARM)
+#define ARCHITECTURE_NAME "arm"
+#elif defined(ARCHITECTURE_IS_HPPA64)
+#define ARCHITECTURE_NAME "hppa64"
+#elif defined(ARCHITECTURE_IS_HPPA)
+#define ARCHITECTURE_NAME "hppa"
+#elif defined(ARCHITECTURE_IS_IA64)
+#define ARCHITECTURE_NAME "ia64"
+#elif defined(ARCHITECTURE_IS_LOONGARCH64)
+#define ARCHITECTURE_NAME "loong64"
+#elif defined(ARCHITECTURE_IS_LOONGARCH)
+#define ARCHITECTURE_NAME "loong"
+#elif defined(ARCHITECTURE_IS_M68K)
+#define ARCHITECTURE_NAME "m68k"
+#elif defined(ARCHITECTURE_IS_MIPS64)
+#define ARCHITECTURE_NAME "mips64"
+#elif defined(ARCHITECTURE_IS_MIPS)
+#define ARCHITECTURE_NAME "mips"
+#elif defined(ARCHITECTURE_IS_PPC64)
+#define ARCHITECTURE_NAME "ppc64"
+#elif defined(ARCHITECTURE_IS_PPC)
+#define ARCHITECTURE_NAME "ppc"
+#elif defined(ARCHITECTURE_IS_RISCV64)
+#define ARCHITECTURE_NAME "riscv64"
+#elif defined(ARCHITECTURE_IS_RISCV)
+#define ARCHITECTURE_NAME "riscv"
+#elif defined(ARCHITECTURE_IS_S390X)
+#define ARCHITECTURE_NAME "s390x"
+#elif defined(ARCHITECTURE_IS_S390)
+#define ARCHITECTURE_NAME "s390"
+#elif defined(ARCHITECTURE_IS_SPARC64)
+#define ARCHITECTURE_NAME "sparc64"
+#elif defined(ARCHITECTURE_IS_SPARC)
+#define ARCHITECTURE_NAME "sparc"
+#elif defined(ARCHITECTURE_IS_SUPERH)
+#define ARCHITECTURE_NAME "superh"
+#elif defined(ARCHITECTURE_IS_WASM)
+#define ARCHITECTURE_NAME "wasm"
+#else
+#define ARCHITECTURE_NAME "unknown"
+#endif
+
 
 /* Integer/pointer endian. */
 #define ARCH_LIL_ENDIAN 0x0d0c0b0a

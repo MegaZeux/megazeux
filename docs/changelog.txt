@@ -22,6 +22,7 @@ USERS
   This should mostly only affect shifted/symbol keys.
 + Improved the performance of COPY (OVERLAY) BLOCK from the
   overlay to the overlay and from the vlayer to the vlayer.
++ The about dialog now displays detected architecture info.
 + DOS: added new LPT DAC and PC speaker pulse width modulation
   audio drivers. See config.txt for more information.
 + DOS: added hardware PC speaker support for PC speaker sound

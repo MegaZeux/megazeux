@@ -20,6 +20,8 @@
 #include "about.h"
 #include "util.h" /* mzx_res */
 #include "window.h"
+#include "algorithm/arch.h"
+#include "algorithm/arch_features.h"
 #include "algorithm/string_compare.h"
 #include "io/path.h"
 #include "io/vio.h"
@@ -48,6 +50,16 @@
 #endif
 #endif
 
+#ifndef VERSION_DATE
+#define VERSION_DATE
+#endif
+
+#ifdef VERSION_HEAD
+#define VERSION_HEAD_STR " \xf9 " VERSION_HEAD ""
+#else
+#define VERSION_HEAD_STR
+#endif
+
 #define ABOUT_X       0
 #define ABOUT_Y       1
 #define ABOUT_WIDTH   80
@@ -65,6 +77,50 @@ static char *png_version_string(char version_str[16], png_uint_32 version)
   return version_str;
 }
 #endif
+
+#if ARCH_BYTE_ORDER == ARCH_LIL_ENDIAN
+#define ENDIAN_STR "le"
+#elif ARCH_BYTE_ORDER == ARCH_BIG_ENDIAN
+#define ENDIAN_STR "be"
+#else
+#define ENDIAN_STR "?e"
+#endif
+#define APPEND(s) do { \
+  size_t num = snprintf(dest, dest_len, (s)); \
+  if(num >= dest_len) \
+    return; \
+  dest += num, dest_len -= num; \
+} while(0)
+
+static void get_features(char *dest, size_t dest_len)
+{
+  APPEND(ARCHITECTURE_NAME " " ENDIAN_STR);
+
+  if(mzx_architecture_has_sse2())
+    APPEND(" sse2");
+  if(mzx_architecture_has_avx())
+    APPEND(" avx");
+  if(mzx_architecture_has_avx2())
+    APPEND(" avx2");
+
+  if(mzx_architecture_has_neon())
+    APPEND(" neon");
+  if(mzx_architecture_has_sve())
+    APPEND(" sve");
+
+  if(mzx_architecture_has_rvv())
+    APPEND(" rvv");
+
+  if(mzx_architecture_has_altivec())
+    APPEND(" vmx");
+  if(mzx_architecture_has_altivec_vsx())
+    APPEND(" vsx");
+
+  if(mzx_architecture_has_lsx())
+    APPEND(" lsx");
+  if(mzx_architecture_has_lasx())
+    APPEND(" lasx");
+}
 
 MZX_ATTRIBUTE_PRINTF(1, 2)
 static char *about_line(const char *fmt, ...)
@@ -92,19 +148,15 @@ static char *about_line(const char *fmt, ...)
 static char **about_text(int *num_lines)
 {
   char **lines = (char  **)malloc(sizeof(char *) * MAX_VERSIONS);
+  char features[ABOUT_WIDTH];
   int i = 0;
   if(!lines)
     return NULL;
 
-#ifdef VERSION_DATE
-  lines[i++] = about_line("MegaZeux " VERSION VERSION_DATE);
-#else
-  lines[i++] = about_line("MegaZeux " VERSION);
-#endif
-  lines[i++] = about_line("Platform: " PLATFORM);
-#ifdef VERSION_HEAD
-  lines[i++] = about_line("Build head: " VERSION_HEAD);
-#endif
+  get_features(features, sizeof(features));
+
+  lines[i++] = about_line("MegaZeux " VERSION VERSION_DATE VERSION_HEAD_STR);
+  lines[i++] = about_line("Platform: " PLATFORM " \xf9 %s", features);
   lines[i++] = about_line(" ");
   lines[i++] = about_line("MegaZeux is free software licensed under the GNU GPL version 2 and");
   lines[i++] = about_line("comes with NO WARRANTY. See \"License\" for more information.");
