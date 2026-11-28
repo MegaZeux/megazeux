@@ -1,7 +1,7 @@
 /* MegaZeux
  *
  * Copyright (C) 2017 Dr Lancer-X <drlancer@megazeux.org>
- * Copyright (C) 2020, 2024-2025 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2020-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -49,284 +49,11 @@
 #define RENDER_EXTRA_ATTRIBUTES
 #endif
 
-template<typename PIXTYPE>
-static void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int align, int smzx, int trans, int clip);
-
-template<typename PIXTYPE, typename ALIGNTYPE>
-static void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int smzx, int trans, int clip);
-
-template<typename PIXTYPE, typename ALIGNTYPE, int SMZX>
-static void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int trans, int clip);
-
-template<typename PIXTYPE, typename ALIGNTYPE, int SMZX, int TR>
-static void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int clip);
-
 template<typename PIXTYPE, typename ALIGNTYPE, int SMZX, int TR, int CLIP>
 static void render_layer_func(
  void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
  const struct graphics_data *graphics, const struct video_layer *layer)
  RENDER_EXTRA_ATTRIBUTES;
-
-/**
- * Alignment of pixel buffer (8bpp).
- * This always must be >= the current renderer's bits-per-pixel.
- */
-template<>
-inline void render_layer_func<uint8_t>(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int align, int smzx, int trans, int clip)
-{
-  switch(align)
-  {
-#if ARCHITECTURE_BITS >= 64 && !defined(SKIP_64_ALIGN)
-    case 64:
-      render_layer_func<uint8_t, uint64_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-#endif /* ARCHITECTURE_BITS >= 64 */
-
-    case 32:
-      render_layer_func<uint8_t, uint32_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-
-    case 16:
-      render_layer_func<uint8_t, uint16_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-
-    case 8:
-      render_layer_func<uint8_t, uint8_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-
-    default:
-      fprintf(mzxerr, "INVALID RENDERER ARG align=%d (8bpp)\n", align);
-      exit(1);
-      break;
-  }
-}
-
-/**
- * Alignment of pixel buffer (16bpp).
- * This always must be >= the current renderer's bits-per-pixel.
- */
-template<>
-inline void render_layer_func<uint16_t>(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int align, int smzx, int trans, int clip)
-{
-  switch(align)
-  {
-#if ARCHITECTURE_BITS >= 64 && !defined(SKIP_64_ALIGN)
-    case 64:
-      render_layer_func<uint16_t, uint64_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-#endif /* ARCHITECTURE_BITS >= 64 */
-
-    case 32:
-      render_layer_func<uint16_t, uint32_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-
-    case 16:
-      render_layer_func<uint16_t, uint16_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-
-    default:
-      fprintf(mzxerr, "INVALID RENDERER ARG align=%d (16bpp)\n", align);
-      exit(1);
-      break;
-  }
-}
-
-/**
- * Alignment of pixel buffer (32bpp).
- * This always must be >= the current renderer's bits-per-pixel.
- */
-template<>
-inline void render_layer_func<uint32_t>(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int align, int smzx, int trans, int clip)
-{
-  switch(align)
-  {
-#if ARCHITECTURE_BITS >= 64 && !defined(SKIP_64_ALIGN)
-    case 64:
-      render_layer_func<uint32_t, uint64_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-#endif /* ARCHITECTURE_BITS >= 64 */
-
-    case 32:
-      render_layer_func<uint32_t, uint32_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       smzx, trans, clip);
-      break;
-
-    default:
-      fprintf(mzxerr, "INVALID RENDERER ARG align=%d (32bpp)\n", align);
-      exit(1);
-      break;
-  }
-}
-
-/**
- * Renderer bits-per-pixel (8, 16, or 32).
- * Sets of renderers for lower bpps are larger since they try to support more
- * alignment options, so several platforms disable them altogether to reduce
- * executable size and/or compilation time.
- */
-static inline void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int bpp, int align, int smzx, int trans, int clip)
-{
-  switch(bpp)
-  {
-#ifndef SKIP_8BPP
-    case 8:
-      render_layer_func<uint8_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       align, smzx, trans, clip);
-      break;
-#endif
-#ifndef SKIP_16BPP
-    case 16:
-      render_layer_func<uint16_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       align, smzx, trans, clip);
-      break;
-#endif
-#ifndef SKIP_32BPP
-    case 32:
-      render_layer_func<uint32_t>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       align, smzx, trans, clip);
-      break;
-#endif
-    default:
-      fprintf(mzxerr, "INVALID RENDERER ARG bpp=%d\n"
-       "(is this bpp enabled for this platform?)\n", bpp);
-      exit(1);
-      break;
-  }
-}
-
-/**
- * Renderer is SMZX (1) or normal MZX (0).
- */
-template<typename PIXTYPE, typename ALIGNTYPE>
-static inline void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int smzx, int trans, int clip)
-{
-  switch(smzx)
-  {
-    case 0:
-      render_layer_func<PIXTYPE, ALIGNTYPE, 0>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       trans, clip);
-      break;
-
-    case 1:
-    case 2:
-    case 3:
-      render_layer_func<PIXTYPE, ALIGNTYPE, 1>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       trans, clip);
-      break;
-
-    default:
-      fprintf(mzxerr, "INVALID RENDERER ARG smzx=%d\n", smzx);
-      exit(1);
-      break;
-  }
-}
-
-/**
- * Layer transparency enabled (1) or disabled (0).
- */
-template<typename PIXTYPE, typename ALIGNTYPE, int SMZX>
-static inline void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int trans, int clip)
-{
-  switch(trans)
-  {
-    case 0:
-      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, 0>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       clip);
-      break;
-
-    case 1:
-      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, 1>(
-       pixels, width_px, height_px, pitch, graphics, layer,
-       clip);
-      break;
-
-    default:
-      fprintf(mzxerr, "INVALID RENDERER ARG trans=%d\n", trans);
-      exit(1);
-      break;
-  }
-}
-
-/**
- * Renderer should clip the layer at the screen boundaries (1) or not (0).
- */
-template<typename PIXTYPE, typename ALIGNTYPE, int SMZX, int TR>
-static inline void render_layer_func(
- void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
- const struct graphics_data *graphics, const struct video_layer *layer,
- int clip)
-{
-  switch(clip)
-  {
-    case 0:
-      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, TR, 0>(
-       pixels, width_px, height_px, pitch, graphics, layer);
-      break;
-
-    case 1:
-      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, TR, 1>(
-       pixels, width_px, height_px, pitch, graphics, layer);
-      break;
-
-    default:
-      fprintf(mzxerr, "INVALID RENDERER ARG clip=%d\n", clip);
-      exit(1);
-      break;
-  }
-}
 
 // Macros to perform these shifts while ignoring spurious compiler warnings
 // that can't be turned off for older versions of GCC. Since BPP is constexpr
@@ -826,5 +553,261 @@ static inline void render_layer_func(
         }
       }
     }
+  }
+}
+
+/**
+ * Renderer should clip the layer at the screen boundaries (1) or not (0).
+ */
+template<typename PIXTYPE, typename ALIGNTYPE, int SMZX, int TR>
+static inline void render_layer_func(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int clip)
+{
+  switch(clip)
+  {
+    case 0:
+      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, TR, 0>(
+       pixels, width_px, height_px, pitch, graphics, layer);
+      break;
+
+    case 1:
+      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, TR, 1>(
+       pixels, width_px, height_px, pitch, graphics, layer);
+      break;
+
+    default:
+      fprintf(mzxerr, "INVALID RENDERER ARG clip=%d\n", clip);
+      exit(1);
+      break;
+  }
+}
+
+/**
+ * Layer transparency enabled (1) or disabled (0).
+ */
+template<typename PIXTYPE, typename ALIGNTYPE, int SMZX>
+static inline void render_layer_func(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int trans, int clip)
+{
+  switch(trans)
+  {
+    case 0:
+      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, 0>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       clip);
+      break;
+
+    case 1:
+      render_layer_func<PIXTYPE, ALIGNTYPE, SMZX, 1>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       clip);
+      break;
+
+    default:
+      fprintf(mzxerr, "INVALID RENDERER ARG trans=%d\n", trans);
+      exit(1);
+      break;
+  }
+}
+
+/**
+ * Renderer is SMZX (1) or normal MZX (0).
+ */
+template<typename PIXTYPE, typename ALIGNTYPE>
+static inline void render_layer_func(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int smzx, int trans, int clip)
+{
+  switch(smzx)
+  {
+    case 0:
+      render_layer_func<PIXTYPE, ALIGNTYPE, 0>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       trans, clip);
+      break;
+
+    case 1:
+    case 2:
+    case 3:
+      render_layer_func<PIXTYPE, ALIGNTYPE, 1>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       trans, clip);
+      break;
+
+    default:
+      fprintf(mzxerr, "INVALID RENDERER ARG smzx=%d\n", smzx);
+      exit(1);
+      break;
+  }
+}
+
+/* Forward declaration: alignment functions require specialization. */
+template<typename PIXTYPE>
+static void render_layer_func(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int align, int smzx, int trans, int clip);
+
+/**
+ * Alignment of pixel buffer (8bpp).
+ * This always must be >= the current renderer's bits-per-pixel.
+ */
+template<>
+inline void render_layer_func<uint8_t>(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int align, int smzx, int trans, int clip)
+{
+  switch(align)
+  {
+#if ARCHITECTURE_BITS >= 64 && !defined(SKIP_64_ALIGN)
+    case 64:
+      render_layer_func<uint8_t, uint64_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+#endif /* ARCHITECTURE_BITS >= 64 */
+
+    case 32:
+      render_layer_func<uint8_t, uint32_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+
+    case 16:
+      render_layer_func<uint8_t, uint16_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+
+    case 8:
+      render_layer_func<uint8_t, uint8_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+
+    default:
+      fprintf(mzxerr, "INVALID RENDERER ARG align=%d (8bpp)\n", align);
+      exit(1);
+      break;
+  }
+}
+
+/**
+ * Alignment of pixel buffer (16bpp).
+ * This always must be >= the current renderer's bits-per-pixel.
+ */
+template<>
+inline void render_layer_func<uint16_t>(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int align, int smzx, int trans, int clip)
+{
+  switch(align)
+  {
+#if ARCHITECTURE_BITS >= 64 && !defined(SKIP_64_ALIGN)
+    case 64:
+      render_layer_func<uint16_t, uint64_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+#endif /* ARCHITECTURE_BITS >= 64 */
+
+    case 32:
+      render_layer_func<uint16_t, uint32_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+
+    case 16:
+      render_layer_func<uint16_t, uint16_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+
+    default:
+      fprintf(mzxerr, "INVALID RENDERER ARG align=%d (16bpp)\n", align);
+      exit(1);
+      break;
+  }
+}
+
+/**
+ * Alignment of pixel buffer (32bpp).
+ * This always must be >= the current renderer's bits-per-pixel.
+ */
+template<>
+inline void render_layer_func<uint32_t>(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int align, int smzx, int trans, int clip)
+{
+  switch(align)
+  {
+#if ARCHITECTURE_BITS >= 64 && !defined(SKIP_64_ALIGN)
+    case 64:
+      render_layer_func<uint32_t, uint64_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+#endif /* ARCHITECTURE_BITS >= 64 */
+
+    case 32:
+      render_layer_func<uint32_t, uint32_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       smzx, trans, clip);
+      break;
+
+    default:
+      fprintf(mzxerr, "INVALID RENDERER ARG align=%d (32bpp)\n", align);
+      exit(1);
+      break;
+  }
+}
+
+/**
+ * Renderer bits-per-pixel (8, 16, or 32).
+ * Sets of renderers for lower bpps are larger since they try to support more
+ * alignment options, so several platforms disable them altogether to reduce
+ * executable size and/or compilation time.
+ */
+void render_layer_func(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int bpp, int align, int smzx, int trans, int clip)
+{
+  switch(bpp)
+  {
+#ifndef SKIP_8BPP
+    case 8:
+      render_layer_func<uint8_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       align, smzx, trans, clip);
+      break;
+#endif
+#ifndef SKIP_16BPP
+    case 16:
+      render_layer_func<uint16_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       align, smzx, trans, clip);
+      break;
+#endif
+#ifndef SKIP_32BPP
+    case 32:
+      render_layer_func<uint32_t>(
+       pixels, width_px, height_px, pitch, graphics, layer,
+       align, smzx, trans, clip);
+      break;
+#endif
+    default:
+      fprintf(mzxerr, "INVALID RENDERER ARG bpp=%d\n"
+       "(is this bpp enabled for this platform?)\n", bpp);
+      exit(1);
+      break;
   }
 }
