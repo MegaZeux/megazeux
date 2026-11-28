@@ -108,16 +108,8 @@ unit_extra_objs += \
 
 endif
 
-#
-# Build unit tests with debug optimizations and without link-time optimzations.
-# (Overrides these optimization flags from the global flags.)
-#
-UNIT_OPTIMIZE_FLAGS := -O0 ${UNIT_OPTIMIZE_FLAGS}
-ifeq (${LTO},1)
-ifeq (${HAS_F_LTO},1)
-UNIT_OPTIMIZE_FLAGS := -fno-lto ${UNIT_OPTIMIZE_FLAGS}
-endif
-endif
+unit_extra_objs += \
+  ${render_obj}/render.o  \
 
 #
 # Build without -DDEBUG to suppress debug messages,

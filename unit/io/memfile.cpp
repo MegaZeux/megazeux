@@ -338,7 +338,10 @@ UNITTEST(read_write)
   {
     0x00, 0x01, 0xFF, 0xFE, 0x7F, 0x53, 0xA3, 0xD8,
     0xFF, 0x00, 0x12, 0x34, 0x45, 0x67, 0x89, 0xAB,
+    /* shut GCC -O3, -fno-lto up */ 0xaa
   };
+  const int SIZE = sizeof(data8) - 1;
+
   static const uint16_t data16[] =
   {
     0x0100, 0xFEFF, 0x537F, 0xD8A3,
@@ -365,7 +368,6 @@ UNITTEST(read_write)
     0xAB896745341200FFULL,
   };
 
-  const int SIZE = sizeof(data8);
   uint8_t dest[SIZE * 2];
   struct memfile mf;
   int res;
@@ -391,10 +393,10 @@ UNITTEST(read_write)
 
     // NOTE: this function does not perform bounds checks since when using it
     // it is assumed these have already been performed.
-    for(uint8_t value : data8)
+    for(int i = 0; i < SIZE; i++)
     {
       uint8_t tmp = mfgetc(&mf);
-      ASSERTEQ(tmp, value, "");
+      ASSERTEQ(tmp, data8[i], "");
     }
   }
 
@@ -521,7 +523,7 @@ UNITTEST(read_write)
     // it is assumed these have already been performed.
     mfopen_wr(dest, sizeof(dest), &mf);
 
-    for(i = 0; i < arraysize(data8); i++)
+    for(i = 0; i < SIZE; i++)
     {
       res = mfputc(data8[i], &mf);
       ASSERTEQ((unsigned)res, data8[i], "");

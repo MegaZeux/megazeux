@@ -62,18 +62,8 @@ void set_screen_coords_viewport(struct graphics_data *graphics,
  int *screen_x, int *screen_y);
 void set_window_viewport_centered(struct graphics_data *graphics,
  struct video_window *window);
-
-#if defined(CONFIG_RENDER_GL_FIXED) || defined(CONFIG_RENDER_GL_PROGRAM) \
- || defined(CONFIG_RENDER_SOFTSCALE) || defined(CONFIG_RENDER_SDLACCEL) \
- || defined(CONFIG_RENDER_YUV) || defined(CONFIG_RENDER_GX) \
- || defined(MZX_UNIT_TESTS)
-
-#define HAVE_SET_WINDOW_VIEWPORT_SCALED
-
 void set_window_viewport_scaled(struct graphics_data *graphics,
  struct video_window *window);
-
-#endif /* CONFIG_RENDER_GL_FIXED || CONFIG_RENDER_GL_PROGRAM || ... */
 
 MEGAZEUX_END_DECLS
 

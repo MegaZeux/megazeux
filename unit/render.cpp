@@ -23,9 +23,8 @@
 #include "../src/algorithm/arch.h"
 #include "../src/io/path.h"
 
-extern "C" {
-#include "../src/render/render.c"
-}
+#include "../src/render/render.h"
+#include "../src/render/yuv.h"
 
 #define BUILD_REFERENCE_RENDERER
 #include "../src/render/render_layer.cpp"
@@ -435,7 +434,7 @@ UNITTEST(render_graph8)
     render_graph_init<MZX, FLAT32> d(graphics);
     init_layer_data(graphics.text_video, SCREEN_W, SCREEN_H, 0, 0, 0x1f);
 
-    render_graph8(pixels, pitch, &graphics, set_colors8_mzx);
+    render_graph8(pixels, pitch, &graphics, set_colors8[0]);
     frame.check(graphics, DIR "8.tga.gz");
   }
 
@@ -444,7 +443,7 @@ UNITTEST(render_graph8)
     render_graph_init<MZX, FLAT32> d(graphics);
     init_layer_data(graphics.text_video, SCREEN_W, SCREEN_H, PRO_CH, 16, 0x2f);
 
-    render_graph8(pixels, pitch, &graphics, set_colors8_mzx);
+    render_graph8(pixels, pitch, &graphics, set_colors8[0]);
     frame.check(graphics, DIR "8p.tga.gz");
   }
 
@@ -453,7 +452,7 @@ UNITTEST(render_graph8)
     render_graph_init<SMZX, FLAT32> d(graphics);
     init_layer_data(graphics.text_video, SCREEN_W, SCREEN_H, 0, 0, 0x1f);
 
-    render_graph8(pixels, pitch, &graphics, set_colors8_smzx);
+    render_graph8(pixels, pitch, &graphics, set_colors8[1]);
     frame.check(graphics, DIR "8s.tga.gz");
   }
 }
@@ -472,7 +471,7 @@ UNITTEST(render_graph16)
     render_graph_init<MZX, FLAT16> d(graphics);
     init_layer_data(graphics.text_video, SCREEN_W, SCREEN_H, 0, 0, 0x1f);
 
-    render_graph16(pixels, pitch, &graphics, set_colors16_mzx);
+    render_graph16(pixels, pitch, &graphics, set_colors16[0]);
     frame.check(graphics, DIR "16.tga.gz");
   }
 
@@ -481,7 +480,7 @@ UNITTEST(render_graph16)
     render_graph_init<MZX, FLAT16> d(graphics);
     init_layer_data(graphics.text_video, SCREEN_W, SCREEN_H, PRO_CH, 16, 0x2f);
 
-    render_graph16(pixels, pitch, &graphics, set_colors16_mzx);
+    render_graph16(pixels, pitch, &graphics, set_colors16[0]);
     frame.check(graphics, DIR "16p.tga.gz");
   }
 
@@ -490,7 +489,7 @@ UNITTEST(render_graph16)
     render_graph_init<SMZX, FLAT16> d(graphics);
     init_layer_data(graphics.text_video, SCREEN_W, SCREEN_H, 0, 0, 0x1f);
 
-    render_graph16(pixels, pitch, &graphics, set_colors16_smzx);
+    render_graph16(pixels, pitch, &graphics, set_colors16[1]);
     frame.check(graphics, DIR "16s.tga.gz");
   }
 }
@@ -572,7 +571,7 @@ UNITTEST(render_graph32)
 // Test that render_cursor overwrites the fill color completely with the
 // cursor color at  the specified location and char lines.
 template<typename T,
- unsigned width_ch = 4, unsigned height_ch = 3, uint32_t fill = 0xbabababau>
+ unsigned width_ch = 4, unsigned height_ch = 3, uint32_t fill = 0xaaaaaaaau>
 static void test_render_cursor(unsigned x_ch, unsigned y_ch, uint32_t flatcolor,
  uint8_t lines, uint8_t offset)
 {
@@ -602,10 +601,10 @@ static void test_render_cursor(unsigned x_ch, unsigned y_ch, uint32_t flatcolor,
       if(x >= x_ch * CHAR_W && x < (x_ch + 1) * CHAR_W &&
        y >= y_ch * CHAR_H + offset && y < y_ch * CHAR_H + offset + lines)
       {
-        ASSERTEQ(*pos, flat_px, "%u,%u", x, y);
+        ASSERTEQ(*pos, flat_px, "%u,%u @ %u,%u", x_ch, y_ch, x, y);
       }
       else
-        ASSERTEQ(*pos, fill_px, "%u,%u", x, y);
+        ASSERTEQ(*pos, fill_px, "%u,%u @ %u,%u", x_ch, y_ch, x, y);
     }
   }
 }
@@ -618,8 +617,8 @@ UNITTEST(render_cursor)
     {
       for(size_t x = 0; x < 4; x++)
       {
-        test_render_cursor<uint8_t>(x, y, 0x0f0f0f0f, 2, 12);
-        test_render_cursor<uint8_t>(x, y, 0x0f0f0f0f, 14, 0);
+        test_render_cursor<uint8_t>(x, y, 0x88888888, 2, 12);
+        test_render_cursor<uint8_t>(x, y, 0x88888888, 14, 0);
       }
     }
   }
@@ -630,8 +629,8 @@ UNITTEST(render_cursor)
     {
       for(size_t x = 0; x < 4; x++)
       {
-        test_render_cursor<uint16_t>(x, y, 0xabcfabcf, 2, 12);
-        test_render_cursor<uint16_t>(x, y, 0xabcfabcf, 14, 0);
+        test_render_cursor<uint16_t>(x, y, 0x00080008, 2, 12);
+        test_render_cursor<uint16_t>(x, y, 0x00080008, 14, 0);
       }
     }
   }
@@ -669,7 +668,7 @@ static void test_render_mouse(unsigned x_px, unsigned y_px,
   ASSERT(x_px < width_px, "bad x");
   ASSERT(y_px < height_px, "bad y");
 
-  uint32_t buffer[buf_sz];
+  uint32_t buffer[buf_sz]{};
   T *pos = reinterpret_cast<T *>(buffer);
   size_t i;
   for(i = 0; i < width_px * height_px; i++)

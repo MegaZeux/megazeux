@@ -23,13 +23,13 @@
 
 #include "../../src/algorithm/string_search.c"
 
-struct string_pair
+struct string_search_pair
 {
   const char *needle;
   const char *haystack;
 };
 
-struct string_pair_idx
+struct string_search_pair_idx
 {
   const char *needle;
   const char *haystack;
@@ -39,7 +39,7 @@ struct string_pair_idx
 UNITTEST(Search)
 {
   // left: needle, right: haystack
-  static const string_pair haystack_none[] =
+  static const string_search_pair haystack_none[] =
   {
     { "", "literally anything" },
     { "literally anything", "" },
@@ -63,7 +63,7 @@ UNITTEST(Search)
     },
     { "abcdabc", "abceabceabceabceabc" },
   };
-  static const string_pair_idx haystack_once[] =
+  static const string_search_pair_idx haystack_once[] =
   {
     { "abcde", "abcde", 0 },
     { "abcd", "aaaaaaaaaabcaaaabcdaaaaa", 15 },
@@ -98,7 +98,7 @@ UNITTEST(Search)
       "$local", "set \"$@\" to \"R&&p_id&&.&$local_('local12')&\"", 24
     },
   };
-  static const string_pair haystack_twice[] =
+  static const string_search_pair haystack_twice[] =
   {
     { "abcde", "abcdeabcde" },
     { "abcd", "aaaaaaaaaabcaaaabcdaaaaabcdaaaaaaaaa" },
@@ -126,7 +126,7 @@ UNITTEST(Search)
 
   SECTION(OneOff)
   {
-    for(const string_pair &d : haystack_none)
+    for(const string_search_pair &d : haystack_none)
     {
       A = d.haystack;
       B = d.needle;
@@ -134,7 +134,7 @@ UNITTEST(Search)
       ASSERT(!mzx_string_search(A, strlen(A), B, strlen(B), nullptr, false), "%s", A);
     }
 
-    for(const string_pair_idx &d : haystack_once)
+    for(const string_search_pair_idx &d : haystack_once)
     {
       A = d.haystack;
       B = d.needle;
@@ -146,7 +146,7 @@ UNITTEST(Search)
       ASSERTEQ((const char *)dest - A, where, "%s", A);
     }
 
-    for(const string_pair &d : haystack_twice)
+    for(const string_search_pair &d : haystack_twice)
     {
       A = d.haystack;
       B = d.needle;
@@ -159,7 +159,7 @@ UNITTEST(Search)
 
   SECTION(Repeating)
   {
-    for(const string_pair_idx &d : haystack_once)
+    for(const string_search_pair_idx &d : haystack_once)
     {
       const char *dest;
       A = d.haystack;
@@ -181,7 +181,7 @@ UNITTEST(Search)
       ASSERT(!mzx_string_search(A, a_len, B, b_len, &data, false), "%s", A);
     }
 
-    for(const string_pair &d : haystack_twice)
+    for(const string_search_pair &d : haystack_twice)
     {
       const char *dest;
       A = d.haystack;
@@ -213,7 +213,7 @@ UNITTEST(Search)
 UNITTEST(SearchCaseInsensitive)
 {
   // left: needle, right: haystack
-  static const string_pair haystack_none[] =
+  static const string_search_pair haystack_none[] =
   {
     { "", "literally anything" },
     { "literally anything", "" },
@@ -235,7 +235,7 @@ UNITTEST(SearchCaseInsensitive)
     },
     { "abcdabc", "abceABCeabceABCeabc" },
   };
-  static const string_pair haystack_once[] =
+  static const string_search_pair haystack_once[] =
   {
     { "abcde", "abcde" },
     { "abcd", "aaaaaaaaaabcaaaabcdaaaaa" },
@@ -253,7 +253,7 @@ UNITTEST(SearchCaseInsensitive)
     },
     { "abcdabc", "abceaBcdAbCeabceabc" },
   };
-  static const string_pair haystack_twice[] =
+  static const string_search_pair haystack_twice[] =
   {
     { "abcde", "abcdeabcde" },
     { "abcd", "aaaaaaaaaabcaaaabcdaaaaabcdaaaaaaaaa" },
@@ -282,7 +282,7 @@ UNITTEST(SearchCaseInsensitive)
 
   SECTION(OneOff)
   {
-    for(const string_pair &d : haystack_none)
+    for(const string_search_pair &d : haystack_none)
     {
       A = d.haystack;
       B = d.needle;
@@ -290,7 +290,7 @@ UNITTEST(SearchCaseInsensitive)
       ASSERT(!mzx_string_search(A, strlen(A), B, strlen(B), NULL, true), "%s", A);
     }
 
-    for(const string_pair &d : haystack_once)
+    for(const string_search_pair &d : haystack_once)
     {
       A = d.haystack;
       B = d.needle;
@@ -300,7 +300,7 @@ UNITTEST(SearchCaseInsensitive)
       ASSERT(dest >= A && dest < A + strlen(A), "%s", A);
     }
 
-    for(const string_pair &d : haystack_twice)
+    for(const string_search_pair &d : haystack_twice)
     {
       A = d.haystack;
       B = d.needle;
@@ -313,7 +313,7 @@ UNITTEST(SearchCaseInsensitive)
 
   SECTION(Repeating)
   {
-    for(const string_pair &d : haystack_once)
+    for(const string_search_pair &d : haystack_once)
     {
       const char *dest;
       A = d.haystack;
@@ -333,7 +333,7 @@ UNITTEST(SearchCaseInsensitive)
       ASSERT(!mzx_string_search(A, a_len, B, b_len, &data, true), "%s", A);
     }
 
-    for(const string_pair &d : haystack_twice)
+    for(const string_search_pair &d : haystack_twice)
     {
       const char *dest;
       A = d.haystack;
