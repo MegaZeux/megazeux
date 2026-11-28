@@ -20,7 +20,7 @@
 #include "../Unit.hpp"
 #include "../../src/algorithm/arch.h"
 #include "../../src/algorithm/rng.h"
-#include "../../src/algorithm/string_xor.c"
+#include "../../src/algorithm/string_xor.h"
 
 static constexpr uint8_t data[] =
 {

@@ -19,7 +19,7 @@
 
 #include "../Unit.hpp"
 #include "../../src/algorithm/arch.h"
-#include "../../src/algorithm/string_compare.c"
+#include "../../src/algorithm/string_compare.h"
 
 #include <string.h>
 

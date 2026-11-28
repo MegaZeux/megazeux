@@ -18,7 +18,7 @@
  */
 
 #include "../Unit.hpp"
-#include "../../src/algorithm/string_match.c"
+#include "../../src/algorithm/string_match.h"
 
 struct wildcard_test_data
 {

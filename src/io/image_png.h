@@ -85,7 +85,7 @@ typedef const struct png_rgba *(*png_write_row_function)(uint32_t width, void *p
  *                    If false, this function will check the signature.
  * @return            PNG_OK on success, otherwise a relevant png_error value.
  */
-enum png_error png_read(void *handle, png_read_function readfn,
+MZX_LIBIO enum png_error png_read(void *handle, png_read_function readfn,
  void *priv, png_read_alloc_function allocfn, mzx_bool skip_signature);
 
 /**
@@ -106,7 +106,7 @@ enum png_error png_read(void *handle, png_read_function readfn,
  *                    This function should return NULL on error.
  * @return            PNG_OK on success, otherwise a relevant png_error value.
  */
-enum png_error png_write(
+MZX_LIBIO enum png_error png_write(
  uint32_t width, uint32_t height, enum png_pixel_fmt fmt,
  void *handle, png_write_function writefn,
  void *priv, png_write_row_function writerowfn);

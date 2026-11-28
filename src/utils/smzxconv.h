@@ -18,6 +18,10 @@
 #ifndef MEGAZEUX_SMZXCONV_H
 #define MEGAZEUX_SMZXCONV_H
 
+#include "../compat.h"
+
+MEGAZEUX_BEGIN_DECLS
+
 struct rgba_color;
 
 typedef struct
@@ -42,5 +46,7 @@ smzx_converter *smzx_convert_init(int w, int h, int chroff, int chrskip,
 int smzx_convert(smzx_converter *c, const struct rgba_color *img,
  mzx_tile *tile, mzx_glyph *chr, mzx_color *pal);
 void smzx_convert_free(smzx_converter *c);
+
+MEGAZEUX_END_DECLS
 
 #endif /* MEGAZEUX_SMZXCONV_H */

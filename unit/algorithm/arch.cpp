@@ -19,9 +19,8 @@
 
 #include "../Unit.hpp"
 #include "../../src/algorithm/arch.h"
+#include "../../src/algorithm/arch_features.h"
 #include "../../src/platform/log.h"
-
-#include "../../src/algorithm/arch_features.c"
 
 #include <string.h>
 

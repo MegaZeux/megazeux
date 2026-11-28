@@ -23,9 +23,9 @@
 #include <zlib.h>
 
 #include "../../src/io/memfile.h"
-#include "../../src/io/image_file.c"
-#include "../../src/io/image_gif.c"
-#include "../../src/io/image_png.c"
+#include "../../src/io/image_file.h"
+#include "../../src/io/image_gif.h"
+#include "../../src/io/image_png.c" /* png_read_fallback */
 
 #define DATA_BASEDIR "unit/io/image_file/"
 

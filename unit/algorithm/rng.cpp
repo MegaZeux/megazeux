@@ -18,7 +18,7 @@
  */
 
 #include "../Unit.hpp"
-#include "../../src/algorithm/rng.c"
+#include "../../src/algorithm/rng.h"
 
 struct rng_data
 {
