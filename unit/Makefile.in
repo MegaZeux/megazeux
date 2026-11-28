@@ -98,6 +98,14 @@ else # !BUILD_MODULAR
 # by directly linking their objects.
 #
 unit_extra_objs += \
+  ${algo_obj}/arch_features.o \
+  ${algo_obj}/rng.o \
+  ${algo_obj}/string_char.o \
+  ${algo_obj}/string_compare.o \
+  ${algo_obj}/string_match.o \
+  ${algo_obj}/string_search.o \
+  ${algo_obj}/string_sep.o \
+  ${algo_obj}/string_xor.o \
   ${io_obj}/alloc.o       \
   ${io_obj}/path.o        \
   ${io_obj}/redirect.o    \
@@ -114,8 +122,11 @@ endif
 # so reuse the object compiled for the library binary.
 #
 unit_extra_objs += \
+  ${io_obj}/image_file.o  \
+  ${io_obj}/image_gif.o   \
   ${render_obj}/render.o  \
   ${render_obj}/render_layer.o \
+  ${utils_obj}/smzxconv.o \
 
 #
 # Build without -DDEBUG to suppress debug messages,

@@ -111,11 +111,12 @@ struct image_raw_format
   mzx_bool force_raw;
 };
 
-enum image_error load_image_from_file(const char *filename,
+MZX_LIBIO enum image_error load_image_from_file(const char *filename,
  struct image_file *dest, const struct image_raw_format *raw_format);
-enum image_error load_image_from_stream(void *handle, image_read_function readfn,
- struct image_file *dest, const struct image_raw_format *raw_format);
-void image_free(struct image_file *dest);
+MZX_LIBIO enum image_error load_image_from_stream(void *handle,
+ image_read_function readfn, struct image_file *dest,
+ const struct image_raw_format *raw_format);
+MZX_LIBIO void image_free(struct image_file *dest);
 
 /**
  * Get the error string for a given error.
@@ -123,7 +124,7 @@ void image_free(struct image_file *dest);
  * @param   err   a `image_error` value.
  * @returns       a statically allocated string corresponding to the error.
  */
-const char *image_error_string(enum image_error err);
+MZX_LIBIO const char *image_error_string(enum image_error err);
 
 MEGAZEUX_END_DECLS
 

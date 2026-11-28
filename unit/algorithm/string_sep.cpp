@@ -18,7 +18,7 @@
  */
 
 #include "../Unit.hpp"
-#include "../../src/algorithm/string_sep.c"
+#include "../../src/algorithm/string_sep.h"
 
 struct strsep_test
 {

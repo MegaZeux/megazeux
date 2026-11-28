@@ -19,7 +19,8 @@
 
 #include "../Unit.hpp"
 #include "../UnitIO.hpp"
-#include "../../src/utils/smzxconv.c"
+#include "../../src/io/image_file.h"
+#include "../../src/utils/smzxconv.h"
 
 /* TODO: this test could probably be much more thorough. */
 

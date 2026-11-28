@@ -21,7 +21,14 @@
 
 #include <string.h>
 
+#ifndef CONFIG_EDITOR
+/* Hack: include source directly for builds with the editor disabled. */
+#define mzx_string_search _mzx_string_search
+#define mzx_string_search_index _mzx_string_search_index
 #include "../../src/algorithm/string_search.c"
+#else
+#include "../../src/algorithm/string_search.h"
+#endif
 
 struct string_search_pair
 {

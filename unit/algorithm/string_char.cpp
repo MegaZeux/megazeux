@@ -18,7 +18,7 @@
  */
 
 #include "../Unit.hpp"
-#include "../../src/algorithm/string_char.c"
+#include "../../src/algorithm/string_char.h"
 
 #include <limits.h>
 

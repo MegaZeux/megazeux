@@ -210,7 +210,7 @@ struct gif_info
  * @param   err   a `gif_error` value.
  * @returns       a statically allocated string corresponding to the error.
  */
-const char *gif_error_string(enum gif_error err);
+MZX_LIBIO const char *gif_error_string(enum gif_error err);
 
 /**
  * Read all GIF data structures from the input handle into RAM.
@@ -223,7 +223,7 @@ const char *gif_error_string(enum gif_error err);
  *                          this if the file format has already been IDed.
  * @returns                 `GIF_OK` on success, otherwise a `gif_error` value.
  */
-enum gif_error gif_read(struct gif_info *gif, void *handle,
+MZX_LIBIO enum gif_error gif_read(struct gif_info *gif, void *handle,
  const gif_read_function readfn, mzx_bool skip_signature);
 
 /**
@@ -231,7 +231,7 @@ enum gif_error gif_read(struct gif_info *gif, void *handle,
  *
  * @param   gif             `gif_info` struct to free GIF data from.
  */
-void gif_close(struct gif_info *gif);
+MZX_LIBIO void gif_close(struct gif_info *gif);
 
 
 #ifndef GIF_NO_COMPOSITOR
@@ -243,7 +243,8 @@ void gif_close(struct gif_info *gif);
  * @param   h               height of output image is stored here.
  * @param   gif             `gif_info` struct representing the GIF to composite.
  */
-void gif_composite_size(unsigned *w, unsigned *h, const struct gif_info *gif);
+MZX_LIBIO void gif_composite_size(unsigned *w, unsigned *h,
+ const struct gif_info *gif);
 
 /**
  * Composite a GIF into a linear array of `gif_rgba` pixels. The width and
@@ -255,8 +256,8 @@ void gif_composite_size(unsigned *w, unsigned *h, const struct gif_info *gif);
  * @param   allocfn         allocator function for the `gif_rgba` array.
  * @returns                 `GIF_OK` on success, otherwise a `gif_error` value.
  */
-enum gif_error gif_composite(struct gif_rgba **pixels, const struct gif_info *gif,
- const gif_alloc_function allocfn);
+MZX_LIBIO enum gif_error gif_composite(struct gif_rgba **pixels,
+ const struct gif_info *gif, const gif_alloc_function allocfn);
 
 #endif /* !GIF_NO_COMPOSITOR */
 
