@@ -1,6 +1,7 @@
 /* MegaZeux
  *
- * Copyright (C) 2024 Alice Rowan <petrifiedrowan@gmail.com>
+ * Copyright (C) 2017 Dr Lancer-X <drlancer@megazeux.org>
+ * Copyright (C) 2024-2026 Alice Rowan <petrifiedrowan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,6 +22,102 @@
 #define MEGAZEUX_RENDER_LAYER_COMMON_HPP
 
 #include "../graphics.h"
+#include "../algorithm/arch.h"
+
+/* Renderer dispatch functions. These are internal to render_layer.cpp but also
+ * required by the units. Use render_layer instead of using these directly. */
+
+void render_layer_func(
+ void * RESTRICT pixels, int width_px, int height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int bpp, int align, int smzx, int trans, int clip);
+
+/* Return the alignment of a particular value (typically pixel array address).
+ * Multiple addresses can be ORed together to get the lowest-common alignment
+ * for multiple inputs. This function should not take architecture unalignment
+ * capabilities or vector rendering into consideration.
+ *
+ * TODO: ARCH_INT*_MODULO counters untested here, use type sizes instead.
+ */
+static inline size_t get_align_for_offset(size_t value)
+{
+#if ARCHITECTURE_BITS >= 64
+  if(ARCH_PTR_MODULO(value, sizeof(uint64_t)) == 0)
+  {
+    return 64;
+  }
+  else
+#endif
+
+  if(ARCH_PTR_MODULO(value, sizeof(uint32_t)) == 0)
+  {
+    return 32;
+  }
+  else
+
+  if(ARCH_PTR_MODULO(value, sizeof(uint16_t)) == 0)
+  {
+    return 16;
+  }
+  else
+    return 8;
+}
+
+/* Select the safest renderer given the alignment of the pixel
+ * array, row pitch, and size_t. This function should not take architecture
+ * alignment capabilities or vector rendering into consideration.
+ */
+static inline void select_aligned_renderer(const void *pixels,
+ size_t width_px, size_t height_px, size_t pitch,
+ const struct graphics_data *graphics, const struct video_layer *layer,
+ int &bpp, int &align, int &smzx, int &trans, int &clip)
+{
+  smzx = layer->mode;
+  trans = layer->transparent_col != -1;
+  clip = 0;
+
+  if(layer->x < 0 || layer->y < 0 ||
+   (layer->x + layer->w * CHAR_W) > width_px ||
+   (layer->y + layer->h * CHAR_H) > height_px)
+    clip = 1;
+
+  if(bpp == -1)
+    bpp = graphics->bits_per_pixel;
+
+  size_t drawStart =
+   (size_t)((char *)pixels + layer->y * (ptrdiff_t)pitch + (layer->x * bpp / 8));
+
+  /**
+   * Select the highest pixel align the current platform is capable of.
+   * Additionally, to simplify the renderer code, the align must also be
+   * capable of addressing the first pixel of the draw (e.g. a 64-bit platform
+   * will use a 32-bit align if the layer is on an odd horizontal pixel).
+   * This must be true for the first pixel of every character row drawn, so
+   * the pitch must be in alignment too.
+   *
+   * In other words, the alignment is the minimum of:
+   *   the number of bits of size_t (rough approximation of arch width),
+   *   the number of bits of the first pixel's alignment in memory,
+   *   the number of bits of the pitch's alignment (for rows after the first).
+   */
+  align = get_align_for_offset(sizeof(size_t) | drawStart | pitch);
+}
+
+/* Override selected alignment for platforms that support fast unaligned.
+ */
+static inline void select_unaligned_renderer(int &align)
+{
+#if defined(ARCH_INT64_UNALIGN)
+  if(align >= ARCH_INT64_UNALIGN * 8)
+    align = 64;
+#elif defined(ARCH_INT32_UNALIGN)
+  if(align >= ARCH_INT32_UNALIGN * 8 && align < 32)
+    align = 32;
+#endif
+}
+
+
+/* Renderer common functions. */
 
 /**
  * Select the real display character for a char element.

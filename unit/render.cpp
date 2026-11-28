@@ -24,10 +24,10 @@
 #include "../src/io/path.h"
 
 #include "../src/render/render.h"
+#include "../src/render/render_layer.h"
+#include "../src/render/render_layer_common.hpp"
+#include "../src/render/render_layer_reference.h" /* reference_renderer */
 #include "../src/render/yuv.h"
-
-#define BUILD_REFERENCE_RENDERER
-#include "../src/render/render_layer.cpp"
 
 typedef void (*render_layer_fp)(void * RESTRICT pixels,
  size_t width_px, size_t height_px, size_t pitch, int bpp,

@@ -108,8 +108,14 @@ unit_extra_objs += \
 
 endif
 
+#
+# These objects contain external non-exported functions that need to be
+# tested directly. In particular, render_layer.cpp is expensive to compile,
+# so reuse the object compiled for the library binary.
+#
 unit_extra_objs += \
   ${render_obj}/render.o  \
+  ${render_obj}/render_layer.o \
 
 #
 # Build without -DDEBUG to suppress debug messages,
