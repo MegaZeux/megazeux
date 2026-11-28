@@ -617,6 +617,22 @@ namespace Unit
     return false;
   }
 
+  /* This is somewhat janky: units need to be kept in compilation order
+   * within a compilation unit, but each compilation unit needs to be sorted
+   * into link order. The compiler seems to consistently keep earlier linked
+   * compilation units at lower addresses, but may change the order of static
+   * objects WITHIN the compilation unit, as it is only required to
+   * instantiate them in order (not store them in order).
+   *
+   * So: if the compilation unit is the same, leave the tests in-place.
+   * If the compilation unit is different, compare by pointer. This
+   * requires std::stable_sort.
+   */
+  bool unittest::sort_compare(const unittest *a, const unittest *b)
+  {
+    return strcasecmp(a->file_name, b->file_name) ? a < b : 0;
+  }
+
 
   /************************************************************************
    * Unit::unittestrunner_cls and support functions.
@@ -680,9 +696,13 @@ namespace Unit
 
     /* Fix static initialization ignoring link order. For now, this compares
      * pointers, which should preserve link order and function order. */
-    std::stable_sort(gettests().begin(), gettests().end());
+    std::stable_sort(gettests().begin(), gettests().end(), unittest::sort_compare);
 
-    getcwd(execdir, sizeof(execdir));
+    if(!getcwd(execdir, sizeof(execdir)))
+    {
+      Uerr("failed to getcwd");
+      return false;
+    }
 
     for(unittest *t : gettests())
     {
@@ -703,7 +723,8 @@ namespace Unit
           continue;
         }
       }
-      chdir(execdir);
+      if(chdir(execdir))
+        Uerr("failed to chdir back to execdir");
 
       count++;
       current_test = t;

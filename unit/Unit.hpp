@@ -435,6 +435,7 @@ namespace Unit
     bool run();
     void signal_fail();
     bool match_filter(const char *filter);
+    static bool sort_compare(const unittest *a, const unittest *b);
 
   private:
     void run_section(void);
@@ -471,7 +472,8 @@ namespace Unit
     ~pushd()
     {
       if(success)
-        chdir(prev);
+        if(chdir(prev))
+          Uerr("failed to chdir back to previous dir");
     }
   };
 

@@ -23,33 +23,33 @@
 
 #include <string.h>
 
-struct string_pair
+struct string_cmp_pair
 {
   const char *a;
   const char *b;
 };
 
-struct string_pair_aligned
+struct string_cmp_pair_aligned
 {
   alignstr<uint64_t> a;
   alignstr<uint64_t> b;
 };
 
-struct bad_string_pair
+struct bad_string_cmp_pair
 {
   const char *a;
   const char *b;
   int expected;
 };
 
-struct bad_string_pair_aligned
+struct bad_string_cmp_pair_aligned
 {
   alignstr<uint64_t> a;
   alignstr<uint64_t> b;
   int expected;
 };
 
-struct special_string_pair
+struct special_string_cmp_pair
 {
   const char *a;
   const char *b;
@@ -57,7 +57,7 @@ struct special_string_pair
   int expected;
 };
 
-struct special_string_pair_aligned
+struct special_string_cmp_pair_aligned
 {
   alignstr<uint64_t> a;
   alignstr<uint64_t> b;
@@ -65,7 +65,7 @@ struct special_string_pair_aligned
   int expected;
 };
 
-static const special_string_pair fail_for_memcasecmp_only[] =
+static const special_string_cmp_pair fail_for_memcasecmp_only[] =
 {
   { "\0a", "\0b", 3, -1 },
   { "h\0b", "h\0a", 4, 1 },
@@ -75,7 +75,7 @@ static const special_string_pair fail_for_memcasecmp_only[] =
   { "hewo >:3\0\n\0\x31\xfc", "hewo >:3\0\n\0\x31\xfch", 14, -'h' },
 };
 
-static const special_string_pair_aligned fail_for_memcasecmp_only64[] =
+static const special_string_cmp_pair_aligned fail_for_memcasecmp_only64[] =
 {
   /* Explicit constructors so old GCC versions don't get confused... */
   { alignstr<uint64_t>("\0a"),
@@ -94,7 +94,7 @@ static const special_string_pair_aligned fail_for_memcasecmp_only64[] =
 
 UNITTEST(Matching)
 {
-  static const string_pair pairs[] =
+  static const string_cmp_pair pairs[] =
   {
     { "", "" },
     { " ", " " },
@@ -104,7 +104,7 @@ UNITTEST(Matching)
     { u8"śśśśśśśś", u8"śśśśśśśś" },
   };
 
-  static const string_pair_aligned pairs64[] =
+  static const string_cmp_pair_aligned pairs64[] =
   {
     /* Explicit constructors so old GCC versions don't get confused... */
     { alignstr<uint64_t>(""),
@@ -132,7 +132,7 @@ UNITTEST(Matching)
 
   SECTION(strcasecmp)
   {
-    for(const string_pair &p : pairs)
+    for(const string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -141,7 +141,7 @@ UNITTEST(Matching)
       ASSERT(!strcasecmp(a, b), "%s", a);
     }
 
-    for(const string_pair_aligned &p : pairs64)
+    for(const string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -150,7 +150,7 @@ UNITTEST(Matching)
       ASSERT(!strcasecmp(a, b), "%s", a);
     }
 
-    for(const special_string_pair &p : fail_for_memcasecmp_only)
+    for(const special_string_cmp_pair &p : fail_for_memcasecmp_only)
     {
       a = p.a;
       b = p.b;
@@ -159,7 +159,7 @@ UNITTEST(Matching)
       ASSERT(!strcasecmp(a, b), "%s", a);
     }
 
-    for(const special_string_pair_aligned &p : fail_for_memcasecmp_only64)
+    for(const special_string_cmp_pair_aligned &p : fail_for_memcasecmp_only64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -171,7 +171,7 @@ UNITTEST(Matching)
 
   SECTION(strncasecmp)
   {
-    for(const string_pair &p : pairs)
+    for(const string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -180,7 +180,7 @@ UNITTEST(Matching)
       ASSERT(!strncasecmp(a, b, strlen(a) + 1), "%s", a);
     }
 
-    for(const string_pair_aligned &p : pairs64)
+    for(const string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -189,7 +189,7 @@ UNITTEST(Matching)
       ASSERT(!strncasecmp(a, b, strlen(a) + 1), "%s", a);
     }
 
-    for(const special_string_pair &p : fail_for_memcasecmp_only)
+    for(const special_string_cmp_pair &p : fail_for_memcasecmp_only)
     {
       a = p.a;
       b = p.b;
@@ -198,7 +198,7 @@ UNITTEST(Matching)
       ASSERT(!strncasecmp(a, b, p.n), "%s", a);
     }
 
-    for(const special_string_pair_aligned &p : fail_for_memcasecmp_only64)
+    for(const special_string_cmp_pair_aligned &p : fail_for_memcasecmp_only64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -210,7 +210,7 @@ UNITTEST(Matching)
 
   SECTION(memcasecmp)
   {
-    for(const string_pair &p : pairs)
+    for(const string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -218,7 +218,7 @@ UNITTEST(Matching)
       ASSERT(!memcasecmp(a, b, strlen(a)), "%s", a);
     }
 
-    for(const string_pair_aligned &p : pairs64)
+    for(const string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -232,7 +232,7 @@ UNITTEST(Matching)
 
   SECTION(memcasecmp32)
   {
-    for(const string_pair &p : pairs)
+    for(const string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -240,7 +240,7 @@ UNITTEST(Matching)
       ASSERT(!memcasecmp32(a, b, strlen(a)), "%s", a);
     }
 
-    for(const string_pair_aligned &p : pairs64)
+    for(const string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -255,7 +255,7 @@ UNITTEST(Matching)
 
 UNITTEST(NoMatch)
 {
-  static const bad_string_pair pairs[] =
+  static const bad_string_cmp_pair pairs[] =
   {
     { "-", "_", ('-' - '_') },
     { "abcde", "ABCDF", ('e' - 'f') },
@@ -264,7 +264,7 @@ UNITTEST(NoMatch)
     { u8"śśŚśśśŚś", u8"ŚśśśŚśśś", 1 },
   };
 
-  static const bad_string_pair_aligned pairs64[] =
+  static const bad_string_cmp_pair_aligned pairs64[] =
   {
     /* Explicit constructors so old GCC versions don't get confused... */
     { alignstr<uint64_t>("-"),
@@ -298,7 +298,7 @@ UNITTEST(NoMatch)
 
   SECTION(strcasecmp)
   {
-    for(const bad_string_pair &p : pairs)
+    for(const bad_string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -307,7 +307,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(mzx_strcasecmp(a, b), expected, "%s", a);
     }
 
-    for(const bad_string_pair_aligned &p : pairs64)
+    for(const bad_string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -319,7 +319,7 @@ UNITTEST(NoMatch)
 
   SECTION(strncasecmp)
   {
-    for(const bad_string_pair &p : pairs)
+    for(const bad_string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -328,7 +328,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(mzx_strncasecmp(a, b, strlen(a)), expected, "%s", a);
     }
 
-    for(const bad_string_pair_aligned &p : pairs64)
+    for(const bad_string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -340,7 +340,7 @@ UNITTEST(NoMatch)
 
   SECTION(memcasecmp)
   {
-    for(const bad_string_pair &p : pairs)
+    for(const bad_string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -349,7 +349,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(memcasecmp(a, b, strlen(a)), expected, "%s", a);
     }
 
-    for(const bad_string_pair_aligned &p : pairs64)
+    for(const bad_string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -361,7 +361,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(memcasecmp(a, b, strlen(a)), expected, "%s", a);
     }
 
-    for(const special_string_pair &p : fail_for_memcasecmp_only)
+    for(const special_string_cmp_pair &p : fail_for_memcasecmp_only)
     {
       a = p.a;
       b = p.b;
@@ -369,7 +369,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(memcasecmp(a, b, p.n), expected, "%s", a);
     }
 
-    for(const special_string_pair_aligned &p : fail_for_memcasecmp_only64)
+    for(const special_string_cmp_pair_aligned &p : fail_for_memcasecmp_only64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -383,7 +383,7 @@ UNITTEST(NoMatch)
 
   SECTION(memcasecmp32)
   {
-    for(const bad_string_pair &p : pairs)
+    for(const bad_string_cmp_pair &p : pairs)
     {
       a = p.a;
       b = p.b;
@@ -392,7 +392,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(memcasecmp32(a, b, strlen(a)), expected, "%s", a);
     }
 
-    for(const bad_string_pair_aligned &p : pairs64)
+    for(const bad_string_cmp_pair_aligned &p : pairs64)
     {
       a = p.a.c_str();
       b = p.b.c_str();
@@ -404,7 +404,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(memcasecmp32(a, b, strlen(a)), expected, "%s", a);
     }
 
-    for(const special_string_pair &p : fail_for_memcasecmp_only)
+    for(const special_string_cmp_pair &p : fail_for_memcasecmp_only)
     {
       a = p.a;
       b = p.b;
@@ -412,7 +412,7 @@ UNITTEST(NoMatch)
       ASSERTEQ(memcasecmp32(a, b, p.n), expected, "%s", a);
     }
 
-    for(const special_string_pair_aligned &p : fail_for_memcasecmp_only64)
+    for(const special_string_cmp_pair_aligned &p : fail_for_memcasecmp_only64)
     {
       a = p.a.c_str();
       b = p.b.c_str();

@@ -541,8 +541,6 @@ void set_window_viewport_centered(struct graphics_data *graphics,
   window->is_integer_scaled = true;
 }
 
-#ifdef HAVE_SET_WINDOW_VIEWPORT_SCALED
-
 void set_window_viewport_scaled(struct graphics_data *graphics,
  struct video_window *window)
 {
@@ -576,5 +574,3 @@ void set_window_viewport_scaled(struct graphics_data *graphics,
   if((width % SCREEN_PIX_W == 0) && (height % SCREEN_PIX_H == 0))
     window->is_integer_scaled = true;
 }
-
-#endif /* HAVE_SET_WINDOW_VIEWPORT_SCALED */
